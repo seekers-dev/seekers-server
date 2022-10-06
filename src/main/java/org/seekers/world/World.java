@@ -1,12 +1,15 @@
 package org.seekers.world;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javafx.geometry.Point2D;
@@ -14,7 +17,7 @@ import javafx.geometry.Point2D;
 public class World {
 	static Properties DEFAULT = new Properties();
 	static {
-		DEFAULT.putAll(Map.of("width", 728, "height", 728, "playtime", 10_000));
+		DEFAULT.putAll(Map.of("width", 768.0, "height", 768.0, "playtime", 10_000.0));
 	}
 
 	private Properties properties = new Properties(DEFAULT);
@@ -61,15 +64,23 @@ public class World {
 		start();
 	}
 
-	public World(InputStream stream) {
-		try {
-			this.properties.load(stream);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public World(File file) {
+		if (file.exists() && file.getName().endsWith(".properties"))
+			try (FileInputStream stream = new FileInputStream(file)) {
+				properties.load(stream);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		else
+			properties.putAll(Map.ofEntries(DEFAULT.entrySet().toArray(new Entry<?, ?>[DEFAULT.entrySet().size()])));
+
 		this.width = (double) properties.get("width");
 		this.height = (double) properties.get("height");
 		this.playtime = (double) properties.get("playtime");
+
+		start();
 	}
 
 	public void start() {

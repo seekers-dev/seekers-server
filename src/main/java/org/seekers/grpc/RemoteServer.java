@@ -1,5 +1,6 @@
 package org.seekers.grpc;
 
+import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -21,7 +22,7 @@ public class RemoteServer {
 
 	private final Server server;
 
-	private World world = new World(768, 768, 50_000);
+	private World world = new World(new File("server.properties"));
 
 	public RemoteServer() {
 		server = ServerBuilder.forPort(7777).addService(new RemoteService(world)).build();
