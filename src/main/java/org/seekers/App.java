@@ -15,6 +15,7 @@ import org.seekers.grpc.PlayerReply;
 import org.seekers.grpc.PlayerStatus;
 import org.seekers.grpc.RemoteClient;
 import org.seekers.grpc.SeekerStatus;
+import org.seekers.grpc.SessionReply;
 import org.seekers.grpc.WorldReply;
 
 import javafx.animation.AnimationTimer;
@@ -61,7 +62,7 @@ public class App extends Application {
 
 	@Override
 	public void init() throws Exception {
-		new AnimationTimer() {
+		AnimationTimer timer = new AnimationTimer() {
 			final long[] frameTimes = new long[100];
 			int frameTimeIndex = 0;
 			boolean arrayFilled = false;
@@ -72,6 +73,11 @@ public class App extends Application {
 				frameTimeIndex = (frameTimeIndex + 1) % frameTimes.length;
 				if (frameTimeIndex == 0) {
 					arrayFilled = true;
+
+					SessionReply sessionReply = client.getSessionStatus();
+					if (sessionReply.getPlaytime() < 5) {
+						// TODO end session
+					}
 
 					PlayerReply playersReply = client.getPlayerStatus();
 					for (PlayerStatus player : playersReply.getPlayersMap().values()) {
@@ -104,7 +110,8 @@ public class App extends Application {
 				}
 				return val;
 			}
-		}.start();
+		};
+		timer.start();
 	}
 
 	private Group group = new Group();

@@ -40,7 +40,7 @@ public class RemoteServer {
 		executor.execute(new Runnable() {
 			@Override
 			public void run() {
-				while (!executor.isTerminating()) {
+				while (RemoteServer.this.isRunning()) {
 					RemoteServer.this.world.getUpdater().tick();
 					try {
 						Thread.sleep(5);
@@ -48,16 +48,10 @@ public class RemoteServer {
 						logger.warning(e.getMessage());
 					}
 				}
-			}
-		});
-
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
 				try {
-					RemoteServer.this.executor.awaitTermination(30, TimeUnit.SECONDS);
+					stop();
 				} catch (Exception e) {
-					e.printStackTrace(System.err);
+					e.printStackTrace();
 				}
 			}
 		});
@@ -81,9 +75,14 @@ public class RemoteServer {
 
 	public void stop() throws Exception {
 		if (server != null) {
-			server.shutdown().awaitTermination(30, TimeUnit.SECONDS);
+			server.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+			executor.shutdown();
 			System.err.println("Server shutdown");
 		}
+	}
+
+	private boolean isRunning() {
+		return world.getRemainingPlaytime() > 0;
 	}
 
 	private static class RemoteService extends RemoteControlImplBase {
@@ -95,13 +94,10 @@ public class RemoteServer {
 
 		@Override
 		public void sessionStatus(SessionRequest request, StreamObserver<SessionReply> responseObserver) {
-			SessionStatus status;
-			if (world.isRunning()) {
-				status = SessionStatus.RUNNING;
-			} else {
-				status = SessionStatus.STARTING;
+			if (request.getToken().isBlank()) {
+				// TODO register player
 			}
-			responseObserver.onNext(SessionReply.newBuilder().setStatus(status).build());
+			responseObserver.onNext(SessionReply.newBuilder().setPlaytime(world.getRemainingPlaytime()).build());
 			responseObserver.onCompleted();
 		}
 

@@ -20,14 +20,9 @@ message SessionRequest {
   string token = 1;
 }
 
-enum SessionStatus {
-  STARTING = 0;
-  RUNNING = 1;
-  CLOSED = 2;
-}
-
 message SessionReply {
-  SessionStatus status = 1;
+  string id = 1;
+  double playtime = 2;
 }
 
 message EntityRequest {

@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -17,7 +15,7 @@ import javafx.geometry.Point2D;
 public class World {
 	static Properties DEFAULT = new Properties();
 	static {
-		DEFAULT.putAll(Map.of("width", 768.0, "height", 768.0, "playtime", 10_000.0));
+		DEFAULT.putAll(Map.of("width", 768.0, "height", 768.0, "playtime", 5_000.0));
 	}
 
 	private Properties properties = new Properties(DEFAULT);
@@ -30,22 +28,13 @@ public class World {
 
 	private double playtime;
 
-	public boolean isRunning() {
-		return playtime > 0;
-	}
-
 	private final Entity updater = new Entity() {
 		@Override
 		public void update(double deltaT) {
-			if (World.this.isRunning()) {
-				for (Entity entity : physicals.values()) {
-					entity.update(deltaT);
-				}
-				playtime -= deltaT;
-			} else {
-				List<Player> players = new ArrayList<>(World.this.players.values());
-				players.sort((a, b) -> a.getScore() - b.getScore());
-				players.forEach(c -> System.out.println(new String(c.getToken()) + " " + c.getScore()));
+			var before = playtime;
+			playtime = Math.max(playtime - deltaT, 0);
+			for (Entity entity : physicals.values()) {
+				entity.update(before - playtime);
 			}
 		}
 	};
@@ -180,5 +169,9 @@ public class World {
 
 	public double getHeight() {
 		return height;
+	}
+
+	public double getRemainingPlaytime() {
+		return playtime;
 	}
 }
