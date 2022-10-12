@@ -72,12 +72,9 @@ public class App extends Application {
 				frameTimes[frameTimeIndex] = now;
 				frameTimeIndex = (frameTimeIndex + 1) % frameTimes.length;
 				if (frameTimeIndex == 0) {
+					if (!client.isRunning())
+						return;
 					arrayFilled = true;
-
-					SessionReply sessionReply = client.getSessionStatus();
-					if (sessionReply.getPlaytime() < 5) {
-						// TODO end session
-					}
 
 					PlayerReply playersReply = client.getPlayerStatus();
 					for (PlayerStatus player : playersReply.getPlayersMap().values()) {
@@ -122,6 +119,7 @@ public class App extends Application {
 		group.getChildren().add(box);
 
 		Scene scene = new Scene(group, 768, 768);
+		primaryStage.setResizable(false);
 		primaryStage.setScene(scene);
 		primaryStage.show();
 	}

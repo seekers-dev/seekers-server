@@ -18,7 +18,8 @@ public class RemoteClient {
 
 	public RemoteClient() {
 		channel = ManagedChannelBuilder.forTarget("localhost:7777").usePlaintext().build();
-		blockingStub = RemoteControlGrpc.newBlockingStub(channel);
+		blockingStub = RemoteControlGrpc.newBlockingStub(channel).withWaitForReady().withDeadlineAfter(30,
+				TimeUnit.SECONDS);
 		logger.info("Client started");
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -41,9 +42,9 @@ public class RemoteClient {
 	}
 
 	public boolean isRunning() {
-		ConnectivityState state = channel.getState(false);
-		if(state == ConnectivityState.IDLE) {
-			return true;
+		ConnectivityState state = channel.getState(true);
+		if (state == ConnectivityState.IDLE) {
+			return false;
 		}
 		if (state == ConnectivityState.TRANSIENT_FAILURE | state == ConnectivityState.SHUTDOWN) {
 			if (!channel.isShutdown())
