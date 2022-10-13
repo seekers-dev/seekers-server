@@ -60,24 +60,13 @@ public class RemoteServer {
 	public void start() throws Exception {
 		server.start();
 		logger.info("Server started, listening on " + server.getPort());
-
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				try {
-					RemoteServer.this.stop();
-				} catch (Exception e) {
-					e.printStackTrace(System.err);
-				}
-			}
-		});
 	}
 
 	public void stop() throws Exception {
 		if (server != null) {
 			server.shutdown().awaitTermination(5, TimeUnit.SECONDS);
 			executor.shutdown();
-			System.err.println("Server shutdown");
+			logger.info("Server shutdown");
 		}
 	}
 
@@ -93,11 +82,20 @@ public class RemoteServer {
 		}
 
 		@Override
-		public void sessionStatus(SessionRequest request, StreamObserver<SessionReply> responseObserver) {
+		public void joinSession(SessionRequest request, StreamObserver<SessionReply> responseObserver) {
 			if (request.getToken().isBlank()) {
+				responseObserver.onError(new StatusException(Status.UNAUTHENTICATED));
+			} else {
 				// TODO register player
+				responseObserver.onNext(SessionReply.newBuilder().build());
 			}
-			responseObserver.onNext(SessionReply.newBuilder().setPlaytime(world.getRemainingPlaytime()).build());
+			responseObserver.onCompleted();
+		}
+
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		@Override
+		public void propertiesInfo(PropertiesRequest request, StreamObserver<PropertiesReply> responseObserver) {
+			responseObserver.onNext(PropertiesReply.newBuilder().putAllEntries((Map) world.getProperties()).build());
 			responseObserver.onCompleted();
 		}
 
@@ -112,15 +110,7 @@ public class RemoteServer {
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		@Override
 		public void playerStatus(PlayerRequest request, StreamObserver<PlayerReply> responseObserver) {
-			responseObserver
-					.onNext(PlayerReply.newBuilder().putAllPlayers(Buildable.map((Map) world.getPlayers())).build());
-			responseObserver.onCompleted();
-		}
-
-		@SuppressWarnings({ "rawtypes", "unchecked" })
-		@Override
-		public void worldStatus(WorldRequest request, StreamObserver<WorldReply> responseObserver) {
-			responseObserver.onNext(WorldReply.newBuilder().setWidth(world.getWidth()).setHeight(world.getHeight())
+			responseObserver.onNext(PlayerReply.newBuilder().putAllPlayers(Buildable.map((Map) world.getPlayers()))
 					.putAllCamps(Buildable.map((Map) world.getCamps())).build());
 			responseObserver.onCompleted();
 		}

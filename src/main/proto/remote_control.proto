@@ -9,10 +9,10 @@ option objc_class_prefix = "API";
 package world;
 
 service RemoteControl {
-  rpc SessionStatus(SessionRequest) returns (SessionReply);
+  rpc JoinSession(SessionRequest) returns (SessionReply);
+  rpc PropertiesInfo(PropertiesRequest) returns (PropertiesReply);
   rpc EntityStatus(EntityRequest) returns (EntityReply);
   rpc PlayerStatus(PlayerRequest) returns (PlayerReply);
-  rpc WorldStatus(WorldRequest) returns (WorldReply);
   rpc CommandUnit(CommandRequest) returns (CommandReply);
 }
 
@@ -22,7 +22,14 @@ message SessionRequest {
 
 message SessionReply {
   string id = 1;
-  double playtime = 2;
+}
+
+message PropertiesRequest {
+
+}
+
+message PropertiesReply {
+  map<string, string> entries = 1;
 }
 
 message EntityRequest {
@@ -40,21 +47,12 @@ message PlayerRequest {
 
 message PlayerReply {
   map<string, PlayerStatus> players = 1;
-}
-
-message WorldRequest {
-  
-}
-
-message WorldReply {
-  map<string, CampStatus> camps = 1;
-  double width = 2;
-  double height = 3;
+  map<string, CampStatus> camps = 2;
 }
 
 message CommandRequest {
-  string token = 1;
-  string id = 2;
+  string id = 1;
+  string token = 2;
   Vector target = 3;
   Magnet magnet = 4;
 }

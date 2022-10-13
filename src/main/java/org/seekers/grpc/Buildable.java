@@ -24,6 +24,7 @@ public interface Buildable {
 		return map;
 	}
 
+	@Deprecated(since = "0.0.2-SNAPSHOT")
 	@SuppressWarnings("unchecked")
 	public static <T> Collection<T> collect(Collection<Buildable> src) {
 		List<T> list = new ArrayList<>(src.size());

@@ -7,18 +7,12 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 
 import javafx.geometry.Point2D;
 
 public class World {
-	static Properties DEFAULT = new Properties();
-	static {
-		DEFAULT.putAll(Map.of("width", 768.0, "height", 768.0, "playtime", 5_000.0));
-	}
-
-	private Properties properties = new Properties(DEFAULT);
+	static final File DEFAULT = new File("src/main/resources/default.properties");
 
 	private final Map<String, Physical> physicals = new HashMap<>();
 	private final Map<String, Seeker> seekers = new HashMap<>();
@@ -26,60 +20,53 @@ public class World {
 	private final Map<String, Goal> goals = new HashMap<>();
 	private final Map<String, Camp> camps = new HashMap<>();
 
-	private double playtime;
-
-	private final Entity updater = new Entity() {
-		@Override
-		public void update(double deltaT) {
-			var before = playtime;
-			playtime = Math.max(playtime - deltaT, 0);
-			for (Entity entity : physicals.values()) {
-				entity.update(before - playtime);
-			}
-		}
-	};
-
-	public Entity getUpdater() {
-		return updater;
-	}
+	private final Properties properties = new Properties();
+	private final Entity updater;
 
 	private final double width;
 	private final double height;
+	private double playtime;
 
-	public World(double width, double height, double playtime) {
-		this.width = width;
-		this.height = height;
-		this.playtime = playtime;
-		start();
+	public World() {
+		this(DEFAULT);
 	}
 
 	public World(File file) {
-		if (file.exists() && file.getName().endsWith(".properties"))
-			try (FileInputStream stream = new FileInputStream(file)) {
-				properties.load(stream);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		else
-			properties.putAll(Map.ofEntries(DEFAULT.entrySet().toArray(new Entry<?, ?>[DEFAULT.entrySet().size()])));
+		try (FileInputStream stream = new FileInputStream(
+				file.exists() && file.getName().endsWith(".properties") ? file : DEFAULT)) {
+			properties.load(stream);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		updater = new Entity() {
+			double speed = Double.valueOf(properties.getProperty("global.speed"));
 
-		this.width = (double) properties.get("width");
-		this.height = (double) properties.get("height");
-		this.playtime = (double) properties.get("playtime");
+			@Override
+			public void update(double deltaT) {
+				var before = playtime;
+				playtime = Math.max(playtime - deltaT * speed, 0);
+				for (Entity entity : physicals.values()) {
+					entity.update(before - playtime);
+				}
+			}
+		};
+		this.width = Double.valueOf(properties.getProperty("map.width"));
+		this.height = Double.valueOf(properties.getProperty("map.height"));
+		this.playtime = Double.valueOf(properties.getProperty("global.playtime"));
 
 		start();
 	}
 
 	public void start() {
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < Integer.valueOf(properties.getProperty("global.goals")); i++) {
 			new Goal(this, getRandomPosition());
 		}
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < Integer.valueOf(properties.getProperty("global.players")); i++) {
 			Player player = new Player(this, "signum");
 			player.setCamp(new Camp(player, new Point2D(width * 0.5, height * (2 - i) / 3)));
-			for (int j = 0; j < 5; j++) {
+			for (int j = 0; j < Integer.valueOf(properties.getProperty("global.seekers")); j++) {
 				new Seeker(player, getRandomPosition());
 			}
 		}
@@ -161,6 +148,14 @@ public class World {
 
 	public Point2D getCenter() {
 		return new Point2D(width / 2, height / 2);
+	}
+
+	public Properties getProperties() {
+		return properties;
+	}
+
+	public Entity getUpdater() {
+		return updater;
 	}
 
 	public double getWidth() {

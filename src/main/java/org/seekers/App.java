@@ -2,6 +2,7 @@ package org.seekers;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Properties;
 
 import org.seekers.graphic.CampRef;
 import org.seekers.graphic.GoalRef;
@@ -13,10 +14,9 @@ import org.seekers.grpc.EntityReply;
 import org.seekers.grpc.GoalStatus;
 import org.seekers.grpc.PlayerReply;
 import org.seekers.grpc.PlayerStatus;
+import org.seekers.grpc.PropertiesReply;
 import org.seekers.grpc.RemoteClient;
 import org.seekers.grpc.SeekerStatus;
-import org.seekers.grpc.SessionReply;
-import org.seekers.grpc.WorldReply;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -41,6 +41,60 @@ public class App extends Application {
 	private final ObservableMap<String, GoalRef> goals = FXCollections.observableHashMap();
 	private final ObservableMap<String, CampRef> camps = FXCollections.observableHashMap();
 
+	private final Properties properties = new Properties();
+
+	public String getPropertieAsString(String key) {
+		return (String) properties.get(key);
+	}
+
+	public Boolean getPropertieAsBoolean(String key) {
+		Object val = properties.get(key);
+
+		if (val == null) {
+			return null;
+		}
+		Boolean cast;
+		if (val instanceof Boolean) {
+			cast = (Boolean) val;
+			properties.put(key, cast);
+		} else {
+			cast = Boolean.parseBoolean((String) val);
+		}
+		return cast;
+	}
+
+	public Double getPropertieAsDouble(String key) {
+		Object val = properties.get(key);
+
+		if (val == null) {
+			return null;
+		}
+		Double cast;
+		if (val instanceof Double) {
+			cast = (Double) val;
+			properties.put(key, cast);
+		} else {
+			cast = Double.valueOf((String) val);
+		}
+		return cast;
+	}
+
+	public Integer getPropertieAsInteger(String key) {
+		Object val = properties.get(key);
+
+		if (val == null) {
+			return null;
+		}
+		Integer cast;
+		if (val instanceof Integer) {
+			cast = (Integer) val;
+			properties.put(key, cast);
+		} else {
+			cast = Integer.valueOf((String) val);
+		}
+		return cast;
+	}
+
 	private MapChangeListener<String, Node> getListener(Collection<Node> to) {
 		return new MapChangeListener<>() {
 			@Override
@@ -62,6 +116,12 @@ public class App extends Application {
 
 	@Override
 	public void init() throws Exception {
+		while (!client.isRunning()) {
+//			wait(0, 10);
+		}
+		PropertiesReply propertiesReply = client.getProperties();
+		properties.putAll(propertiesReply.getEntriesMap());
+
 		AnimationTimer timer = new AnimationTimer() {
 			final long[] frameTimes = new long[100];
 			int frameTimeIndex = 0;
@@ -72,16 +132,13 @@ public class App extends Application {
 				frameTimes[frameTimeIndex] = now;
 				frameTimeIndex = (frameTimeIndex + 1) % frameTimes.length;
 				if (frameTimeIndex == 0) {
-					if (!client.isRunning())
-						return;
 					arrayFilled = true;
 
 					PlayerReply playersReply = client.getPlayerStatus();
 					for (PlayerStatus player : playersReply.getPlayersMap().values()) {
 						save(players, player.getId()).update(player);
 					}
-					WorldReply worldReply = client.getWorldStatus();
-					for (CampStatus camp : worldReply.getCampsMap().values()) {
+					for (CampStatus camp : playersReply.getCampsMap().values()) {
 						save(camps, camp.getId()).update(camp);
 					}
 				}

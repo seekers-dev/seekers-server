@@ -7,7 +7,7 @@ import javafx.scene.shape.Circle;
 
 public class GoalRef extends Circle implements Reference<GoalStatus> {
 	public GoalRef(App app) {
-		super(6);
+		super(app.getPropertieAsDouble("goal.radius"));
 	}
 
 	@Override

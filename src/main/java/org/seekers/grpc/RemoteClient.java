@@ -18,26 +18,14 @@ public class RemoteClient {
 
 	public RemoteClient() {
 		channel = ManagedChannelBuilder.forTarget("localhost:7777").usePlaintext().build();
-		blockingStub = RemoteControlGrpc.newBlockingStub(channel).withWaitForReady().withDeadlineAfter(30,
-				TimeUnit.SECONDS);
+		blockingStub = RemoteControlGrpc.newBlockingStub(channel).withWaitForReady();
 		logger.info("Client started");
-
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				try {
-					RemoteClient.this.stop();
-				} catch (Exception e) {
-					e.printStackTrace(System.err);
-				}
-			}
-		});
 	}
 
 	public void stop() throws Exception {
 		if (channel != null) {
 			channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-			System.err.println("client shutdown");
+			logger.info("client shutdown");
 		}
 	}
 
@@ -63,17 +51,20 @@ public class RemoteClient {
 	}
 
 	public SessionReply getSessionStatus(String token) {
+		if (token.isBlank()) {
+			throw new UnsupportedOperationException("Can not use a blank string as token");
+		}
 		if (!isRunning()) {
 			return SessionReply.newBuilder().build();
 		}
-		return blockingStub.sessionStatus(SessionRequest.newBuilder().setToken(token).build());
+		return blockingStub.joinSession(SessionRequest.newBuilder().setToken(token).build());
 	}
 
-	public SessionReply getSessionStatus() {
+	public PropertiesReply getProperties() {
 		if (!isRunning()) {
-			return SessionReply.newBuilder().build();
+			return PropertiesReply.newBuilder().build();
 		}
-		return blockingStub.sessionStatus(SessionRequest.newBuilder().build());
+		return blockingStub.propertiesInfo(PropertiesRequest.newBuilder().build());
 	}
 
 	public EntityReply getEntityStatus() {
@@ -88,13 +79,6 @@ public class RemoteClient {
 			return PlayerReply.newBuilder().build();
 		}
 		return blockingStub.playerStatus(PlayerRequest.newBuilder().build());
-	}
-
-	public WorldReply getWorldStatus() {
-		if (!isRunning()) {
-			return WorldReply.newBuilder().build();
-		}
-		return blockingStub.worldStatus(WorldRequest.newBuilder().build());
 	}
 
 	public CommandReply setCommand(String token, String id, Vector target, Magnet magnet) {

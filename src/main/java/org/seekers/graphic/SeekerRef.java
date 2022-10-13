@@ -20,6 +20,9 @@ public class SeekerRef extends StackPane implements Reference<SeekerStatus> {
 
 	public SeekerRef(App app) {
 		this.app = app;
+		double radius = app.getPropertieAsDouble("seeker.radius");
+		circle = new Circle(radius);
+		magnet = new Circle(radius, Color.TRANSPARENT);
 		getChildren().addAll(circle, magnet);
 		magnet.setStrokeWidth(1);
 		transition.setByX(1.0);
