@@ -117,7 +117,9 @@ public class App extends Application {
 	@Override
 	public void init() throws Exception {
 		while (!client.isRunning()) {
-//			wait(0, 10);
+			synchronized (this) {
+				wait(0, 10);
+			}
 		}
 		PropertiesReply propertiesReply = client.getProperties();
 		properties.putAll(propertiesReply.getEntriesMap());

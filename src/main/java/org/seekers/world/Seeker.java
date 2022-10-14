@@ -29,23 +29,9 @@ public class Seeker extends Physical {
 		getWorld().getSeekers().put(toString(), this);
 	}
 
-	static boolean auto = true;
-
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void update(double deltaT) {
 		super.update(deltaT);
-		if (auto) {
-			Goal goal = (Goal) getWorld().getNearestPhysicalOf(getPosition(),
-					(Collection) getWorld().getGoals().values());
-			if (getWorld().getTorusDistance(getPosition(), goal.getPosition()) > 20) {
-				setTarget(goal.getPosition());
-				getMagnet().disable();
-			} else {
-				getMagnet().setAttractive();
-				setTarget(getPlayer().getCamp().getPosition());
-			}
-		}
 		if (isDisabled()) {
 			disabledCounter = Math.max(disabledCounter - deltaT, 0);
 		}
@@ -77,6 +63,19 @@ public class Seeker extends Physical {
 		}
 
 		super.collision(another, minDistance);
+	}
+
+	public void setAutoCommands() {
+		@SuppressWarnings("unchecked")
+		Goal goal = (Goal) getWorld().getNearestPhysicalOf(getPosition(),
+				(Collection<Physical>) (Collection<?>) getWorld().getGoals().values());
+		if (getWorld().getTorusDistance(getPosition(), goal.getPosition()) > 20) {
+			setTarget(goal.getPosition());
+			getMagnet().disable();
+		} else {
+			setTarget(getPlayer().getCamp().getPosition());
+			getMagnet().setAttractive();
+		}
 	}
 
 	public Point2D getMagneticForce(Point2D p) {

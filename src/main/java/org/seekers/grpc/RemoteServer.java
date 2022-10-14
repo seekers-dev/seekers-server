@@ -71,7 +71,7 @@ public class RemoteServer {
 	}
 
 	private boolean isRunning() {
-		return world.getRemainingPlaytime() > 0;
+		return world.getPassedPlaytime() < world.getMaxPlaytime();
 	}
 
 	private static class RemoteService extends RemoteControlImplBase {
@@ -85,9 +85,10 @@ public class RemoteServer {
 		public void joinSession(SessionRequest request, StreamObserver<SessionReply> responseObserver) {
 			if (request.getToken().isBlank()) {
 				responseObserver.onError(new StatusException(Status.UNAUTHENTICATED));
+			} else if (world.hasOpenSlots()) {
+				responseObserver.onNext(SessionReply.newBuilder().setId(world.addPlayer(request.getToken())).build());
 			} else {
-				// TODO register player
-				responseObserver.onNext(SessionReply.newBuilder().build());
+				responseObserver.onError(new StatusException(Status.RESOURCE_EXHAUSTED));
 			}
 			responseObserver.onCompleted();
 		}

@@ -21,11 +21,26 @@ public class World {
 	private final Map<String, Camp> camps = new HashMap<>();
 
 	private final Properties properties = new Properties();
-	private final Entity updater;
 
-	private final double width;
-	private final double height;
-	private double playtime;
+	transient double passed = 0;
+
+	private final Entity updater = new Entity() {
+		@Override
+		public void update(double deltaT) {
+			double before = passed;
+			passed = Math.min(passed + deltaT * speed, playtime);
+			for (Entity entity : physicals.values()) {
+				entity.update(passed - before);
+				if (autoPlay && entity instanceof Seeker) {
+					((Seeker) entity).setAutoCommands();
+				}
+			}
+		}
+	};;
+
+	private final double width, height, speed, playtime;
+	private final int playerCount, seekerCount, goalCount;
+	private final boolean autoPlay;
 
 	public World() {
 		this(DEFAULT);
@@ -40,35 +55,40 @@ public class World {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		updater = new Entity() {
-			double speed = Double.valueOf(properties.getProperty("global.speed"));
-
-			@Override
-			public void update(double deltaT) {
-				var before = playtime;
-				playtime = Math.max(playtime - deltaT * speed, 0);
-				for (Entity entity : physicals.values()) {
-					entity.update(before - playtime);
-				}
-			}
-		};
 		this.width = Double.valueOf(properties.getProperty("map.width"));
 		this.height = Double.valueOf(properties.getProperty("map.height"));
+		this.speed = Double.valueOf(properties.getProperty("global.speed"));
 		this.playtime = Double.valueOf(properties.getProperty("global.playtime"));
-
-		start();
+		this.playerCount = Integer.valueOf(properties.getProperty("global.players"));
+		this.seekerCount = Integer.valueOf(properties.getProperty("global.seekers"));
+		this.goalCount = Integer.valueOf(properties.getProperty("global.goals"));
+		this.autoPlay = Boolean.parseBoolean(properties.getProperty("global.auto-play"));
+		if (autoPlay) {
+			while (hasOpenSlots())
+				addPlayer(new String());
+		}
+		addGoals();
 	}
 
-	public void start() {
-		for (int i = 0; i < Integer.valueOf(properties.getProperty("global.goals")); i++) {
-			new Goal(this, getRandomPosition());
+	public boolean hasOpenSlots() {
+		return players.size() < playerCount;
+	}
+
+	public String addPlayer(String token) {
+		int cur = players.size(), max = playerCount;
+
+		Player player = new Player(this, token);
+		player.setCamp(new Camp(player, new Point2D(width * 0.5, height * (max - cur) / (max + 1))));
+		for (int s = 0; s < seekerCount; s++) {
+			new Seeker(player, getRandomPosition());
 		}
-		for (int i = 0; i < Integer.valueOf(properties.getProperty("global.players")); i++) {
-			Player player = new Player(this, "signum");
-			player.setCamp(new Camp(player, new Point2D(width * 0.5, height * (2 - i) / 3)));
-			for (int j = 0; j < Integer.valueOf(properties.getProperty("global.seekers")); j++) {
-				new Seeker(player, getRandomPosition());
-			}
+
+		return player.toString();
+	}
+
+	public void addGoals() {
+		for (int i = 0; i < goalCount; i++) {
+			new Goal(this, getRandomPosition());
 		}
 	}
 
@@ -166,7 +186,11 @@ public class World {
 		return height;
 	}
 
-	public double getRemainingPlaytime() {
+	public double getMaxPlaytime() {
 		return playtime;
+	}
+
+	public double getPassedPlaytime() {
+		return passed;
 	}
 }
