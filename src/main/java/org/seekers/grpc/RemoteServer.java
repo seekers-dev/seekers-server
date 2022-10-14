@@ -93,26 +93,29 @@ public class RemoteServer {
 			responseObserver.onCompleted();
 		}
 
-		@SuppressWarnings({ "unchecked", "rawtypes" })
 		@Override
 		public void propertiesInfo(PropertiesRequest request, StreamObserver<PropertiesReply> responseObserver) {
-			responseObserver.onNext(PropertiesReply.newBuilder().putAllEntries((Map) world.getProperties()).build());
+			@SuppressWarnings({ "unchecked", "rawtypes" })
+			PropertiesReply reply = PropertiesReply.newBuilder().putAllEntries((Map) world.getProperties()).build();
+			responseObserver.onNext(reply);
 			responseObserver.onCompleted();
 		}
 
-		@SuppressWarnings({ "unchecked", "rawtypes" })
 		@Override
 		public void entityStatus(EntityRequest request, StreamObserver<EntityReply> responseObserver) {
-			responseObserver.onNext(EntityReply.newBuilder().putAllSeekers(Buildable.map((Map) world.getSeekers()))
-					.putAllGoals(Buildable.map((Map) world.getGoals())).build());
+			@SuppressWarnings({ "unchecked", "rawtypes" })
+			EntityReply reply = EntityReply.newBuilder().putAllSeekers(Buildable.map((Map) world.getSeekers()))
+					.putAllGoals(Buildable.map((Map) world.getGoals())).build();
+			responseObserver.onNext(reply);
 			responseObserver.onCompleted();
 		}
 
-		@SuppressWarnings({ "unchecked", "rawtypes" })
 		@Override
 		public void playerStatus(PlayerRequest request, StreamObserver<PlayerReply> responseObserver) {
-			responseObserver.onNext(PlayerReply.newBuilder().putAllPlayers(Buildable.map((Map) world.getPlayers()))
-					.putAllCamps(Buildable.map((Map) world.getCamps())).build());
+			@SuppressWarnings({ "unchecked", "rawtypes" })
+			PlayerReply reply = PlayerReply.newBuilder().putAllPlayers(Buildable.map((Map) world.getPlayers()))
+					.putAllCamps(Buildable.map((Map) world.getCamps())).build();
+			responseObserver.onNext(reply);
 			responseObserver.onCompleted();
 		}
 
