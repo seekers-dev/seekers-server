@@ -14,14 +14,17 @@ public class Seeker extends Physical {
 
 	private Point2D target = getPosition();
 
-	private double magnetSlowdown = 0.2;
-	private double disabledTime = 25;
+	private double magnetSlowdown;
+	private double disabledTime;
 	private double disabledCounter = 0;
 
 	public Seeker(Player player, Point2D position) {
-		super(player.getWorld(), position, Point2D.ZERO);
+		super(player.getWorld(), position);
 		this.player = player;
-
+		magnetSlowdown = Double.valueOf(player.getWorld().getProperties().getProperty("seeker.magnet-slowdown"));
+		disabledTime = Double.valueOf(player.getWorld().getProperties().getProperty("seeker.disabled-time"));
+		setMass(Double.valueOf(player.getWorld().getProperties().getProperty("seeker.mass")));
+		setRange(Double.valueOf(player.getWorld().getProperties().getProperty("seeker.radius")));
 		player.getSeekers().put(toString(), this);
 		getWorld().getSeekers().put(toString(), this);
 	}

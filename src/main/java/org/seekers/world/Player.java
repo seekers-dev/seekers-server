@@ -62,7 +62,7 @@ public class Player implements Buildable {
 
 	@Override
 	public Object asBuilder() {
-		return PlayerStatus.newBuilder().setId(toString()).setCampId(camp.toString()).setColor(color.toString())
-				.setScore(score).build(); // TODO add seeker id s
+		return PlayerStatus.newBuilder().setId(toString()).addAllSeekerIds(seekers.keySet()).setCampId(camp.toString())
+				.setColor(color.toString()).setScore(score).build();
 	}
 }

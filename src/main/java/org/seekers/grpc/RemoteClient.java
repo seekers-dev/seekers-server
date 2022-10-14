@@ -18,14 +18,14 @@ public class RemoteClient {
 
 	public RemoteClient() {
 		channel = ManagedChannelBuilder.forTarget("localhost:7777").usePlaintext().build();
-		blockingStub = RemoteControlGrpc.newBlockingStub(channel).withWaitForReady();
+		blockingStub = RemoteControlGrpc.newBlockingStub(channel);
 		logger.info("Client started");
 	}
 
 	public void stop() throws Exception {
 		if (channel != null) {
 			channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-			logger.info("client shutdown");
+			logger.info("Client shutdown");
 		}
 	}
 

@@ -8,20 +8,23 @@ import javafx.geometry.Point2D;
 public abstract class Physical implements Entity, Buildable {
 	private final World world;
 
-	private Point2D acceleration;
-	private Point2D position;
+	private Point2D acceleration = Point2D.ZERO;
 	private Point2D velocity = Point2D.ZERO;
+	private Point2D position;
 
-	private double maxSpeed = 5;
-	private double mass = 1;
-	private double range = 10;
-	private double friction = 0.02;
-	private double baseThrust = maxSpeed * friction;
+	private double maxSpeed;
+	private double mass;
+	private double range;
+	private double friction;
+	private double baseThrust;
 
-	public Physical(World world, Point2D position, Point2D acceleration) {
+	public Physical(World world, Point2D position) {
 		this.world = world;
 		this.position = position;
-		this.acceleration = acceleration;
+		
+		maxSpeed = Double.valueOf(world.getProperties().getProperty("physical.max-speed"));
+		friction = Double.valueOf(world.getProperties().getProperty("physical.friction"));
+		baseThrust = maxSpeed * friction;
 
 		getWorld().getPhysicals().put(toString(), this);
 	}

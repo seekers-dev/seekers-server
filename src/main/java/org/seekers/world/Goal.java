@@ -8,15 +8,16 @@ import javafx.geometry.Point2D;
 public class Goal extends Physical {
 	private Camp camp;
 
-	private double scoringTime = 150;
+	private double scoringTime;
 	private double timeOwned = 0;
 
 	public Goal(World world, Point2D position) {
-		super(world, position, Point2D.ZERO);
+		super(world, position);
+		scoringTime = Double.valueOf(world.getProperties().getProperty("goal.scoring-time"));
 
 		getWorld().getGoals().put(toString(), this);
-		setMass(0.5);
-		setRange(6);
+		setMass(Double.valueOf(world.getProperties().getProperty("goal.mass")));
+		setRange(Double.valueOf(world.getProperties().getProperty("goal.radius")));
 	}
 
 	@Override

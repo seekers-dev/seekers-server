@@ -12,7 +12,7 @@ public class CampRef extends Rectangle implements Reference<CampStatus> {
 	public CampRef(App app) {
 		this.app = app;
 		setFill(Color.TRANSPARENT);
-		setStrokeWidth(app.getPropertieAsDouble("camp.stroke"));
+		setStrokeWidth(6);
 		setWidth(app.getPropertieAsDouble("camp.width"));
 		setHeight(app.getPropertieAsDouble("camp.height"));
 	}

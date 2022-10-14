@@ -17,9 +17,8 @@ public class Camp implements Buildable {
 		this.player = player;
 		this.position = position;
 
-		double diameter = player.getWorld().getDiameter() / 20;
-		width = diameter;
-		height = diameter;
+		width = Double.valueOf(player.getWorld().getProperties().getProperty("camp.width"));
+		height = Double.valueOf(player.getWorld().getProperties().getProperty("camp.height"));
 
 		player.getWorld().getCamps().put(toString(), this);
 	}
