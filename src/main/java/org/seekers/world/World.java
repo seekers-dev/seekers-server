@@ -12,7 +12,17 @@ import java.util.Properties;
 import javafx.geometry.Point2D;
 
 public class World {
-	static final File DEFAULT = new File("src/main/resources/default.properties");
+	static final Properties DEFAULT = new Properties();
+	static {
+		DEFAULT.putAll(Map.ofEntries(Map.entry("global.auto-play", "true"), Map.entry("global.playtime", "5000"),
+				Map.entry("global.speed", "1"), Map.entry("global.players", "2"), Map.entry("global.seekers", "5"),
+				Map.entry("global.goals", "6"), Map.entry("map.width", "768"), Map.entry("map.height", "768"),
+				Map.entry("camp.width", "50"), Map.entry("camp.height", "50"), Map.entry("physical.max-speed", "5"),
+				Map.entry("physical.friction", ".02"), Map.entry("seeker.magnet-slowdown", ".2"),
+				Map.entry("seeker.disabled-time", "25"), Map.entry("seeker.radius", "10"),
+				Map.entry("seeker.mass", "1"), Map.entry("goal.scoring-time", "100"), Map.entry("goal.radius", "6"),
+				Map.entry("goal.mass", ".5")));
+	}
 
 	private final Map<String, Physical> physicals = new HashMap<>();
 	private final Map<String, Seeker> seekers = new HashMap<>();
@@ -42,18 +52,17 @@ public class World {
 	private final int playerCount, seekerCount, goalCount;
 	private final boolean autoPlay;
 
-	public World() {
-		this(DEFAULT);
-	}
-
 	public World(File file) {
-		try (FileInputStream stream = new FileInputStream(
-				file.exists() && file.getName().endsWith(".properties") ? file : DEFAULT)) {
-			properties.load(stream);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (file.exists() && file.getName().endsWith(".properties"))
+			try (FileInputStream stream = new FileInputStream(file)) {
+				properties.load(stream);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		else {
+			properties.putAll(DEFAULT);
 		}
 		this.width = Double.valueOf(properties.getProperty("map.width"));
 		this.height = Double.valueOf(properties.getProperty("map.height"));

@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.seekers</groupId>
 	<artifactId>seekers</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.2-alpha-1</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -85,6 +85,15 @@
 				<version>1.4.1.Final</version>
 			</extension>
 		</extensions>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>3.4.2</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>kr.motd.maven</groupId>
@@ -155,7 +164,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<mainClass>${project.mainClass}</mainClass>
-							<packageName>4x-space-simulation</packageName>
+							<packageName>seekers</packageName>
 						</manifest>
 					</archive>
 					<descriptorRefs>
@@ -166,7 +175,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.2.1</version>
+				<version>3.1.0</version>
 				<executions>
 					<execution>
 						<goals>
@@ -180,6 +189,24 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.4.0</version>
+				<configuration>
+					<transformers>
+						<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+					</transformers>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.6</version>
 				<configuration>
@@ -187,7 +214,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<mainClass>${project.mainClass}</mainClass>
-							<packageName>4x-space-simulation</packageName>
+							<packageName>seekers</packageName>
 						</manifest>
 					</archive>
 				</configuration>

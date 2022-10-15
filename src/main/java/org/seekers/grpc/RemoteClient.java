@@ -17,7 +17,7 @@ public class RemoteClient {
 	private final RemoteControlBlockingStub blockingStub;
 
 	public RemoteClient() {
-		channel = ManagedChannelBuilder.forTarget("localhost:7777").usePlaintext().build();
+		channel = ManagedChannelBuilder.forAddress("localhost", 7777).usePlaintext().build();
 		blockingStub = RemoteControlGrpc.newBlockingStub(channel);
 		logger.info("Client started");
 	}
