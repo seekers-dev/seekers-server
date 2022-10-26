@@ -71,7 +71,8 @@ public class SeekersServer {
 		public void entityStatus(EntityRequest request, StreamObserver<EntityReply> responseObserver) {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
 			EntityReply reply = EntityReply.newBuilder().putAllSeekers(Buildable.map((Map) game.getSeekers()))
-					.putAllGoals(Buildable.map((Map) game.getGoals())).build();
+					.putAllGoals(Buildable.map((Map) game.getGoals())).setPassedPlaytime(game.getPassedPlaytime())
+					.build();
 			responseObserver.onNext(reply);
 			responseObserver.onCompleted();
 		}
