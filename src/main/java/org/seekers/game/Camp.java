@@ -1,4 +1,4 @@
-package org.seekers.world;
+package org.seekers.game;
 
 import org.seekers.grpc.Buildable;
 import org.seekers.grpc.CampStatus;

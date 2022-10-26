@@ -3,11 +3,12 @@ package org.seekers.graphic;
 import org.seekers.App;
 import org.seekers.grpc.GoalStatus;
 
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 public class GoalRef extends Circle implements Reference<GoalStatus> {
 	public GoalRef(App app) {
-		super(app.getPropertieAsDouble("goal.radius"));
+		super(app.getPropertieAsDouble("goal.radius"), Color.CORAL);
 	}
 
 	@Override

@@ -15,7 +15,8 @@ import org.seekers.grpc.GoalStatus;
 import org.seekers.grpc.PlayerReply;
 import org.seekers.grpc.PlayerStatus;
 import org.seekers.grpc.PropertiesReply;
-import org.seekers.grpc.RemoteClient;
+import org.seekers.grpc.SeekersClient;
+import org.seekers.grpc.SeekersServer;
 import org.seekers.grpc.SeekerStatus;
 
 import javafx.animation.AnimationTimer;
@@ -30,11 +31,12 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class App extends Application {
-	private final RemoteClient client = new RemoteClient();
+	private final SeekersServer server = new SeekersServer();
+	private final SeekersClient client = new SeekersClient();
 
-	private final Map<String, Creator<?>> creators = Map.of("org.seekers.world.Player", () -> new PlayerRef(App.this),
-			"org.seekers.world.Seeker", () -> new SeekerRef(App.this), "org.seekers.world.Goal",
-			() -> new GoalRef(App.this), "org.seekers.world.Camp", () -> new CampRef(App.this));
+	private final Map<String, Creator<?>> creators = Map.of("org.seekers.game.Player", () -> new PlayerRef(App.this),
+			"org.seekers.game.Seeker", () -> new SeekerRef(App.this), "org.seekers.game.Goal",
+			() -> new GoalRef(App.this), "org.seekers.game.Camp", () -> new CampRef(App.this));
 
 	private final ObservableMap<String, PlayerRef> players = FXCollections.observableHashMap();
 	private final ObservableMap<String, SeekerRef> seekers = FXCollections.observableHashMap();
@@ -174,13 +176,22 @@ public class App extends Application {
 	private VBox box = new VBox(10);
 
 	@Override
-	public void start(Stage primaryStage) throws Exception {
+	public void start(Stage stage) throws Exception {
 		group.getChildren().add(box);
 
 		Scene scene = new Scene(group, 768, 768);
-		primaryStage.setResizable(false);
-		primaryStage.setScene(scene);
-		primaryStage.show();
+
+		stage.setOnCloseRequest(c -> {
+			try {
+				client.stop();
+				server.stop();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+		stage.setResizable(false);
+		stage.setScene(scene);
+		stage.show();
 	}
 
 	public ObservableMap<String, GoalRef> getGoals() {

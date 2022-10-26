@@ -1,4 +1,4 @@
-package org.seekers.world;
+package org.seekers.game;
 
 import org.seekers.grpc.Buildable;
 import org.seekers.grpc.PhysicalStatus;
@@ -6,7 +6,7 @@ import org.seekers.grpc.PhysicalStatus;
 import javafx.geometry.Point2D;
 
 public abstract class Physical implements Entity, Buildable {
-	private final World world;
+	private final Game game;
 
 	private Point2D acceleration = Point2D.ZERO;
 	private Point2D velocity = Point2D.ZERO;
@@ -18,12 +18,12 @@ public abstract class Physical implements Entity, Buildable {
 	private double friction;
 	private double baseThrust;
 
-	public Physical(World world, Point2D position) {
-		this.world = world;
+	public Physical(Game game, Point2D position) {
+		this.game = game;
 		this.position = position;
 		
-		maxSpeed = Double.valueOf(world.getProperties().getProperty("physical.max-speed"));
-		friction = Double.valueOf(world.getProperties().getProperty("physical.friction"));
+		maxSpeed = Double.valueOf(game.getProperties().getProperty("physical.max-speed"));
+		friction = Double.valueOf(game.getProperties().getProperty("physical.friction"));
 		baseThrust = maxSpeed * friction;
 
 		getWorld().getPhysicals().put(toString(), this);
@@ -58,7 +58,7 @@ public abstract class Physical implements Entity, Buildable {
 	}
 
 	public void collision(Physical another, double minDistance) {
-		Point2D distance = world.getTorusDifference(getPosition(), another.getPosition());
+		Point2D distance = game.getTorusDifference(getPosition(), another.getPosition());
 
 		Point2D deltaR = distance.normalize();
 		Point2D deltaV = getVelocity().subtract(another.getVelocity());
@@ -81,8 +81,8 @@ public abstract class Physical implements Entity, Buildable {
 		return baseThrust;
 	}
 
-	public World getWorld() {
-		return world;
+	public Game getWorld() {
+		return game;
 	}
 
 	public Point2D getPosition() {

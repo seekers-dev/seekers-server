@@ -10,12 +10,11 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 
 public class PlayerRef extends Label implements Reference<PlayerStatus> {
-	ObjectProperty<Paint> color = new SimpleObjectProperty<>();
-	IntegerProperty score = new SimpleIntegerProperty();
+	private final ObjectProperty<Color> color = new SimpleObjectProperty<>();
+	private final IntegerProperty score = new SimpleIntegerProperty();
 
 	public PlayerRef(App app) {
 		textProperty().bind(new SimpleStringProperty("Score: ").concat(score));
@@ -27,5 +26,13 @@ public class PlayerRef extends Label implements Reference<PlayerStatus> {
 	public void update(PlayerStatus delta) {
 		color.set(Color.web(delta.getColor()));
 		score.set(delta.getScore());
+	}
+
+	public ObjectProperty<Color> colorProperty() {
+		return color;
+	}
+
+	public IntegerProperty scoreProperty() {
+		return score;
 	}
 }

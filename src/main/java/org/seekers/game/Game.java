@@ -1,4 +1,4 @@
-package org.seekers.world;
+package org.seekers.game;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,13 +11,13 @@ import java.util.Properties;
 
 import javafx.geometry.Point2D;
 
-public class World {
+public class Game {
 	static final Properties DEFAULT = new Properties();
 	static {
 		DEFAULT.putAll(Map.ofEntries(Map.entry("global.auto-play", "true"), Map.entry("global.playtime", "5000"),
 				Map.entry("global.speed", "1"), Map.entry("global.players", "2"), Map.entry("global.seekers", "5"),
 				Map.entry("global.goals", "6"), Map.entry("map.width", "768"), Map.entry("map.height", "768"),
-				Map.entry("camp.width", "50"), Map.entry("camp.height", "50"), Map.entry("physical.max-speed", "5"),
+				Map.entry("camp.width", "45"), Map.entry("camp.height", "45"), Map.entry("physical.max-speed", "5"),
 				Map.entry("physical.friction", ".02"), Map.entry("seeker.magnet-slowdown", ".2"),
 				Map.entry("seeker.disabled-time", "25"), Map.entry("seeker.radius", "10"),
 				Map.entry("seeker.mass", "1"), Map.entry("goal.scoring-time", "100"), Map.entry("goal.radius", "6"),
@@ -29,16 +29,16 @@ public class World {
 	private final Map<String, Player> players = new HashMap<>();
 	private final Map<String, Goal> goals = new HashMap<>();
 	private final Map<String, Camp> camps = new HashMap<>();
-
 	private final Properties properties = new Properties();
 
-	transient double passed = 0;
+	private double width, height, speed, passed, playtime;
+	private int playerCount, seekerCount, goalCount;
+	private boolean autoPlay;
 
-	private final Entity updater = new Entity() {
-		@Override
-		public void update(double deltaT) {
+	private final Clock clock = new Clock(new Runnable() {
+		public void run() {
 			double before = passed;
-			passed = Math.min(passed + deltaT * speed, playtime);
+			passed = Math.min(passed + speed, playtime);
 			for (Entity entity : physicals.values()) {
 				entity.update(passed - before);
 				if (autoPlay && entity instanceof Seeker) {
@@ -46,13 +46,9 @@ public class World {
 				}
 			}
 		}
-	};;
+	}, 5l);
 
-	private final double width, height, speed, playtime;
-	private final int playerCount, seekerCount, goalCount;
-	private final boolean autoPlay;
-
-	public World(File file) {
+	public Game(File file) {
 		if (file.exists() && file.getName().endsWith(".properties"))
 			try (FileInputStream stream = new FileInputStream(file)) {
 				properties.load(stream);
@@ -167,6 +163,14 @@ public class World {
 		return camps;
 	}
 
+	public Properties getProperties() {
+		return properties;
+	}
+
+	public Clock getClock() {
+		return clock;
+	}
+
 	public Point2D getRandomPosition() {
 		return new Point2D(Math.random() * width, Math.random() * height);
 	}
@@ -177,14 +181,6 @@ public class World {
 
 	public Point2D getCenter() {
 		return new Point2D(width / 2, height / 2);
-	}
-
-	public Properties getProperties() {
-		return properties;
-	}
-
-	public Entity getUpdater() {
-		return updater;
 	}
 
 	public double getWidth() {

@@ -1,4 +1,4 @@
-package org.seekers.world;
+package org.seekers.game;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ import javafx.scene.paint.Color;
 public class Player implements Buildable {
 	private final Map<String, Seeker> seekers = new HashMap<>();
 
-	private final World world;
+	private final Game game;
 	private final Color color;
 
 	private final String token;
@@ -19,21 +19,21 @@ public class Player implements Buildable {
 	private Camp camp;
 	private int score;
 
-	public Player(World world, String token) {
-		this.world = world;
+	public Player(Game game, String token) {
+		this.game = game;
 		this.token = token;
 		this.color = Color.rgb((int) (Math.random() * 124 + 124), (int) (Math.random() * 124 + 124),
 				(int) (Math.random() * 124 + 124));
 
-		world.getPlayers().put(toString(), this);
+		game.getPlayers().put(toString(), this);
 	}
 
 	public Map<String, Seeker> getSeekers() {
 		return seekers;
 	}
 
-	public World getWorld() {
-		return world;
+	public Game getWorld() {
+		return game;
 	}
 
 	public Camp getCamp() {

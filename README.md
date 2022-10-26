@@ -1,22 +1,10 @@
-# seekers
+# Seekers
 
-Artificial intelligence programming challenge, hopefully suited for school students.
+In seekers, AIs compete against each other with the aim of scoring as many points as possible. This project is competition-oriented for students.
 
-AIs compete by controlling bouncy little circles ("seekers") trying to collect the most goals.
+## Setup
 
-Based on Java, Maven and Proto.
+For the setup, please take a look at the [wiki](https://github.com/seekers-dev/seekers-api/wiki/Setup).
 
-## How to run it
+## Running
 
-Install java and maven, then run the following commands in maven:
-
-```cmd
-$ mvn install
-$ mvn exec:java
-```
-
-## License
-
-You can, and are invited to, use, redistribute and modify seekers under the terms
-of the GNU General Public License (GPL), version 3 or (at your option) any
-later version published by the Free Software Foundation.

@@ -4,21 +4,21 @@ import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import org.seekers.grpc.RemoteControlGrpc.RemoteControlBlockingStub;
+import org.seekers.grpc.SeekersGrpc.SeekersBlockingStub;
 
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
-public class RemoteClient {
-	private static final Logger logger = Logger.getLogger(RemoteClient.class.getName());
+public class SeekersClient {
+	private static final Logger logger = Logger.getLogger(SeekersClient.class.getName());
 
 	private final ManagedChannel channel;
-	private final RemoteControlBlockingStub blockingStub;
+	private final SeekersBlockingStub blockingStub;
 
-	public RemoteClient() {
+	public SeekersClient() {
 		channel = ManagedChannelBuilder.forAddress("localhost", 7777).usePlaintext().build();
-		blockingStub = RemoteControlGrpc.newBlockingStub(channel);
+		blockingStub = SeekersGrpc.newBlockingStub(channel);
 		logger.info("Client started");
 	}
 
@@ -81,7 +81,7 @@ public class RemoteClient {
 		return blockingStub.playerStatus(PlayerRequest.newBuilder().build());
 	}
 
-	public CommandReply setCommand(String token, String id, Vector target, Magnet magnet) {
+	public CommandReply setCommand(String token, String id, Vector target, double magnet) {
 		if (!isRunning()) {
 			return CommandReply.newBuilder().build();
 		}

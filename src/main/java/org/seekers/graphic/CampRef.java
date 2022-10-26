@@ -12,7 +12,7 @@ public class CampRef extends Rectangle implements Reference<CampStatus> {
 	public CampRef(App app) {
 		this.app = app;
 		setFill(Color.TRANSPARENT);
-		setStrokeWidth(6);
+		setStrokeWidth(app.getPropertieAsDouble("goal.radius"));
 		setWidth(app.getPropertieAsDouble("camp.width"));
 		setHeight(app.getPropertieAsDouble("camp.height"));
 	}
@@ -21,6 +21,6 @@ public class CampRef extends Rectangle implements Reference<CampStatus> {
 	public void update(CampStatus delta) {
 		setLayoutX(delta.getPosition().getX() - delta.getWidth() / 2);
 		setLayoutY(delta.getPosition().getY() - delta.getHeight() / 2);
-		setStroke(app.getPlayers().get(delta.getPlayerId()).color.get());
+		setStroke(app.getPlayers().get(delta.getPlayerId()).colorProperty().get());
 	}
 }

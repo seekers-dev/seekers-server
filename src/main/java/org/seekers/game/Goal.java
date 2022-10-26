@@ -1,4 +1,4 @@
-package org.seekers.world;
+package org.seekers.game;
 
 import org.seekers.grpc.GoalStatus;
 import org.seekers.grpc.PhysicalStatus;
@@ -11,13 +11,13 @@ public class Goal extends Physical {
 	private double scoringTime;
 	private double timeOwned = 0;
 
-	public Goal(World world, Point2D position) {
-		super(world, position);
-		scoringTime = Double.valueOf(world.getProperties().getProperty("goal.scoring-time"));
+	public Goal(Game game, Point2D position) {
+		super(game, position);
+		scoringTime = Double.valueOf(game.getProperties().getProperty("goal.scoring-time"));
 
 		getWorld().getGoals().put(toString(), this);
-		setMass(Double.valueOf(world.getProperties().getProperty("goal.mass")));
-		setRange(Double.valueOf(world.getProperties().getProperty("goal.radius")));
+		setMass(Double.valueOf(game.getProperties().getProperty("goal.mass")));
+		setRange(Double.valueOf(game.getProperties().getProperty("goal.radius")));
 	}
 
 	@Override

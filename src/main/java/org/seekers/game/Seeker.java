@@ -1,8 +1,7 @@
-package org.seekers.world;
+package org.seekers.game;
 
 import java.util.Collection;
 
-import org.seekers.grpc.Buildable;
 import org.seekers.grpc.PhysicalStatus;
 import org.seekers.grpc.SeekerStatus;
 
@@ -10,10 +9,10 @@ import javafx.geometry.Point2D;
 
 public class Seeker extends Physical {
 	private final Player player;
-	private final Magnet magnet = new Magnet();
 
 	private Point2D target = getPosition();
 
+	private double magnet = 0;
 	private double magnetSlowdown;
 	private double disabledTime;
 	private double disabledCounter = 0;
@@ -50,11 +49,11 @@ public class Seeker extends Physical {
 	public void collision(Physical another, double minDistance) {
 		if (another instanceof Seeker) {
 			Seeker collision = (Seeker) another;
-			if (getMagnet().isActivated()) {
+			if (magnet != 0) {
 				disable();
-				if (collision.getMagnet().isActivated())
+				if (collision.magnet != 0)
 					collision.disable();
-			} else if (collision.getMagnet().isActivated()) {
+			} else if (collision.magnet != 0) {
 				collision.disable();
 			} else {
 				disable();
@@ -71,10 +70,10 @@ public class Seeker extends Physical {
 				(Collection<Physical>) (Collection<?>) getWorld().getGoals().values());
 		if (getWorld().getTorusDistance(getPosition(), goal.getPosition()) > 20) {
 			setTarget(goal.getPosition());
-			getMagnet().disable();
+			setMagnet(0);
 		} else {
 			setTarget(getPlayer().getCamp().getPosition());
-			getMagnet().setAttractive();
+			setMagnet(1);
 		}
 	}
 
@@ -82,20 +81,24 @@ public class Seeker extends Physical {
 		double r = getWorld().getTorusDistance(getPosition(), p) / getWorld().getDiameter() * 10;
 		Point2D d = getWorld().getTorusDirection(getPosition(), p);
 		return (isDisabled()) ? Point2D.ZERO
-				: d.multiply(-magnet.strength * ((r < 1) ? Math.exp(1 / (Math.pow(r, 2) - 1)) : 0));
+				: d.multiply(-getMagnet() * ((r < 1) ? Math.exp(1 / (Math.pow(r, 2) - 1)) : 0));
 	}
 
 	@Override
 	public double getThrust() {
-		return super.getThrust() * ((magnet.isActivated()) ? magnetSlowdown : 1);
+		return super.getThrust() * (magnet != 0 ? magnetSlowdown : 1);
 	}
 
 	public Player getPlayer() {
 		return player;
 	}
 
-	public Magnet getMagnet() {
+	public double getMagnet() {
 		return magnet;
+	}
+
+	public void setMagnet(double magnet) {
+		this.magnet = Math.max(Math.min(magnet, 1), -8);
 	}
 
 	public void disable() {
@@ -115,63 +118,9 @@ public class Seeker extends Physical {
 		this.target = target;
 	}
 
-	public class Magnet implements Buildable {
-		private int strength;
-
-		public void setMode(org.seekers.grpc.Magnet mode) {
-			switch (mode) {
-			case DISABLED: {
-				disable();
-			}
-			case ATTRACTIVE: {
-				setAttractive();
-			}
-			case REPULSIVE: {
-				setRepulsive();
-			}
-			default:
-				throw new IllegalArgumentException("Unexpected value: " + mode);
-			}
-		}
-
-		public void disable() {
-			strength = 0;
-		}
-
-		public boolean isActivated() {
-			return strength != 0;
-		}
-
-		public void setAttractive() {
-			strength = 1;
-		}
-
-		public void setRepulsive() {
-			strength = -8;
-		}
-
-		@Override
-		public Object asBuilder() {
-			switch (strength) {
-			case 0: {
-				return org.seekers.grpc.Magnet.DISABLED;
-			}
-			case 1: {
-				return org.seekers.grpc.Magnet.ATTRACTIVE;
-			}
-			case -8: {
-				return org.seekers.grpc.Magnet.REPULSIVE;
-			}
-			default:
-				return org.seekers.grpc.Magnet.UNRECOGNIZED;
-			}
-		}
-	}
-
 	@Override
 	public Object asBuilder() {
 		return SeekerStatus.newBuilder().setSuper((PhysicalStatus) super.asBuilder()).setPlayerId(player.toString())
-				.setMagnet((org.seekers.grpc.Magnet) magnet.asBuilder()).setTarget(asVector(target))
-				.setDisableCounter(disabledCounter).build();
+				.setMagnet(magnet).setTarget(asVector(target)).setDisableCounter(disabledCounter).build();
 	}
 }
