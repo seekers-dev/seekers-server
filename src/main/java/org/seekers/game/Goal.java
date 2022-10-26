@@ -54,7 +54,13 @@ public class Goal extends Physical {
 
 	private void score(Player player) {
 		player.putUp();
+		reset();
+	}
+
+	private void reset() {
 		setPosition(getWorld().getRandomPosition());
+		camp = null;
+		timeOwned = 0;
 	}
 
 	@Override

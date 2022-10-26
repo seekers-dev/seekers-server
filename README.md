@@ -6,5 +6,9 @@ In seekers, AIs compete against each other with the aim of scoring as many point
 
 For the setup, please take a look at the [wiki](https://github.com/seekers-dev/seekers-api/wiki/Setup).
 
-## Running
+## Launch
 
+Launch it using the Exec Maven Plugin.
+~~~sh
+mvn exec:java
+~~~
