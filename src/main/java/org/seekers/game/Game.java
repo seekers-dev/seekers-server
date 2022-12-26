@@ -108,7 +108,7 @@ public class Game {
 		if (physicals.isEmpty())
 			return null;
 
-		double distance = width * height;
+		double distance = Double.POSITIVE_INFINITY;
 		Physical nearest = null;
 
 		for (Physical physical : physicals) {
