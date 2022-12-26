@@ -83,7 +83,7 @@ public class Game {
 		int cur = players.size(), max = playerCount;
 
 		Player player = new Player(this, token);
-		player.setCamp(new Camp(player, new Point2D(width * 0.5, height * (max - cur) / (max + 1))));
+		player.setCamp(new Camp(player, new Point2D(width * 0.5, height * ( cur / max + 1 / (2 * max) ) )));
 		for (int s = 0; s < seekerCount; s++) {
 			new Seeker(player, getRandomPosition());
 		}
