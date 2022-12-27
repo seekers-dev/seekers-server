@@ -1,5 +1,7 @@
 package org.seekers.grpc;
 
+import static org.seekers.grpc.Corresponding.transform;
+
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -51,10 +53,15 @@ public class SeekersServer {
 		public void joinSession(SessionRequest request, StreamObserver<SessionReply> responseObserver) {
 			if (request.getToken().isBlank()) {
 				responseObserver.onError(new StatusException(Status.UNAUTHENTICATED));
+				System.out.println(111);
+
 			} else if (game.hasOpenSlots()) {
 				responseObserver.onNext(SessionReply.newBuilder().setId(game.addPlayer(request.getToken())).build());
+				System.out.println(222);
+
 			} else {
 				responseObserver.onError(new StatusException(Status.RESOURCE_EXHAUSTED));
+				System.out.println(333);
 			}
 			responseObserver.onCompleted();
 		}
@@ -70,9 +77,8 @@ public class SeekersServer {
 		@Override
 		public void entityStatus(EntityRequest request, StreamObserver<EntityReply> responseObserver) {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
-			EntityReply reply = EntityReply.newBuilder().putAllSeekers(Buildable.map((Map) game.getSeekers()))
-					.putAllGoals(Buildable.map((Map) game.getGoals())).setPassedPlaytime(game.getPassedPlaytime())
-					.build();
+			EntityReply reply = EntityReply.newBuilder().putAllSeekers(transform((Map) game.getSeekers()))
+					.putAllGoals(transform((Map) game.getGoals())).setPassedPlaytime(game.getPassedPlaytime()).build();
 			responseObserver.onNext(reply);
 			responseObserver.onCompleted();
 		}
@@ -80,8 +86,8 @@ public class SeekersServer {
 		@Override
 		public void playerStatus(PlayerRequest request, StreamObserver<PlayerReply> responseObserver) {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
-			PlayerReply reply = PlayerReply.newBuilder().putAllPlayers(Buildable.map((Map) game.getPlayers()))
-					.putAllCamps(Buildable.map((Map) game.getCamps())).build();
+			PlayerReply reply = PlayerReply.newBuilder().putAllPlayers(transform((Map) game.getPlayers()))
+					.putAllCamps(transform((Map) game.getCamps())).build();
 			responseObserver.onNext(reply);
 			responseObserver.onCompleted();
 		}

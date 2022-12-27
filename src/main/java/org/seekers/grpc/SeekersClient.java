@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 
 import org.seekers.grpc.SeekersGrpc.SeekersBlockingStub;
 
-import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
@@ -29,23 +28,6 @@ public class SeekersClient {
 		}
 	}
 
-	public boolean isRunning() {
-		ConnectivityState state = channel.getState(true);
-		if (state == ConnectivityState.IDLE) {
-			return false;
-		}
-		if (state == ConnectivityState.TRANSIENT_FAILURE | state == ConnectivityState.SHUTDOWN) {
-			if (!channel.isShutdown())
-				try {
-					stop();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			return false;
-		}
-		return true;
-	}
-
 	public String generateToken(String username) {
 		return Base64.getEncoder().encodeToString(username.getBytes());
 	}
@@ -54,38 +36,43 @@ public class SeekersClient {
 		if (token.isBlank()) {
 			throw new UnsupportedOperationException("Can not use a blank string as token");
 		}
-		if (!isRunning()) {
+		try {
+			return blockingStub.joinSession(SessionRequest.newBuilder().setToken(token).build());
+		} catch (Exception ex) {
 			return SessionReply.newBuilder().build();
 		}
-		return blockingStub.joinSession(SessionRequest.newBuilder().setToken(token).build());
 	}
 
 	public PropertiesReply getProperties() {
-		if (!isRunning()) {
+		try {
+			return blockingStub.propertiesInfo(PropertiesRequest.newBuilder().build());
+		} catch (Exception ex) {
 			return PropertiesReply.newBuilder().build();
 		}
-		return blockingStub.propertiesInfo(PropertiesRequest.newBuilder().build());
 	}
 
 	public EntityReply getEntityStatus() {
-		if (!isRunning()) {
+		try {
+			return blockingStub.entityStatus(EntityRequest.newBuilder().build());
+		} catch (Exception ex) {
 			return EntityReply.newBuilder().build();
 		}
-		return blockingStub.entityStatus(EntityRequest.newBuilder().build());
 	}
 
 	public PlayerReply getPlayerStatus() {
-		if (!isRunning()) {
+		try {
+			return blockingStub.playerStatus(PlayerRequest.newBuilder().build());
+		} catch (Exception ex) {
 			return PlayerReply.newBuilder().build();
 		}
-		return blockingStub.playerStatus(PlayerRequest.newBuilder().build());
 	}
 
 	public CommandReply setCommand(String token, String id, Vector target, double magnet) {
-		if (!isRunning()) {
+		try {
+			return blockingStub.commandUnit(
+					CommandRequest.newBuilder().setToken(token).setId(id).setTarget(target).setMagnet(magnet).build());
+		} catch (Exception ex) {
 			return CommandReply.newBuilder().build();
 		}
-		return blockingStub
-				.commandUnit(CommandRequest.newBuilder().setToken(token).setTarget(target).setMagnet(magnet).build());
 	}
 }

@@ -2,6 +2,7 @@ package org.seekers.graphic;
 
 import org.seekers.App;
 import org.seekers.grpc.SeekerStatus;
+import org.seekers.grpc.Switching;
 
 import javafx.animation.ScaleTransition;
 import javafx.scene.layout.StackPane;
@@ -10,13 +11,13 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 
-public class SeekerRef extends StackPane implements Reference<SeekerStatus> {
+public class Seeker extends StackPane implements Switching<SeekerStatus> {
 	private App app;
 
 	private final Circle circle, magnet;
 	private final ScaleTransition transition;
 
-	public SeekerRef(App app) {
+	public Seeker(App app) {
 		this.app = app;
 
 		double radius = app.getPropertieAsDouble("seeker.radius");
@@ -36,7 +37,7 @@ public class SeekerRef extends StackPane implements Reference<SeekerStatus> {
 	}
 
 	@Override
-	public void update(SeekerStatus delta) {
+	public void switched(SeekerStatus delta) {
 		setLayoutX(delta.getSuper().getPosition().getX() - 5);
 		setLayoutY(delta.getSuper().getPosition().getY() - 5);
 

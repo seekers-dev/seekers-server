@@ -2,6 +2,7 @@ package org.seekers.graphic;
 
 import org.seekers.App;
 import org.seekers.grpc.PlayerStatus;
+import org.seekers.grpc.Switching;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -12,18 +13,18 @@ import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
-public class PlayerRef extends Label implements Reference<PlayerStatus> {
+public class Player extends Label implements Switching<PlayerStatus> {
 	private final ObjectProperty<Color> color = new SimpleObjectProperty<>();
 	private final IntegerProperty score = new SimpleIntegerProperty();
 
-	public PlayerRef(App app) {
+	public Player(App app) {
 		textProperty().bind(new SimpleStringProperty("Score: ").concat(score));
 		textFillProperty().bind(color);
 		setFont(Font.font("ubuntu", 20));
 	}
 
 	@Override
-	public void update(PlayerStatus delta) {
+	public void switched(PlayerStatus delta) {
 		color.set(Color.web(delta.getColor()));
 		score.set(delta.getScore());
 	}

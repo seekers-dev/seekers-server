@@ -2,14 +2,15 @@ package org.seekers.graphic;
 
 import org.seekers.App;
 import org.seekers.grpc.CampStatus;
+import org.seekers.grpc.Switching;
 
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-public class CampRef extends Rectangle implements Reference<CampStatus> {
+public class Camp extends Rectangle implements Switching<CampStatus> {
 	private App app;
 
-	public CampRef(App app) {
+	public Camp(App app) {
 		this.app = app;
 		setFill(Color.TRANSPARENT);
 		setStrokeWidth(app.getPropertieAsDouble("goal.radius"));
@@ -18,7 +19,7 @@ public class CampRef extends Rectangle implements Reference<CampStatus> {
 	}
 
 	@Override
-	public void update(CampStatus delta) {
+	public void switched(CampStatus delta) {
 		setLayoutX(delta.getPosition().getX() - delta.getWidth() / 2);
 		setLayoutY(delta.getPosition().getY() - delta.getHeight() / 2);
 		setStroke(app.getPlayers().get(delta.getPlayerId()).colorProperty().get());

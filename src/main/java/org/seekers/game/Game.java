@@ -29,6 +29,7 @@ public class Game {
 	private final Map<String, Player> players = new HashMap<>();
 	private final Map<String, Goal> goals = new HashMap<>();
 	private final Map<String, Camp> camps = new HashMap<>();
+
 	private final Properties properties = new Properties();
 
 	private double width, height, speed, passed, playtime;

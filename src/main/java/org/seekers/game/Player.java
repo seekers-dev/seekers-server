@@ -3,12 +3,12 @@ package org.seekers.game;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.seekers.grpc.Buildable;
+import org.seekers.grpc.Corresponding;
 import org.seekers.grpc.PlayerStatus;
 
 import javafx.scene.paint.Color;
 
-public class Player implements Buildable {
+public class Player implements Corresponding<PlayerStatus> {
 	private final Map<String, Seeker> seekers = new HashMap<>();
 
 	private final Game game;
@@ -32,7 +32,7 @@ public class Player implements Buildable {
 		return seekers;
 	}
 
-	public Game getWorld() {
+	public Game getGame() {
 		return game;
 	}
 
@@ -61,7 +61,7 @@ public class Player implements Buildable {
 	}
 
 	@Override
-	public Object asBuilder() {
+	public PlayerStatus associated() {
 		return PlayerStatus.newBuilder().setId(toString()).addAllSeekerIds(seekers.keySet()).setCampId(camp.toString())
 				.setColor(color.toString()).setScore(score).build();
 	}

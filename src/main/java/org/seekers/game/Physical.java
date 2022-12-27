@@ -1,11 +1,13 @@
 package org.seekers.game;
 
-import org.seekers.grpc.Buildable;
+import static org.seekers.grpc.Corresponding.transform;
+
+import org.seekers.grpc.Corresponding.ExtendableCorresponding;
 import org.seekers.grpc.PhysicalStatus;
 
 import javafx.geometry.Point2D;
 
-public abstract class Physical implements Entity, Buildable {
+public abstract class Physical implements Entity, ExtendableCorresponding {
 	private final Game game;
 
 	private Point2D acceleration = Point2D.ZERO;
@@ -21,12 +23,12 @@ public abstract class Physical implements Entity, Buildable {
 	public Physical(Game game, Point2D position) {
 		this.game = game;
 		this.position = position;
-		
+
 		maxSpeed = Double.valueOf(game.getProperties().getProperty("physical.max-speed"));
 		friction = Double.valueOf(game.getProperties().getProperty("physical.friction"));
 		baseThrust = maxSpeed * friction;
 
-		getWorld().getPhysicals().put(toString(), this);
+		getGame().getPhysicals().put(toString(), this);
 	}
 
 	@Override
@@ -40,17 +42,17 @@ public abstract class Physical implements Entity, Buildable {
 		accelerate(deltaT);
 		setVelocity(getVelocity().add(getAcceleration().multiply(getThrust() * deltaT)));
 		setPosition(getPosition().add(getVelocity().multiply(deltaT)));
-		getWorld().putNormalizedPosition(this);
+		getGame().putNormalizedPosition(this);
 	}
 
 	protected abstract void accelerate(double deltaT);
 
 	private void checks() {
-		for (Physical physical : getWorld().getPhysicals().values()) {
+		for (Physical physical : getGame().getPhysicals().values()) {
 			if (physical == this)
 				continue;
 			double min = range + physical.range;
-			double dist = getWorld().getTorusDistance(position, physical.position);
+			double dist = getGame().getTorusDistance(position, physical.position);
 			if (min > dist) {
 				collision(physical, min);
 			}
@@ -81,7 +83,7 @@ public abstract class Physical implements Entity, Buildable {
 		return baseThrust;
 	}
 
-	public Game getWorld() {
+	public Game getGame() {
 		return game;
 	}
 
@@ -118,8 +120,8 @@ public abstract class Physical implements Entity, Buildable {
 	}
 
 	@Override
-	public Object asBuilder() {
-		return PhysicalStatus.newBuilder().setId(toString()).setAcceleration(asVector(acceleration))
-				.setPosition(asVector(position)).setVelocity(asVector(velocity)).build();
+	public Object associated() {
+		return PhysicalStatus.newBuilder().setId(toString()).setAcceleration(transform(acceleration))
+				.setPosition(transform(position)).setVelocity(transform(velocity)).build();
 	}
 }

@@ -15,7 +15,7 @@ public class Goal extends Physical {
 		super(game, position);
 		scoringTime = Double.valueOf(game.getProperties().getProperty("goal.scoring-time"));
 
-		getWorld().getGoals().put(toString(), this);
+		getGame().getGoals().put(toString(), this);
 		setMass(Double.valueOf(game.getProperties().getProperty("goal.mass")));
 		setRange(Double.valueOf(game.getProperties().getProperty("goal.radius")));
 	}
@@ -29,14 +29,14 @@ public class Goal extends Physical {
 	@Override
 	protected void accelerate(double deltaT) {
 		Point2D force = Point2D.ZERO;
-		for (Seeker seeker : getWorld().getSeekers().values()) {
+		for (Seeker seeker : getGame().getSeekers().values()) {
 			force = force.add(seeker.getMagneticForce(getPosition()));
 		}
 		setAcceleration(force.multiply(deltaT));
 	}
 
 	private void adopt(double deltaT) {
-		for (Camp camp : getWorld().getCamps().values()) {
+		for (Camp camp : getGame().getCamps().values()) {
 			if (camp.contains(getPosition())) {
 				if (this.camp == camp) {
 					timeOwned += deltaT;
@@ -58,14 +58,14 @@ public class Goal extends Physical {
 	}
 
 	private void reset() {
-		setPosition(getWorld().getRandomPosition());
+		setPosition(getGame().getRandomPosition());
 		camp = null;
 		timeOwned = 0;
 	}
 
 	@Override
-	public Object asBuilder() {
-		return GoalStatus.newBuilder().setSuper((PhysicalStatus) super.asBuilder())
+	public Object associated() {
+		return GoalStatus.newBuilder().setSuper((PhysicalStatus) super.associated())
 				.setCampId((camp != null) ? camp.toString() : "").setTimeOwned(timeOwned).build();
 	}
 }

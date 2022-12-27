@@ -2,6 +2,7 @@ package org.seekers.game;
 
 import java.util.Collection;
 
+import org.seekers.grpc.Corresponding;
 import org.seekers.grpc.PhysicalStatus;
 import org.seekers.grpc.SeekerStatus;
 
@@ -18,14 +19,14 @@ public class Seeker extends Physical {
 	private double disabledCounter = 0;
 
 	public Seeker(Player player, Point2D position) {
-		super(player.getWorld(), position);
+		super(player.getGame(), position);
 		this.player = player;
-		magnetSlowdown = Double.valueOf(player.getWorld().getProperties().getProperty("seeker.magnet-slowdown"));
-		disabledTime = Double.valueOf(player.getWorld().getProperties().getProperty("seeker.disabled-time"));
-		setMass(Double.valueOf(player.getWorld().getProperties().getProperty("seeker.mass")));
-		setRange(Double.valueOf(player.getWorld().getProperties().getProperty("seeker.radius")));
+		magnetSlowdown = Double.valueOf(player.getGame().getProperties().getProperty("seeker.magnet-slowdown"));
+		disabledTime = Double.valueOf(player.getGame().getProperties().getProperty("seeker.disabled-time"));
+		setMass(Double.valueOf(player.getGame().getProperties().getProperty("seeker.mass")));
+		setRange(Double.valueOf(player.getGame().getProperties().getProperty("seeker.radius")));
 		player.getSeekers().put(toString(), this);
-		getWorld().getSeekers().put(toString(), this);
+		getGame().getSeekers().put(toString(), this);
 	}
 
 	@Override
@@ -39,7 +40,7 @@ public class Seeker extends Physical {
 	@Override
 	protected void accelerate(double deltaT) {
 		if (!isDisabled()) {
-			setAcceleration(getWorld().getTorusDirection(getPosition(), getTarget()).multiply(deltaT));
+			setAcceleration(getGame().getTorusDirection(getPosition(), getTarget()).multiply(deltaT));
 		} else {
 			setAcceleration(Point2D.ZERO);
 		}
@@ -66,9 +67,9 @@ public class Seeker extends Physical {
 
 	public void setAutoCommands() {
 		@SuppressWarnings("unchecked")
-		Goal goal = (Goal) getWorld().getNearestPhysicalOf(getPosition(),
-				(Collection<Physical>) (Collection<?>) getWorld().getGoals().values());
-		if (getWorld().getTorusDistance(getPosition(), goal.getPosition()) > 20) {
+		Goal goal = (Goal) getGame().getNearestPhysicalOf(getPosition(),
+				(Collection<Physical>) (Collection<?>) getGame().getGoals().values());
+		if (getGame().getTorusDistance(getPosition(), goal.getPosition()) > 20) {
 			setTarget(goal.getPosition());
 			setMagnet(0);
 		} else {
@@ -78,8 +79,8 @@ public class Seeker extends Physical {
 	}
 
 	public Point2D getMagneticForce(Point2D p) {
-		double r = getWorld().getTorusDistance(getPosition(), p) / getWorld().getDiameter() * 10;
-		Point2D d = getWorld().getTorusDirection(getPosition(), p);
+		double r = getGame().getTorusDistance(getPosition(), p) / getGame().getDiameter() * 10;
+		Point2D d = getGame().getTorusDirection(getPosition(), p);
 		return (isDisabled()) ? Point2D.ZERO
 				: d.multiply(-getMagnet() * ((r < 1) ? Math.exp(1 / (Math.pow(r, 2) - 1)) : 0));
 	}
@@ -119,8 +120,9 @@ public class Seeker extends Physical {
 	}
 
 	@Override
-	public Object asBuilder() {
-		return SeekerStatus.newBuilder().setSuper((PhysicalStatus) super.asBuilder()).setPlayerId(player.toString())
-				.setMagnet(magnet).setTarget(asVector(target)).setDisableCounter(disabledCounter).build();
+	public Object associated() {
+		return SeekerStatus.newBuilder().setSuper((PhysicalStatus) super.associated()).setPlayerId(player.toString())
+				.setMagnet(magnet).setTarget(Corresponding.transform(target)).setDisableCounter(disabledCounter)
+				.build();
 	}
 }
