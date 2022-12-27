@@ -1,7 +1,6 @@
 package org.seekers.game;
 
-import org.seekers.grpc.GoalStatus;
-import org.seekers.grpc.PhysicalStatus;
+import org.seekers.grpc.StatusReply;
 
 import javafx.geometry.Point2D;
 
@@ -15,7 +14,7 @@ public class Goal extends Physical {
 		super(game, position);
 		scoringTime = Double.valueOf(game.getProperties().getProperty("goal.scoring-time"));
 
-		getGame().getGoals().put(toString(), this);
+		getGame().getGoals().put(getId(), this);
 		setMass(Double.valueOf(game.getProperties().getProperty("goal.mass")));
 		setRange(Double.valueOf(game.getProperties().getProperty("goal.radius")));
 	}
@@ -65,7 +64,7 @@ public class Goal extends Physical {
 
 	@Override
 	public Object associated() {
-		return GoalStatus.newBuilder().setSuper((PhysicalStatus) super.associated())
-				.setCampId((camp != null) ? camp.toString() : "").setTimeOwned(timeOwned).build();
+		return StatusReply.Goal.newBuilder().setSuper((StatusReply.Physical) super.associated())
+				.setCampId((camp != null) ? camp.getId() : "").setTimeOwned(timeOwned).build();
 	}
 }

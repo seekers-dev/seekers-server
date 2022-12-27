@@ -1,11 +1,11 @@
 package org.seekers.game;
 
-import org.seekers.grpc.CampStatus;
 import org.seekers.grpc.Corresponding;
+import org.seekers.grpc.StatusReply;
 
 import javafx.geometry.Point2D;
 
-public class Camp implements Corresponding<CampStatus> {
+public class Camp implements Corresponding<StatusReply.Camp> {
 	private final Player player;
 
 	public final Point2D position;
@@ -20,7 +20,7 @@ public class Camp implements Corresponding<CampStatus> {
 		width = Double.valueOf(player.getGame().getProperties().getProperty("camp.width"));
 		height = Double.valueOf(player.getGame().getProperties().getProperty("camp.height"));
 
-		player.getGame().getCamps().put(toString(), this);
+		player.getGame().getCamps().put(getId(), this);
 	}
 
 	public boolean contains(Point2D p) {
@@ -37,8 +37,8 @@ public class Camp implements Corresponding<CampStatus> {
 	}
 
 	@Override
-	public CampStatus associated() {
-		return CampStatus.newBuilder().setId(toString()).setPlayerId(player.toString())
+	public StatusReply.Camp associated() {
+		return StatusReply.Camp.newBuilder().setId(getId()).setPlayerId(player.getId())
 				.setPosition(Corresponding.transform(position)).setWidth(width).setHeight(height).build();
 	}
 }

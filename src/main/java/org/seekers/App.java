@@ -8,16 +8,11 @@ import org.seekers.graphic.Camp;
 import org.seekers.graphic.Goal;
 import org.seekers.graphic.Player;
 import org.seekers.graphic.Seeker;
-import org.seekers.grpc.CampStatus;
 import org.seekers.grpc.Creator;
-import org.seekers.grpc.EntityReply;
-import org.seekers.grpc.GoalStatus;
-import org.seekers.grpc.PlayerReply;
-import org.seekers.grpc.PlayerStatus;
 import org.seekers.grpc.PropertiesReply;
 import org.seekers.grpc.SeekersClient;
 import org.seekers.grpc.SeekersServer;
-import org.seekers.grpc.SeekerStatus;
+import org.seekers.grpc.StatusReply;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -36,9 +31,8 @@ public class App extends Application {
 	private final SeekersServer server = new SeekersServer();
 	private final SeekersClient client = new SeekersClient();
 
-	private final Map<String, Creator<?>> creators = Map.of("org.seekers.game.Player", () -> new Player(App.this),
-			"org.seekers.game.Seeker", () -> new Seeker(App.this), "org.seekers.game.Goal", () -> new Goal(App.this),
-			"org.seekers.game.Camp", () -> new Camp(App.this));
+	private final Map<String, Creator<?>> creators = Map.of("Player", () -> new Player(this), "Seeker",
+			() -> new Seeker(this), "Goal", () -> new Goal(this), "Camp", () -> new Camp(this));
 
 	private final ObservableMap<String, Player> players = FXCollections.observableHashMap();
 	private final ObservableMap<String, Seeker> seekers = FXCollections.observableHashMap();
@@ -136,31 +130,28 @@ public class App extends Application {
 					arrayFilled = true;
 				}
 				if (arrayFilled) {
-					PlayerReply playersReply = client.getPlayerStatus();
-					for (PlayerStatus player : playersReply.getPlayersMap().values()) {
-						save(players, player.getId()).switched(player);
+					StatusReply status = client.getStatus();
+					for (StatusReply.Player player : status.getPlayersMap().values()) {
+						save(players, player.getId(), "Player").switched(player);
 					}
-					for (CampStatus camp : playersReply.getCampsMap().values()) {
-						save(camps, camp.getId()).switched(camp);
+					for (StatusReply.Camp camp : status.getCampsMap().values()) {
+						save(camps, camp.getId(), "Camp").switched(camp);
 					}
-					EntityReply entityReply = client.getEntityStatus();
-					for (SeekerStatus seeker : entityReply.getSeekersMap().values()) {
-						save(seekers, seeker.getSuper().getId()).switched(seeker);
+					for (StatusReply.Seeker seeker : status.getSeekersMap().values()) {
+						save(seekers, seeker.getSuper().getId(), "Seeker").switched(seeker);
 					}
-					for (GoalStatus goal : entityReply.getGoalsMap().values()) {
-						save(goals, goal.getSuper().getId()).switched(goal);
+					for (StatusReply.Goal goal : status.getGoalsMap().values()) {
+						save(goals, goal.getSuper().getId(), "Goal").switched(goal);
 					}
 				}
 			}
 
 			@SuppressWarnings("unchecked")
-			public <T> T save(Map<String, T> map, String key) {
-				T val;
-				if (!map.containsKey(key)) {
-					val = (T) creators.get(key.substring(0, key.indexOf("@"))).create();
-					map.put(key, val);
-				} else {
-					val = map.get(key);
+			public <T> T save(Map<String, T> map, String id, String type) {
+				T val = map.get(id);
+				if (val == null) {
+					val = (T) creators.get(type).create();
+					map.put(id, val);
 				}
 				return val;
 			}
@@ -169,7 +160,7 @@ public class App extends Application {
 	}
 
 	private Group group = new Group();
-	private VBox box = new VBox(10);
+	private VBox box = new VBox();
 
 	@Override
 	public void start(Stage stage) throws Exception {
@@ -181,8 +172,8 @@ public class App extends Application {
 			try {
 				client.stop();
 				server.stop();
-			} catch (Exception e) {
-				e.printStackTrace();
+			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
 		});
 		stage.setResizable(false);

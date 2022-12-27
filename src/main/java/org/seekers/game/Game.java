@@ -71,7 +71,7 @@ public class Game {
 		this.autoPlay = Boolean.parseBoolean(properties.getProperty("global.auto-play"));
 		if (autoPlay) {
 			while (hasOpenSlots())
-				addPlayer(new String());
+				addPlayer();
 		}
 		addGoals();
 	}
@@ -80,16 +80,16 @@ public class Game {
 		return players.size() < playerCount;
 	}
 
-	public String addPlayer(String token) {
+	public Player addPlayer() {
 		int cur = players.size(), max = playerCount;
 
-		Player player = new Player(this, token);
+		Player player = new Player(this);
 		player.setCamp(new Camp(player, new Point2D(width * 0.5, height * (max - cur) / (max + 1))));
 		for (int s = 0; s < seekerCount; s++) {
 			new Seeker(player, getRandomPosition());
 		}
 
-		return player.toString();
+		return player;
 	}
 
 	public void addGoals() {

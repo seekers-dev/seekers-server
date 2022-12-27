@@ -32,45 +32,34 @@ public class SeekersClient {
 		return Base64.getEncoder().encodeToString(username.getBytes());
 	}
 
-	public SessionReply getSessionStatus(String token) {
-		if (token.isBlank()) {
-			throw new UnsupportedOperationException("Can not use a blank string as token");
-		}
+	public JoinReply getJoined(String name, String color) {
 		try {
-			return blockingStub.joinSession(SessionRequest.newBuilder().setToken(token).build());
+			return blockingStub.join(JoinRequest.newBuilder().setName(name).setColor(color).build());
 		} catch (Exception ex) {
-			return SessionReply.newBuilder().build();
+			return JoinReply.newBuilder().build();
 		}
 	}
 
 	public PropertiesReply getProperties() {
 		try {
-			return blockingStub.propertiesInfo(PropertiesRequest.newBuilder().build());
+			return blockingStub.properties(PropertiesRequest.newBuilder().build());
 		} catch (Exception ex) {
 			return PropertiesReply.newBuilder().build();
 		}
 	}
 
-	public EntityReply getEntityStatus() {
+	public StatusReply getStatus() {
 		try {
-			return blockingStub.entityStatus(EntityRequest.newBuilder().build());
+			return blockingStub.status(StatusRequest.newBuilder().build());
 		} catch (Exception ex) {
-			return EntityReply.newBuilder().build();
-		}
-	}
-
-	public PlayerReply getPlayerStatus() {
-		try {
-			return blockingStub.playerStatus(PlayerRequest.newBuilder().build());
-		} catch (Exception ex) {
-			return PlayerReply.newBuilder().build();
+			return StatusReply.newBuilder().build();
 		}
 	}
 
 	public CommandReply setCommand(String token, String id, Vector target, double magnet) {
 		try {
-			return blockingStub.commandUnit(
-					CommandRequest.newBuilder().setToken(token).setId(id).setTarget(target).setMagnet(magnet).build());
+			return blockingStub.command(CommandRequest.newBuilder().setToken(token).setSeekerId(id).setTarget(target)
+					.setMagnet(magnet).build());
 		} catch (Exception ex) {
 			return CommandReply.newBuilder().build();
 		}

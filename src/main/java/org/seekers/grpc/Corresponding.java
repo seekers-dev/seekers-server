@@ -10,6 +10,10 @@ import javafx.geometry.Point2D;
 public interface Corresponding<T> {
 	T associated();
 
+	default String getId() {
+		return Integer.toHexString(hashCode());
+	}
+
 	public static <T> Collection<T> transform(Collection<? extends Corresponding<T>> collection) {
 		java.util.Vector<T> transformed = new java.util.Vector<>(collection.size());
 		int index = 0;

@@ -1,9 +1,9 @@
 package org.seekers.game;
 
 public interface Entity {
-	public void update(double deltaT);
+	void update(double deltaT);
 
-	public default void tick() {
+	default void tick() {
 		update(1);
 	};
 }

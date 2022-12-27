@@ -3,8 +3,7 @@ package org.seekers.game;
 import java.util.Collection;
 
 import org.seekers.grpc.Corresponding;
-import org.seekers.grpc.PhysicalStatus;
-import org.seekers.grpc.SeekerStatus;
+import org.seekers.grpc.StatusReply;
 
 import javafx.geometry.Point2D;
 
@@ -25,8 +24,8 @@ public class Seeker extends Physical {
 		disabledTime = Double.valueOf(player.getGame().getProperties().getProperty("seeker.disabled-time"));
 		setMass(Double.valueOf(player.getGame().getProperties().getProperty("seeker.mass")));
 		setRange(Double.valueOf(player.getGame().getProperties().getProperty("seeker.radius")));
-		player.getSeekers().put(toString(), this);
-		getGame().getSeekers().put(toString(), this);
+		player.getSeekers().put(getId(), this);
+		getGame().getSeekers().put(getId(), this);
 	}
 
 	@Override
@@ -121,8 +120,8 @@ public class Seeker extends Physical {
 
 	@Override
 	public Object associated() {
-		return SeekerStatus.newBuilder().setSuper((PhysicalStatus) super.associated()).setPlayerId(player.toString())
-				.setMagnet(magnet).setTarget(Corresponding.transform(target)).setDisableCounter(disabledCounter)
-				.build();
+		return StatusReply.Seeker.newBuilder().setSuper((StatusReply.Physical) super.associated())
+				.setPlayerId(player.getId()).setMagnet(magnet).setTarget(Corresponding.transform(target))
+				.setDisableCounter(disabledCounter).build();
 	}
 }

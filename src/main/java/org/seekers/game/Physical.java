@@ -3,7 +3,7 @@ package org.seekers.game;
 import static org.seekers.grpc.Corresponding.transform;
 
 import org.seekers.grpc.Corresponding.ExtendableCorresponding;
-import org.seekers.grpc.PhysicalStatus;
+import org.seekers.grpc.StatusReply;
 
 import javafx.geometry.Point2D;
 
@@ -28,7 +28,7 @@ public abstract class Physical implements Entity, ExtendableCorresponding {
 		friction = Double.valueOf(game.getProperties().getProperty("physical.friction"));
 		baseThrust = maxSpeed * friction;
 
-		getGame().getPhysicals().put(toString(), this);
+		getGame().getPhysicals().put(getId(), this);
 	}
 
 	@Override
@@ -121,7 +121,7 @@ public abstract class Physical implements Entity, ExtendableCorresponding {
 
 	@Override
 	public Object associated() {
-		return PhysicalStatus.newBuilder().setId(toString()).setAcceleration(transform(acceleration))
+		return StatusReply.Physical.newBuilder().setId(getId()).setAcceleration(transform(acceleration))
 				.setPosition(transform(position)).setVelocity(transform(velocity)).build();
 	}
 }
