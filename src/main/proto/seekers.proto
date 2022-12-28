@@ -77,10 +77,10 @@ message StatusReply {
     double time_owned = 3;
   }
 
-  map<string, Player> players = 1;
-  map<string, Camp> camps = 2;
-  map<string, Seeker> seekers = 3;
-  map<string, Goal> goals = 4;
+  repeated Player players = 1;
+  repeated Camp camps = 2;
+  repeated Seeker seekers = 3;
+  repeated Goal goals = 4;
   
   double passed_playtime = 5;
 }

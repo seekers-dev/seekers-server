@@ -1,7 +1,5 @@
 package org.seekers.grpc;
 
-import static org.seekers.grpc.Corresponding.transform;
-
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -58,7 +56,13 @@ public class SeekersServer {
 
 		@Override
 		public void join(JoinRequest request, StreamObserver<JoinReply> responseObserver) {
-			if (game.hasOpenSlots()) {
+			if (request.getName().isEmpty() && request.getColor().isEmpty()) {
+				String token = Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
+						.toString();
+				game.getHelpers().put(token, new PushHelper(game));
+				responseObserver.onNext(JoinReply.newBuilder().setToken(token).build());
+				responseObserver.onCompleted();
+			} else if (game.hasOpenSlots()) {
 				Player player = game.addPlayer();
 				String token = Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
 						.toString();
@@ -72,20 +76,22 @@ public class SeekersServer {
 
 		@Override
 		public void properties(PropertiesRequest request, StreamObserver<PropertiesReply> responseObserver) {
-			@SuppressWarnings({ "unchecked", "rawtypes" })
-			PropertiesReply reply = PropertiesReply.newBuilder().putAllEntries((Map) game.getProperties()).build();
+			@SuppressWarnings("unchecked")
+			PropertiesReply reply = PropertiesReply.newBuilder()
+					.putAllEntries((Map<String, String>) (Map<?, ?>) game.getProperties()).build();
 			responseObserver.onNext(reply);
 			responseObserver.onCompleted();
 		}
 
 		@Override
 		public void status(StatusRequest request, StreamObserver<StatusReply> responseObserver) {
-			@SuppressWarnings({ "unchecked", "rawtypes" })
-			StatusReply reply = StatusReply.newBuilder().putAllPlayers(transform((Map) game.getPlayers()))
-					.putAllCamps(transform((Map) game.getCamps())).putAllSeekers(transform((Map) game.getSeekers()))
-					.putAllGoals(transform((Map) game.getGoals())).setPassedPlaytime(game.getPassedPlaytime()).build();
-			responseObserver.onNext(reply);
-			responseObserver.onCompleted();
+			PushHelper helper = game.getHelpers().get(request.getToken());
+			if (helper != null) {
+				responseObserver.onNext(helper.associated());
+				responseObserver.onCompleted();
+			} else {
+				responseObserver.onError(new StatusException(Status.PERMISSION_DENIED));
+			}
 		}
 
 		@Override

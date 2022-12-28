@@ -3,6 +3,7 @@ package org.seekers.game;
 import java.util.Collection;
 
 import org.seekers.grpc.Corresponding;
+import org.seekers.grpc.PushHelper;
 import org.seekers.grpc.StatusReply;
 
 import javafx.geometry.Point2D;
@@ -25,7 +26,7 @@ public class Seeker extends Physical {
 		setMass(Double.valueOf(player.getGame().getProperties().getProperty("seeker.mass")));
 		setRange(Double.valueOf(player.getGame().getProperties().getProperty("seeker.radius")));
 		player.getSeekers().put(getId(), this);
-		getGame().getSeekers().put(getId(), this);
+		getGame().getSeekers().add(this);
 	}
 
 	@Override
@@ -67,7 +68,7 @@ public class Seeker extends Physical {
 	public void setAutoCommands() {
 		@SuppressWarnings("unchecked")
 		Goal goal = (Goal) getGame().getNearestPhysicalOf(getPosition(),
-				(Collection<Physical>) (Collection<?>) getGame().getGoals().values());
+				(Collection<Physical>) (Collection<?>) getGame().getGoals());
 		if (getGame().getTorusDistance(getPosition(), goal.getPosition()) > 20) {
 			setTarget(goal.getPosition());
 			setMagnet(0);
@@ -99,11 +100,14 @@ public class Seeker extends Physical {
 
 	public void setMagnet(double magnet) {
 		this.magnet = Math.max(Math.min(magnet, 1), -8);
+		changed();
 	}
 
 	public void disable() {
-		if (!isDisabled())
+		if (!isDisabled()) {
 			disabledCounter = disabledTime;
+			changed();
+		}
 	}
 
 	public boolean isDisabled() {
@@ -116,6 +120,7 @@ public class Seeker extends Physical {
 
 	public void setTarget(Point2D target) {
 		this.target = target;
+		changed();
 	}
 
 	@Override
@@ -123,5 +128,11 @@ public class Seeker extends Physical {
 		return StatusReply.Seeker.newBuilder().setSuper((StatusReply.Physical) super.associated())
 				.setPlayerId(player.getId()).setMagnet(magnet).setTarget(Corresponding.transform(target))
 				.setDisableCounter(disabledCounter).build();
+	}
+
+	@Override
+	public void changed() {
+		for (PushHelper helper : getGame().getHelpers().values())
+			helper.getSeekers().add(this);
 	}
 }

@@ -4,11 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.seekers.grpc.Corresponding;
+import org.seekers.grpc.Observable;
+import org.seekers.grpc.PushHelper;
 import org.seekers.grpc.StatusReply;
 
 import javafx.scene.paint.Color;
 
-public class Player implements Corresponding<StatusReply.Player> {
+public class Player implements Observable, Corresponding<StatusReply.Player> {
 	private final Map<String, Seeker> seekers = new HashMap<>();
 
 	private final Game game;
@@ -24,7 +26,7 @@ public class Player implements Corresponding<StatusReply.Player> {
 				(int) (Math.random() * 124 + 124)).toString();
 		this.name = "Player " + (int) (Math.random() * 1e6);
 
-		game.getPlayers().put(getId(), this);
+		game.getPlayers().add(this);
 	}
 
 	public Map<String, Seeker> getSeekers() {
@@ -74,6 +76,7 @@ public class Player implements Corresponding<StatusReply.Player> {
 
 	public void putUp() {
 		score++;
+		changed();
 	}
 
 	@Override
@@ -82,4 +85,9 @@ public class Player implements Corresponding<StatusReply.Player> {
 				.setCampId(camp.toString()).setName(name).setColor(color.toString()).setScore(score).build();
 	}
 
+	@Override
+	public void changed() {
+		for (PushHelper helper : getGame().getHelpers().values())
+			helper.getPlayers().add(this);
+	}
 }

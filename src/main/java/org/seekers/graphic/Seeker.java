@@ -1,6 +1,5 @@
 package org.seekers.graphic;
 
-import org.seekers.App;
 import org.seekers.grpc.StatusReply;
 import org.seekers.grpc.Switching;
 
@@ -12,15 +11,15 @@ import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 
 public class Seeker extends StackPane implements Switching<StatusReply.Seeker> {
-	private App app;
+	private Game game;
 
 	private final Circle circle, magnet;
 	private final ScaleTransition transition;
 
-	public Seeker(App app) {
-		this.app = app;
+	public Seeker(Game game) {
+		this.game = game;
 
-		double radius = app.getPropertieAsDouble("seeker.radius");
+		double radius = game.getTypeProperties().getPropertieAsDouble("seeker.radius");
 		circle = new Circle(radius);
 		magnet = new Circle(radius, Color.TRANSPARENT);
 		magnet.setStrokeWidth(1);
@@ -41,7 +40,7 @@ public class Seeker extends StackPane implements Switching<StatusReply.Seeker> {
 		setLayoutX(delta.getSuper().getPosition().getX() - 5);
 		setLayoutY(delta.getSuper().getPosition().getY() - 5);
 
-		Color natural = app.getPlayers().get(delta.getPlayerId()).colorProperty().get();
+		Color natural = game.getHelper().getPlayers().get(delta.getPlayerId()).colorProperty().get();
 		Paint paint = delta.getDisableCounter() > 0 ? natural.darker().darker() : natural;
 		circle.setFill(paint);
 		magnet.setStroke(paint);

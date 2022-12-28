@@ -1,13 +1,14 @@
 package org.seekers.grpc;
 
-import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import org.seekers.graphic.Game;
 import org.seekers.grpc.SeekersGrpc.SeekersBlockingStub;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import javafx.scene.layout.BorderPane;
 
 public class SeekersClient {
 	private static final Logger logger = Logger.getLogger(SeekersClient.class.getName());
@@ -19,7 +20,10 @@ public class SeekersClient {
 		channel = ManagedChannelBuilder.forAddress("localhost", 7777).usePlaintext().build();
 		blockingStub = SeekersGrpc.newBlockingStub(channel);
 		logger.info("Client started");
+		game.start(this);
 	}
+
+	private final Game game = new Game(new BorderPane());
 
 	public void stop() throws Exception {
 		if (channel != null) {
@@ -28,15 +32,17 @@ public class SeekersClient {
 		}
 	}
 
-	public String generateToken(String username) {
-		return Base64.getEncoder().encodeToString(username.getBytes());
+	public Game getGame() {
+		return game;
 	}
 
-	public JoinReply getJoined(String name, String color) {
+	private JoinReply reply;
+
+	public void join(String name, String color) {
 		try {
-			return blockingStub.join(JoinRequest.newBuilder().setName(name).setColor(color).build());
+			reply = blockingStub.join(JoinRequest.newBuilder().setName(name).setColor(color).build());
 		} catch (Exception ex) {
-			return JoinReply.newBuilder().build();
+			ex.printStackTrace();
 		}
 	}
 
@@ -50,18 +56,22 @@ public class SeekersClient {
 
 	public StatusReply getStatus() {
 		try {
-			return blockingStub.status(StatusRequest.newBuilder().build());
+			return blockingStub.status(StatusRequest.newBuilder().setToken(reply.getToken()).build());
 		} catch (Exception ex) {
 			return StatusReply.newBuilder().build();
 		}
 	}
 
-	public CommandReply setCommand(String token, String id, Vector target, double magnet) {
+	public CommandReply setCommand(String id, Vector target, double magnet) {
 		try {
-			return blockingStub.command(CommandRequest.newBuilder().setToken(token).setSeekerId(id).setTarget(target)
-					.setMagnet(magnet).build());
+			return blockingStub.command(CommandRequest.newBuilder().setToken(reply.getToken()).setSeekerId(id)
+					.setTarget(target).setMagnet(magnet).build());
 		} catch (Exception ex) {
 			return CommandReply.newBuilder().build();
 		}
+	}
+
+	public JoinReply getJoinReply() {
+		return reply;
 	}
 }

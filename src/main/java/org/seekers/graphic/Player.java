@@ -1,6 +1,5 @@
 package org.seekers.graphic;
 
-import org.seekers.App;
 import org.seekers.grpc.StatusReply;
 import org.seekers.grpc.Switching;
 
@@ -20,7 +19,7 @@ public class Player extends Label implements Switching<StatusReply.Player> {
 	private final StringProperty name = new SimpleStringProperty();
 	private final IntegerProperty score = new SimpleIntegerProperty();
 
-	public Player(App app) {
+	public Player(Game game) {
 		textProperty().bind(name.concat(": ").concat(score));
 		textFillProperty().bind(color);
 		setFont(Font.font("ubuntu", 20));

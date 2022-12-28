@@ -20,7 +20,7 @@ public class Camp implements Corresponding<StatusReply.Camp> {
 		width = Double.valueOf(player.getGame().getProperties().getProperty("camp.width"));
 		height = Double.valueOf(player.getGame().getProperties().getProperty("camp.height"));
 
-		player.getGame().getCamps().put(getId(), this);
+		player.getGame().getCamps().add(this);
 	}
 
 	public boolean contains(Point2D p) {

@@ -6,8 +6,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+
+import org.seekers.grpc.PushHelper;
 
 import javafx.geometry.Point2D;
 
@@ -24,11 +28,13 @@ public class Game {
 				Map.entry("goal.mass", ".5")));
 	}
 
-	private final Map<String, Physical> physicals = new HashMap<>();
-	private final Map<String, Seeker> seekers = new HashMap<>();
-	private final Map<String, Player> players = new HashMap<>();
-	private final Map<String, Goal> goals = new HashMap<>();
-	private final Map<String, Camp> camps = new HashMap<>();
+	private final Map<String, PushHelper> helpers = new HashMap<>();
+
+	private final Set<Physical> physicals = new HashSet<>();
+	private final Set<Seeker> seekers = new HashSet<>();
+	private final Set<Player> players = new HashSet<>();
+	private final Set<Goal> goals = new HashSet<>();
+	private final Set<Camp> camps = new HashSet<>();
 
 	private final Properties properties = new Properties();
 
@@ -40,7 +46,7 @@ public class Game {
 		public void run() {
 			double before = passed;
 			passed = Math.min(passed + speed, playtime);
-			for (Entity entity : physicals.values()) {
+			for (Entity entity : physicals) {
 				entity.update(passed - before);
 				if (autoPlay && entity instanceof Seeker) {
 					((Seeker) entity).setAutoCommands();
@@ -144,23 +150,27 @@ public class Game {
 		return getTorusDifference(p0, p1).normalize();
 	}
 
-	public Map<String, Physical> getPhysicals() {
+	public Map<String, PushHelper> getHelpers() {
+		return helpers;
+	}
+
+	public Set<Physical> getPhysicals() {
 		return physicals;
 	}
 
-	public Map<String, Seeker> getSeekers() {
+	public Set<Seeker> getSeekers() {
 		return seekers;
 	}
 
-	public Map<String, Player> getPlayers() {
+	public Set<Player> getPlayers() {
 		return players;
 	}
 
-	public Map<String, Goal> getGoals() {
+	public Set<Goal> getGoals() {
 		return goals;
 	}
 
-	public Map<String, Camp> getCamps() {
+	public Set<Camp> getCamps() {
 		return camps;
 	}
 
