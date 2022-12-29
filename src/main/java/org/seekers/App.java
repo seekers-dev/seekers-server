@@ -1,6 +1,6 @@
 package org.seekers;
 
-import org.seekers.grpc.SeekersClient;
+import org.seekers.grpc.SeekersGraphicClient;
 import org.seekers.grpc.SeekersServer;
 
 import javafx.application.Application;
@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 
 public class App extends Application {
 	private final SeekersServer server = new SeekersServer();
-	private final SeekersClient client = new SeekersClient();
+	private final SeekersGraphicClient client = new SeekersGraphicClient();
 
 	@Override
 	public void start(Stage stage) throws Exception {

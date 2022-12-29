@@ -27,6 +27,7 @@ public class Seeker extends Physical {
 		setRange(Double.valueOf(player.getGame().getProperties().getProperty("seeker.radius")));
 		player.getSeekers().put(getId(), this);
 		getGame().getSeekers().add(this);
+		changed();
 	}
 
 	@Override

@@ -1,11 +1,13 @@
 package org.seekers.game;
 
 import org.seekers.grpc.Corresponding;
+import org.seekers.grpc.Observable;
+import org.seekers.grpc.PushHelper;
 import org.seekers.grpc.StatusReply;
 
 import javafx.geometry.Point2D;
 
-public class Camp implements Corresponding<StatusReply.Camp> {
+public class Camp implements Observable, Corresponding<StatusReply.Camp> {
 	private final Player player;
 
 	public final Point2D position;
@@ -21,6 +23,7 @@ public class Camp implements Corresponding<StatusReply.Camp> {
 		height = Double.valueOf(player.getGame().getProperties().getProperty("camp.height"));
 
 		player.getGame().getCamps().add(this);
+		changed();
 	}
 
 	public boolean contains(Point2D p) {
@@ -40,5 +43,13 @@ public class Camp implements Corresponding<StatusReply.Camp> {
 	public StatusReply.Camp associated() {
 		return StatusReply.Camp.newBuilder().setId(getId()).setPlayerId(player.getId())
 				.setPosition(Corresponding.transform(position)).setWidth(width).setHeight(height).build();
+	}
+
+	@Override
+	public void changed() {
+		for (PushHelper helper : getPlayer().getGame().getHelpers().values()) {
+			helper.getCamps().add(this);
+		}
+
 	}
 }

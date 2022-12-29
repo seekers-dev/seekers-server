@@ -3,12 +3,10 @@ package org.seekers.grpc;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import org.seekers.graphic.Game;
 import org.seekers.grpc.SeekersGrpc.SeekersBlockingStub;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import javafx.scene.layout.BorderPane;
 
 public class SeekersClient {
 	private static final Logger logger = Logger.getLogger(SeekersClient.class.getName());
@@ -20,20 +18,13 @@ public class SeekersClient {
 		channel = ManagedChannelBuilder.forAddress("localhost", 7777).usePlaintext().build();
 		blockingStub = SeekersGrpc.newBlockingStub(channel);
 		logger.info("Client started");
-		game.start(this);
 	}
-
-	private final Game game = new Game(new BorderPane());
 
 	public void stop() throws Exception {
 		if (channel != null) {
 			channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
 			logger.info("Client shutdown");
 		}
-	}
-
-	public Game getGame() {
-		return game;
 	}
 
 	private JoinReply reply;

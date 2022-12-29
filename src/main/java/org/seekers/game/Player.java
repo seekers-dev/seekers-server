@@ -25,8 +25,8 @@ public class Player implements Observable, Corresponding<StatusReply.Player> {
 		this.color = Color.rgb((int) (Math.random() * 124 + 124), (int) (Math.random() * 124 + 124),
 				(int) (Math.random() * 124 + 124)).toString();
 		this.name = "Player " + (int) (Math.random() * 1e6);
-
 		game.getPlayers().add(this);
+		changed();
 	}
 
 	public Map<String, Seeker> getSeekers() {
