@@ -59,7 +59,7 @@ public class SeekersServer {
 			if (request.getName().isEmpty() && request.getColor().isEmpty()) {
 				String token = Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
 						.toString();
-				logger.info("New Watcher [" + request.getName() + "," + request.getColor()+"] -> " + token);
+				logger.info("New Watcher [%1$s,%2$s] -> %3$s".formatted(request.getName(), request.getColor(), token));
 				game.getHelpers().put(token, new PushHelper(game));
 				responseObserver.onNext(JoinReply.newBuilder().setToken(token).build());
 				responseObserver.onCompleted();
@@ -67,7 +67,7 @@ public class SeekersServer {
 				Player player = game.addPlayer();
 				String token = Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
 						.toString();
-				logger.info("New Player [" + request.getName() + "," + request.getColor()+"] -> " + token);
+				logger.info("New Player [%1$s,%2$s] -> %3$s".formatted(request.getName(), request.getColor(), token));
 				game.getHelpers().put(token, new PushHelper(game));
 				players.put(token, player);
 				responseObserver.onNext(JoinReply.newBuilder().setId(player.getId()).setToken(token).build());
@@ -89,12 +89,11 @@ public class SeekersServer {
 		@Override
 		public void status(StatusRequest request, StreamObserver<StatusReply> responseObserver) {
 			PushHelper helper = game.getHelpers().get(request.getToken());
-
 			if (helper != null) {
 				responseObserver.onNext(helper.associated());
 				responseObserver.onCompleted();
 			} else {
-				System.out.println(game.getHelpers() + " < " + request.getToken());
+				logger.warning("%1$s -> %2$s".formatted(request.getToken(), game.getHelpers()));
 				responseObserver.onError(new StatusException(Status.PERMISSION_DENIED));
 			}
 		}

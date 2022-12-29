@@ -28,7 +28,7 @@ public class PushHelper implements Corresponding<StatusReply> {
 		StatusReply reply = StatusReply.newBuilder().addAllPlayers(transform(players)).addAllCamps(transform(camps))
 				.addAllSeekers((Collection<StatusReply.Seeker>) (Collection<?>) transform(seekers))
 				.addAllGoals((Collection<StatusReply.Goal>) (Collection<?>) transform(goals)).build();
-		clean();
+//		clean();
 		return reply;
 	}
 
