@@ -4,13 +4,13 @@ import org.seekers.grpc.StatusReply;
 import org.seekers.grpc.Switching;
 
 import javafx.animation.ScaleTransition;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 
-public class Seeker extends StackPane implements Switching<StatusReply.Seeker> {
+public class Seeker extends Pane implements Switching<StatusReply.Seeker> {
 	private Game game;
 
 	private final Circle circle, magnet;
