@@ -18,7 +18,10 @@ public class PushHelper implements Corresponding<StatusReply> {
 	private final Set<Goal> goals = new HashSet<>();
 	private final Set<Camp> camps = new HashSet<>();
 
+	private final Game game;
+
 	public PushHelper(Game game) {
+		this.game = game;
 		init(game);
 	}
 
@@ -27,8 +30,9 @@ public class PushHelper implements Corresponding<StatusReply> {
 		@SuppressWarnings("unchecked")
 		StatusReply reply = StatusReply.newBuilder().addAllPlayers(transform(players)).addAllCamps(transform(camps))
 				.addAllSeekers((Collection<StatusReply.Seeker>) (Collection<?>) transform(seekers))
-				.addAllGoals((Collection<StatusReply.Goal>) (Collection<?>) transform(goals)).build();
-//		clean();
+				.addAllGoals((Collection<StatusReply.Goal>) (Collection<?>) transform(goals))
+				.setPassedPlaytime(game.getPassedPlaytime()).build();
+		clean();
 		return reply;
 	}
 

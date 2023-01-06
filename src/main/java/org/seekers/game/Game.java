@@ -44,6 +44,7 @@ public class Game {
 
 	private final Clock clock = new Clock(new Runnable() {
 		public void run() {
+			if(hasOpenSlots()) return;
 			double before = passed;
 			passed = Math.min(passed + speed, playtime);
 			for (Entity entity : physicals) {
