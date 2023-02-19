@@ -59,7 +59,7 @@ public class Game extends Scene {
 					arrayFilled = true;
 				}
 				if (arrayFilled) {
-					helper.switched(client.getStatus());
+					helper.update(client.getStatus());
 				}
 			}
 		};

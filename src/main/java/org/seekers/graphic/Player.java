@@ -1,7 +1,8 @@
 package org.seekers.graphic;
 
 import org.seekers.grpc.StatusReply;
-import org.seekers.grpc.Switching;
+
+import com.karlz.exchange.Reference;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -14,7 +15,7 @@ import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
-public class Player extends Label implements Switching<StatusReply.Player> {
+public class Player extends Label implements Reference<StatusReply.Player> {
 	private final ObjectProperty<Color> color = new SimpleObjectProperty<>();
 	private final StringProperty name = new SimpleStringProperty();
 	private final IntegerProperty score = new SimpleIntegerProperty();
@@ -27,7 +28,7 @@ public class Player extends Label implements Switching<StatusReply.Player> {
 	}
 
 	@Override
-	public void switched(StatusReply.Player delta) {
+	public void update(StatusReply.Player delta) {
 		color.set(Color.web(delta.getColor()));
 		name.set(delta.getName());
 		score.set(delta.getScore());

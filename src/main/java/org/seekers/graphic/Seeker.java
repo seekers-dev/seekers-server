@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.seekers.grpc.StatusReply;
-import org.seekers.grpc.Switching;
+
+import com.karlz.exchange.Reference;
 
 import javafx.animation.ScaleTransition;
 import javafx.beans.property.ObjectProperty;
@@ -16,7 +17,7 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 
-public class Seeker extends Pane implements Switching<StatusReply.Seeker> {
+public class Seeker extends Pane implements Reference<StatusReply.Seeker> {
 	private Game game;
 
 	private final List<ScaleTransition> transitions = new ArrayList<>();
@@ -35,7 +36,8 @@ public class Seeker extends Pane implements Switching<StatusReply.Seeker> {
 		for (int i = 0; i < 3; i++) {
 			Circle magnet = new Circle(radius, Color.TRANSPARENT);
 			magnet.strokeProperty().bind(fill);
-			magnet.strokeWidthProperty().bind(new SimpleDoubleProperty(2).subtract(magnet.scaleXProperty().divide(1.5)));
+			magnet.strokeWidthProperty()
+					.bind(new SimpleDoubleProperty(2).subtract(magnet.scaleXProperty().divide(1.5)));
 			getChildren().add(magnet);
 
 			ScaleTransition transition = new ScaleTransition(Duration.millis(450), magnet);
@@ -54,7 +56,7 @@ public class Seeker extends Pane implements Switching<StatusReply.Seeker> {
 	}
 
 	@Override
-	public void switched(StatusReply.Seeker delta) {
+	public void update(StatusReply.Seeker delta) {
 		setLayoutX(delta.getSuper().getPosition().getX() - 5);
 		setLayoutY(delta.getSuper().getPosition().getY() - 5);
 

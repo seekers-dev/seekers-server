@@ -13,6 +13,9 @@ import java.util.Set;
 
 import org.seekers.grpc.PushHelper;
 
+import com.karlz.entity.Clock;
+import com.karlz.entity.Entity;
+
 import javafx.geometry.Point2D;
 
 public class Game {

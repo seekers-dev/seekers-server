@@ -6,6 +6,8 @@ import org.seekers.grpc.Corresponding.ExtendableCorresponding;
 import org.seekers.grpc.Observable;
 import org.seekers.grpc.StatusReply;
 
+import com.karlz.entity.Entity;
+
 import javafx.geometry.Point2D;
 
 public abstract class Physical implements Entity, Observable, ExtendableCorresponding {

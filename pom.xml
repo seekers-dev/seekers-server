@@ -3,7 +3,6 @@
 	<groupId>org.seekers</groupId>
 	<artifactId>seekers</artifactId>
 	<version>0.0.2-alpha-2</version>
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.mainClass>org.seekers.Launcher</project.mainClass>
@@ -15,7 +14,12 @@
 		<maven.compiler.target>${project.javaVersion}</maven.compiler.target>
 		<maven.compiler.release>${project.javaVersion}</maven.compiler.release>
 	</properties>
-
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>org.openjfx</groupId>
@@ -70,13 +74,17 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>com.github.karl-zschiebsch</groupId>
+			<artifactId>util</artifactId>
+			<version>4d114c1</version>
+		</dependency>
+		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
 			<version>5.9.1</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
 	<build>
 		<extensions>
 			<extension>
@@ -193,7 +201,7 @@
 				<version>3.4.0</version>
 				<configuration>
 					<transformers>
-						<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+						<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 					</transformers>
 				</configuration>
 				<executions>
