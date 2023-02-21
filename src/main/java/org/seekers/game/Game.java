@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.seekers.grpc.PushHelper;
+import org.seekers.grpc.SeekersDispatchHelper;
 
 import com.karlz.entity.Clock;
 import com.karlz.entity.Entity;
@@ -31,7 +31,7 @@ public class Game {
 				Map.entry("goal.mass", ".5")));
 	}
 
-	private final Map<String, PushHelper> helpers = new HashMap<>();
+	private final Map<String, SeekersDispatchHelper> helpers = new HashMap<>();
 
 	private final Set<Physical> physicals = new HashSet<>();
 	private final Set<Seeker> seekers = new HashSet<>();
@@ -155,7 +155,7 @@ public class Game {
 		return getTorusDifference(p0, p1).normalize();
 	}
 
-	public Map<String, PushHelper> getHelpers() {
+	public Map<String, SeekersDispatchHelper> getHelpers() {
 		return helpers;
 	}
 

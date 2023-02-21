@@ -2,7 +2,7 @@ package org.seekers.game;
 
 import org.seekers.grpc.Corresponding;
 import org.seekers.grpc.Observable;
-import org.seekers.grpc.PushHelper;
+import org.seekers.grpc.SeekersDispatchHelper;
 import org.seekers.grpc.StatusReply;
 
 import javafx.geometry.Point2D;
@@ -47,7 +47,7 @@ public class Camp implements Observable, Corresponding<StatusReply.Camp> {
 
 	@Override
 	public void changed() {
-		for (PushHelper helper : getPlayer().getGame().getHelpers().values()) {
+		for (SeekersDispatchHelper helper : getPlayer().getGame().getHelpers().values()) {
 			helper.getCamps().add(this);
 		}
 

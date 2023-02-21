@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.seekers.grpc.Corresponding;
 import org.seekers.grpc.Observable;
-import org.seekers.grpc.PushHelper;
+import org.seekers.grpc.SeekersDispatchHelper;
 import org.seekers.grpc.StatusReply;
 
 import javafx.scene.paint.Color;
@@ -87,7 +87,7 @@ public class Player implements Observable, Corresponding<StatusReply.Player> {
 
 	@Override
 	public void changed() {
-		for (PushHelper helper : getGame().getHelpers().values())
+		for (SeekersDispatchHelper helper : getGame().getHelpers().values())
 			helper.getPlayers().add(this);
 	}
 }

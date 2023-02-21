@@ -15,7 +15,7 @@ import com.karlz.exchange.Reference;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 
-public class GetHelper implements StoreHelper<Reference<?>, StatusReply> {
+public class SeekersStoreHelper implements StoreHelper<Reference<?>, StatusReply> {
 	private final ObservableMap<String, Player> players = FXCollections.observableHashMap();
 	private final ObservableMap<String, Seeker> seekers = FXCollections.observableHashMap();
 	private final ObservableMap<String, Goal> goals = FXCollections.observableHashMap();
@@ -30,7 +30,7 @@ public class GetHelper implements StoreHelper<Reference<?>, StatusReply> {
 			"Camp", () -> new Camp(getGame()) //
 	);
 
-	public GetHelper(Game game) {
+	public SeekersStoreHelper(Game game) {
 		this.game = game;
 	}
 

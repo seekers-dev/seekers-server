@@ -12,7 +12,9 @@ import org.seekers.game.Goal;
 import org.seekers.game.Player;
 import org.seekers.game.Seeker;
 
-public class PushHelper implements Corresponding<StatusReply> {
+import com.karlz.exchange.ExchangeHelper.DispatchHelper;
+
+public class SeekersDispatchHelper implements DispatchHelper<Corresponding<?>, StatusReply> {
 	private final Set<Player> players = new HashSet<>();
 	private final Set<Seeker> seekers = new HashSet<>();
 	private final Set<Goal> goals = new HashSet<>();
@@ -20,7 +22,7 @@ public class PushHelper implements Corresponding<StatusReply> {
 
 	private final Game game;
 
-	public PushHelper(Game game) {
+	public SeekersDispatchHelper(Game game) {
 		this.game = game;
 		init(game);
 	}
@@ -48,6 +50,11 @@ public class PushHelper implements Corresponding<StatusReply> {
 		seekers.clear();
 		goals.clear();
 		camps.clear();
+	}
+
+	@Override
+	public void push(Collection<Corresponding<?>> collection, Corresponding<?> element) {
+		collection.add(element);
 	}
 
 	public Set<Player> getPlayers() {

@@ -3,7 +3,7 @@ package org.seekers.game;
 import java.util.Collection;
 
 import org.seekers.grpc.Corresponding;
-import org.seekers.grpc.PushHelper;
+import org.seekers.grpc.SeekersDispatchHelper;
 import org.seekers.grpc.StatusReply;
 
 import javafx.geometry.Point2D;
@@ -133,7 +133,7 @@ public class Seeker extends Physical {
 
 	@Override
 	public void changed() {
-		for (PushHelper helper : getGame().getHelpers().values())
+		for (SeekersDispatchHelper helper : getGame().getHelpers().values())
 			helper.getSeekers().add(this);
 	}
 }

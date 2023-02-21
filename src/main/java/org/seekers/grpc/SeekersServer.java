@@ -59,14 +59,14 @@ public class SeekersServer {
 			if (request.getName().isEmpty() && request.getColor().isEmpty()) {
 				String token = Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
 						.toString();
-				game.getHelpers().put(token, new PushHelper(game));
+				game.getHelpers().put(token, new SeekersDispatchHelper(game));
 				responseObserver.onNext(JoinReply.newBuilder().setToken(token).build());
 				responseObserver.onCompleted();
 			} else if (game.hasOpenSlots()) {
 				Player player = game.addPlayer();
 				String token = Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
 						.toString();
-				game.getHelpers().put(token, new PushHelper(game));
+				game.getHelpers().put(token, new SeekersDispatchHelper(game));
 				players.put(token, player);
 				responseObserver.onNext(JoinReply.newBuilder().setId(player.getId()).setToken(token).build());
 				responseObserver.onCompleted();
@@ -86,7 +86,7 @@ public class SeekersServer {
 
 		@Override
 		public void status(StatusRequest request, StreamObserver<StatusReply> responseObserver) {
-			PushHelper helper = game.getHelpers().get(request.getToken());
+			SeekersDispatchHelper helper = game.getHelpers().get(request.getToken());
 			if (helper != null) {
 				responseObserver.onNext(helper.associated());
 				responseObserver.onCompleted();

@@ -2,7 +2,7 @@ package org.seekers.graphic;
 
 import java.util.Collection;
 
-import org.seekers.grpc.GetHelper;
+import org.seekers.grpc.SeekersStoreHelper;
 import org.seekers.grpc.PropertiesReply;
 import org.seekers.grpc.SeekersClient;
 import org.seekers.grpc.TypeProperties;
@@ -22,7 +22,7 @@ import javafx.scene.paint.Color;
 public class Game extends Scene {
 	private final TypeProperties properties = new TypeProperties();
 
-	private final GetHelper helper = new GetHelper(this);
+	private final SeekersStoreHelper helper = new SeekersStoreHelper(this);
 
 	public Game(BorderPane root) {
 		super(root, 768, 768, true, SceneAntialiasing.BALANCED);
@@ -82,7 +82,7 @@ public class Game extends Scene {
 		return properties;
 	}
 
-	public GetHelper getHelper() {
+	public SeekersStoreHelper getHelper() {
 		return helper;
 	}
 
