@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+import "com/karlz/bounds/vector.proto";
+import "com/seekers/game/camp.proto";
+import "com/seekers/game/goal.proto";
+import "com/seekers/game/player.proto";
+import "com/seekers/game/seeker.proto";
+
+option java_multiple_files = true;
+option optimize_for = SPEED;
+option java_package = "com.seekers.grpc.game";
+option java_outer_classname = "SeekersProto";
+option objc_class_prefix = "API";
+
+service Seekers {
+  rpc Properties(PropertiesRequest) returns (PropertiesResponse);
+  rpc Status(StatusRequest) returns (StatusResponse);
+  rpc Command(CommandRequest) returns (CommandResponse);
+}
+
+message PropertiesRequest {
+
+}
+
+message PropertiesResponse {
+  map<string, string> entries = 1;
+}
+
+message StatusRequest {
+  string token = 1;
+}
+
+message StatusResponse {
+  repeated Player players = 1;
+  repeated Camp camps = 2;
+  repeated Seeker seekers = 3;
+  repeated Goal goals = 4;
+  
+  double passed_playtime = 5;
+}
+
+message CommandRequest {
+  string token = 1;
+  string seeker_id = 2;
+  Vector target = 3;
+  double magnet = 4;
+}
+
+message CommandResponse {
+  
+}

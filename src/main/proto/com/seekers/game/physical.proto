@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "com/karlz/bounds/vector.proto";
+
+option java_multiple_files = true;
+option optimize_for = SPEED;
+option java_package = "com.seekers.grpc.game";
+
+message Physical {
+    string id = 1;
+    Vector acceleration = 2;
+    Vector position = 3;
+    Vector velocity = 4;
+}

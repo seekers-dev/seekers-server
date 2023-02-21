@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+import "com/seekers/game/physical.proto";
+import "com/karlz/bounds/vector.proto";
+
+option java_multiple_files = true;
+option optimize_for = SPEED;
+option java_package = "com.seekers.grpc.game";
+
+message Seeker {
+    Physical super = 1;
+    string player_id = 2;
+    double magnet = 3;
+    Vector target = 4;
+    double disable_counter = 5;
+  }
