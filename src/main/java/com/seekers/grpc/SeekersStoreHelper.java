@@ -1,8 +1,8 @@
 package com.seekers.grpc;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
-import com.karlz.entity.Creator;
 import com.karlz.exchange.ExchangeHelper.StoreHelper;
 import com.karlz.exchange.Reference;
 import com.seekers.graphic.Camp;
@@ -23,7 +23,7 @@ public class SeekersStoreHelper implements StoreHelper<Reference<?>, StatusRespo
 
 	private final Game game;
 
-	private final Map<String, Creator<? extends Reference<?>>> creators = Map.of( //
+	private final Map<String, Supplier<? extends Reference<?>>> creators = Map.of( //
 			"Player", () -> new Player(getGame()), //
 			"Seeker", () -> new Seeker(getGame()), //
 			"Goal", () -> new Goal(getGame()), //
@@ -38,7 +38,7 @@ public class SeekersStoreHelper implements StoreHelper<Reference<?>, StatusRespo
 	public Reference<?> save(Map<String, Reference<?>> map, String id, String type) {
 		Reference<?> val = map.get(id);
 		if (val == null) {
-			val = creators.get(type).create();
+			val = creators.get(type).get();
 			map.put(id, val);
 		}
 		return val;
@@ -74,7 +74,7 @@ public class SeekersStoreHelper implements StoreHelper<Reference<?>, StatusRespo
 	}
 
 	@Override
-	public Map<String, Creator<? extends Reference<?>>> getCreators() {
+	public Map<String, Supplier<? extends Reference<?>>> getCreators() {
 		return creators;
 	}
 

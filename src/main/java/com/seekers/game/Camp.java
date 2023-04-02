@@ -2,10 +2,10 @@ package com.seekers.game;
 
 import com.karlz.bounds.Vector;
 import com.karlz.exchange.Corresponding;
-import com.karlz.exchange.Observable;
+import com.karlz.exchange.Identifier;
 import com.seekers.grpc.SeekersDispatchHelper;
 
-public class Camp implements Observable {
+public class Camp implements Identifier {
 	private final Player player;
 
 	public final Vector position;

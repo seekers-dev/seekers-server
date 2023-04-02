@@ -3,12 +3,12 @@ package com.seekers.game;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.karlz.exchange.Observable;
+import com.karlz.exchange.Identifier;
 import com.seekers.grpc.SeekersDispatchHelper;
 
 import javafx.scene.paint.Color;
 
-public class Player implements Observable {
+public class Player implements Identifier {
 	private final Map<String, Seeker> seekers = new HashMap<>();
 
 	private final Game game;

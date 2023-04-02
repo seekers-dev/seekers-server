@@ -5,9 +5,9 @@ import com.karlz.bounds.Vector;
 import com.karlz.entity.Entity;
 import com.karlz.exchange.Corresponding;
 import com.karlz.exchange.Corresponding.ExtendableCorresponding;
-import com.karlz.exchange.Observable;
+import com.karlz.exchange.Identifier;
 
-public abstract class Physical implements Entity, Observable, ExtendableCorresponding {
+public abstract class Physical implements Entity, Identifier, ExtendableCorresponding {
 	private final Game game;
 
 	private Vector acceleration = Vector.ZERO;
