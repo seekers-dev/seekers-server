@@ -2,21 +2,22 @@ package com.seekers.game;
 
 import java.util.Collection;
 
-import com.karlz.bounds.Vector;
-import com.karlz.exchange.Corresponding;
 import com.seekers.grpc.SeekersDispatchHelper;
+
+import io.scvis.geometry.Vector2D;
+import io.scvis.proto.Corresponding;
 
 public class Seeker extends Physical {
 	private final Player player;
 
-	private Vector target = getPosition();
+	private Vector2D target = getPosition();
 
 	private double magnet = 0;
 	private double magnetSlowdown;
 	private double disabledTime;
 	private double disabledCounter = 0;
 
-	public Seeker(Player player, Vector position) {
+	public Seeker(Player player, Vector2D position) {
 		super(player.getGame(), position);
 		this.player = player;
 		magnetSlowdown = Double.valueOf(player.getGame().getProperties().getProperty("seeker.magnet-slowdown"));
@@ -41,7 +42,7 @@ public class Seeker extends Physical {
 		if (!isDisabled()) {
 			setAcceleration(getGame().getTorusDirection(getPosition(), getTarget()).multiply(deltaT));
 		} else {
-			setAcceleration(Vector.ZERO);
+			setAcceleration(Vector2D.ZERO);
 		}
 	}
 
@@ -77,11 +78,11 @@ public class Seeker extends Physical {
 		}
 	}
 
-	public Vector getMagneticForce(Vector p) {
+	public Vector2D getMagneticForce(Vector2D p) {
 		double r = getGame().getTorusDistance(getPosition(), p) / getGame().getDiameter() * 10;
-		Vector d = getGame().getTorusDirection(getPosition(), p);
-		return (isDisabled()) ? Vector.ZERO
-				: d.multiply(-getMagnet() * ((r < 1) ? Math.exp(1 / (Math.pow(r, 2) - 1)) : 0));
+		Vector2D d = getGame().getTorusDirection(getPosition(), p);
+		double s = (r < 1) ? Math.exp(1 / (Math.pow(r, 2) - 1)) : 0;
+		return (isDisabled()) ? Vector2D.ZERO : d.multiply(-getMagnet() * s);
 	}
 
 	@Override
@@ -113,11 +114,11 @@ public class Seeker extends Physical {
 		return disabledCounter > 0;
 	}
 
-	public Vector getTarget() {
+	public Vector2D getTarget() {
 		return target;
 	}
 
-	public void setTarget(Vector target) {
+	public void setTarget(Vector2D target) {
 		this.target = target;
 		changed();
 	}

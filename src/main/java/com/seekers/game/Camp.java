@@ -1,19 +1,20 @@
 package com.seekers.game;
 
-import com.karlz.bounds.Vector;
-import com.karlz.exchange.Corresponding;
-import com.karlz.exchange.Identifier;
 import com.seekers.grpc.SeekersDispatchHelper;
 
-public class Camp implements Identifier {
+import io.scvis.geometry.Vector2D;
+import io.scvis.proto.Corresponding;
+import io.scvis.proto.Identifiable;
+
+public class Camp implements Identifiable {
 	private final Player player;
 
-	public final Vector position;
+	public final Vector2D position;
 
 	private double width;
 	private double height;
 
-	public Camp(Player player, Vector position) {
+	public Camp(Player player, Vector2D position) {
 		this.player = player;
 		this.position = position;
 
@@ -24,8 +25,8 @@ public class Camp implements Identifier {
 		changed();
 	}
 
-	public boolean contains(Vector p) {
-		Vector deltaR = position.subtract(p);
+	public boolean contains(Vector2D p) {
+		Vector2D deltaR = position.subtract(p);
 		return 2 * Math.abs(deltaR.getX()) < width && 2 * Math.abs(deltaR.getY()) < height;
 	}
 
@@ -33,7 +34,7 @@ public class Camp implements Identifier {
 		return player;
 	}
 
-	public Vector getPosition() {
+	public Vector2D getPosition() {
 		return position;
 	}
 

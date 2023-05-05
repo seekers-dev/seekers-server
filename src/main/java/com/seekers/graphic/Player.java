@@ -1,7 +1,6 @@
 package com.seekers.graphic;
 
-import com.karlz.exchange.Reference;
-
+import io.scvis.proto.Reference;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;

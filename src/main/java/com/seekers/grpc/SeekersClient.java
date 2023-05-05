@@ -4,11 +4,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import com.karlz.grpc.bounds.Vector;
-import com.karlz.grpc.exchange.HostingGrpc;
-import com.karlz.grpc.exchange.HostingGrpc.HostingBlockingStub;
-import com.karlz.grpc.exchange.JoinRequest;
-import com.karlz.grpc.exchange.JoinResponse;
 import com.seekers.graphic.Game;
 import com.seekers.grpc.game.CommandRequest;
 import com.seekers.grpc.game.CommandResponse;
@@ -21,6 +16,11 @@ import com.seekers.grpc.game.StatusResponse;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.scvis.grpc.game.HostingGrpc;
+import io.scvis.grpc.game.HostingGrpc.HostingBlockingStub;
+import io.scvis.grpc.game.JoinRequest;
+import io.scvis.grpc.game.JoinResponse;
+import io.scvis.grpc.geometry.Vector2D;
 import javafx.scene.layout.BorderPane;
 
 public class SeekersClient {
@@ -42,14 +42,15 @@ public class SeekersClient {
 		logger.info("Client started");
 	}
 
-	public void stop() throws Exception {
+	public void stop() throws InterruptedException {
 		channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
 		logger.info("Client shutdown");
 	}
 
 	private final Game game = new Game(new BorderPane());
 
-	private String token = "", playerId = "";
+	private String token = "";
+	private String playerId = "";
 
 	public void join(String name, String color) {
 		try {
@@ -78,7 +79,7 @@ public class SeekersClient {
 		}
 	}
 
-	public CommandResponse setCommand(String id, Vector target, double magnet) {
+	public CommandResponse setCommand(String id, Vector2D target, double magnet) {
 		try {
 			return seekersBlockingStub.command(CommandRequest.newBuilder().setToken(token).setSeekerId(id)
 					.setTarget(target).setMagnet(magnet).build());

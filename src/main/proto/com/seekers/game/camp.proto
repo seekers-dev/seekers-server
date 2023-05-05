@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "com/karlz/bounds/vector.proto";
+import "io/scvis/geometry/vector2d.proto";
 
 option java_multiple_files = true;
 option optimize_for = SPEED;
@@ -9,7 +9,7 @@ option java_package = "com.seekers.grpc.game";
 message Camp {
     string id = 1;
     string player_id = 2;
-    Vector position = 3;
+    Vector2D position = 3;
     double width = 4;
     double height = 5;
 }

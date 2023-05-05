@@ -1,15 +1,16 @@
 package com.seekers.game;
 
-import com.karlz.bounds.Vector;
 import com.seekers.grpc.SeekersDispatchHelper;
 
+import io.scvis.geometry.Vector2D;
+
 public class Goal extends Physical {
-	private Camp camp;
+	private Camp capture;
 
 	private double scoringTime;
 	private double timeOwned = 0;
 
-	public Goal(Game game, Vector position) {
+	public Goal(Game game, Vector2D position) {
 		super(game, position);
 		scoringTime = Double.valueOf(game.getProperties().getProperty("goal.scoring-time"));
 
@@ -26,7 +27,7 @@ public class Goal extends Physical {
 
 	@Override
 	protected void accelerate(double deltaT) {
-		Vector force = Vector.ZERO;
+		Vector2D force = Vector2D.ZERO;
 		for (Seeker seeker : getGame().getSeekers()) {
 			force = force.add(seeker.getMagneticForce(getPosition()));
 		}
@@ -36,14 +37,14 @@ public class Goal extends Physical {
 	private void adopt(double deltaT) {
 		for (Camp camp : getGame().getCamps()) {
 			if (camp.contains(getPosition())) {
-				if (this.camp == camp) {
+				if (this.capture == camp) {
 					timeOwned += deltaT;
 					if (timeOwned >= scoringTime) {
 						score(camp.getPlayer());
 						return;
 					}
 				} else {
-					this.camp = camp;
+					this.capture = camp;
 					timeOwned = 0;
 				}
 			}
@@ -57,14 +58,14 @@ public class Goal extends Physical {
 
 	private void reset() {
 		setPosition(getGame().getRandomPosition());
-		camp = null;
+		capture = null;
 		timeOwned = 0;
 	}
 
 	@Override
 	public com.seekers.grpc.game.Goal associated() {
 		return com.seekers.grpc.game.Goal.newBuilder().setSuper((com.seekers.grpc.game.Physical) super.associated())
-				.setCampId((camp != null) ? camp.getId() : "").setTimeOwned(timeOwned).build();
+				.setCampId((capture != null) ? capture.getId() : "").setTimeOwned(timeOwned).build();
 	}
 
 	@Override

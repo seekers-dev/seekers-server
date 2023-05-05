@@ -12,6 +12,6 @@ For the setup, please take a look at the [wiki](https://github.com/seekers-dev/s
 ## Launch
 
 Launch it using the Exec Maven Plugin.
-~~~sh
+```sh
 mvn exec:java
-~~~
+```

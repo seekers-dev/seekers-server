@@ -2,19 +2,20 @@ package com.seekers.game;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import com.karlz.bounds.Vector;
-import com.karlz.entity.Clock;
-import com.karlz.entity.Entity;
 import com.seekers.grpc.SeekersDispatchHelper;
+
+import io.scvis.game.Clock;
+import io.scvis.geometry.Vector2D;
 
 public class Game {
 	static final Properties DEFAULT = new Properties();
@@ -31,7 +32,8 @@ public class Game {
 
 	private final Map<String, SeekersDispatchHelper> helpers = new HashMap<>();
 
-	private final Set<Physical> physicals = new HashSet<>();
+	private final List<Physical> physicals = new ArrayList<>();
+
 	private final Set<Seeker> seekers = new HashSet<>();
 	private final Set<Player> players = new HashSet<>();
 	private final Set<Goal> goals = new HashSet<>();
@@ -39,21 +41,25 @@ public class Game {
 
 	private final Properties properties = new Properties();
 
-	private double width, height, speed, passed, playtime;
-	private int playerCount, seekerCount, goalCount;
+	private double width;
+	private double height;
+	private double speed;
+	private double passed;
+	private double playtime;
+	private int playerCount;
+	private int seekerCount;
+	private int goalCount;
 	private boolean autoPlay;
 
-	private final Clock clock = new Clock(new Runnable() {
-		public void run() {
-			if (hasOpenSlots())
-				return;
-			double before = passed;
-			passed = Math.min(passed + speed, playtime);
-			for (Entity entity : physicals) {
-				entity.update(passed - before);
-				if (autoPlay && entity instanceof Seeker) {
-					((Seeker) entity).setAutoCommands();
-				}
+	private final Clock clock = new Clock(() -> {
+		if (hasOpenSlots())
+			return;
+		double before = passed;
+		passed = Math.min(passed + speed, playtime);
+		for (Physical physical : physicals) {
+			physical.update(passed - before);
+			if (autoPlay && physical instanceof Seeker) {
+				((Seeker) physical).setAutoCommands();
 			}
 		}
 	}, 5l);
@@ -62,8 +68,6 @@ public class Game {
 		if (file.exists() && file.getName().endsWith(".properties"))
 			try (FileInputStream stream = new FileInputStream(file)) {
 				properties.load(stream);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -90,10 +94,11 @@ public class Game {
 	}
 
 	public Player addPlayer() {
-		int cur = players.size(), max = playerCount;
+		int cur = players.size();
+		int max = playerCount;
 
 		Player player = new Player(this);
-		player.setCamp(new Camp(player, new Vector(width * 0.5, height * (max - cur) / (max + 1))));
+		player.setCamp(new Camp(player, new Vector2D(width * 0.5, height * (max - cur) / (max + 1))));
 		for (int s = 0; s < seekerCount; s++) {
 			new Seeker(player, getRandomPosition());
 		}
@@ -108,13 +113,13 @@ public class Game {
 	}
 
 	public void putNormalizedPosition(Physical physical) {
-		Vector p = physical.getPosition();
+		Vector2D p = physical.getPosition();
 
 		physical.setPosition(physical.getPosition().subtract(Math.floor(p.getX() / width) * width,
 				Math.floor(p.getY() / height) * height));
 	}
 
-	public Physical getNearestPhysicalOf(Vector p, Collection<Physical> physicals) {
+	public Physical getNearestPhysicalOf(Vector2D p, Collection<Physical> physicals) {
 		if (physicals.isEmpty())
 			return null;
 
@@ -136,8 +141,8 @@ public class Game {
 		return Math.min(temp, d - temp);
 	}
 
-	public double getTorusDistance(Vector p0, Vector p1) {
-		return new Vector(distance(p0.getX(), p1.getX(), width), distance(p0.getY(), p1.getY(), height)).magnitude();
+	public double getTorusDistance(Vector2D p0, Vector2D p1) {
+		return new Vector2D(distance(p0.getX(), p1.getX(), width), distance(p0.getY(), p1.getY(), height)).magnitude();
 	}
 
 	private double difference(double p0, double p1, double d) {
@@ -145,11 +150,11 @@ public class Game {
 		return (temp < d - temp) ? p1 - p0 : p0 - p1;
 	}
 
-	public Vector getTorusDifference(Vector p0, Vector p1) {
-		return new Vector(difference(p0.getX(), p1.getX(), width), difference(p0.getY(), p1.getY(), height));
+	public Vector2D getTorusDifference(Vector2D p0, Vector2D p1) {
+		return new Vector2D(difference(p0.getX(), p1.getX(), width), difference(p0.getY(), p1.getY(), height));
 	}
 
-	public Vector getTorusDirection(Vector p0, Vector p1) {
+	public Vector2D getTorusDirection(Vector2D p0, Vector2D p1) {
 		return getTorusDifference(p0, p1).normalize();
 	}
 
@@ -157,7 +162,7 @@ public class Game {
 		return helpers;
 	}
 
-	public Set<Physical> getPhysicals() {
+	public List<Physical> getPhysicals() {
 		return physicals;
 	}
 
@@ -185,16 +190,16 @@ public class Game {
 		return clock;
 	}
 
-	public Vector getRandomPosition() {
-		return new Vector(Math.random() * width, Math.random() * height);
+	public Vector2D getRandomPosition() {
+		return new Vector2D(Math.random() * width, Math.random() * height);
 	}
 
 	public double getDiameter() {
 		return Math.hypot(width, height);
 	}
 
-	public Vector getCenter() {
-		return new Vector(width / 2, height / 2);
+	public Vector2D getCenter() {
+		return new Vector2D(width / 2, height / 2);
 	}
 
 	public double getWidth() {

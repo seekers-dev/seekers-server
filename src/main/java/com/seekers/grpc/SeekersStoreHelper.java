@@ -3,8 +3,6 @@ package com.seekers.grpc;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import com.karlz.exchange.ExchangeHelper.StoreHelper;
-import com.karlz.exchange.Reference;
 import com.seekers.graphic.Camp;
 import com.seekers.graphic.Game;
 import com.seekers.graphic.Goal;
@@ -12,6 +10,8 @@ import com.seekers.graphic.Player;
 import com.seekers.graphic.Seeker;
 import com.seekers.grpc.game.StatusResponse;
 
+import io.scvis.proto.ExchangeHelper.StoreHelper;
+import io.scvis.proto.Reference;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 
@@ -32,16 +32,6 @@ public class SeekersStoreHelper implements StoreHelper<Reference<?>, StatusRespo
 
 	public SeekersStoreHelper(Game game) {
 		this.game = game;
-	}
-
-	@Override
-	public Reference<?> save(Map<String, Reference<?>> map, String id, String type) {
-		Reference<?> val = map.get(id);
-		if (val == null) {
-			val = creators.get(type).get();
-			map.put(id, val);
-		}
-		return val;
 	}
 
 	@SuppressWarnings("unchecked")

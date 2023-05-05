@@ -1,6 +1,7 @@
 package com.seekers.grpc;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,12 +9,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import com.google.common.hash.Hashing;
-import com.karlz.bounds.Vector;
-import com.karlz.grpc.exchange.HostingGrpc.HostingImplBase;
-import com.karlz.grpc.exchange.JoinRequest;
-import com.karlz.grpc.exchange.JoinResponse;
-import com.karlz.grpc.exchange.PingRequest;
-import com.karlz.grpc.exchange.PingResponse;
 import com.seekers.game.Game;
 import com.seekers.game.Player;
 import com.seekers.game.Seeker;
@@ -30,6 +25,12 @@ import io.grpc.ServerBuilder;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
+import io.scvis.geometry.Vector2D;
+import io.scvis.grpc.game.HostingGrpc.HostingImplBase;
+import io.scvis.grpc.game.JoinRequest;
+import io.scvis.grpc.game.JoinResponse;
+import io.scvis.grpc.game.PingRequest;
+import io.scvis.grpc.game.PingResponse;
 
 public class SeekersServer {
 	private static final Logger logger = Logger.getLogger(SeekersServer.class.getName());
@@ -47,13 +48,13 @@ public class SeekersServer {
 		}
 	}
 
-	public void start() throws Exception {
+	public void start() throws IOException {
 		server.start();
 		game.getClock().start();
 		logger.info("Server started, listening on " + server.getPort());
 	}
 
-	public void stop() throws Exception {
+	public void stop() throws InterruptedException {
 		server.shutdown().awaitTermination(5, TimeUnit.SECONDS);
 		game.getClock().markAsDone();
 		logger.info("Server shutdown");
@@ -119,7 +120,7 @@ public class SeekersServer {
 			if (player != null) {
 				Seeker seeker = player.getSeekers().get(request.getSeekerId());
 				if (seeker != null) {
-					seeker.setTarget(new Vector(request.getTarget().getX(), request.getTarget().getY()));
+					seeker.setTarget(new Vector2D(request.getTarget().getX(), request.getTarget().getY()));
 					seeker.setMagnet(request.getMagnet());
 					responseObserver.onNext(CommandResponse.newBuilder().build());
 					responseObserver.onCompleted();

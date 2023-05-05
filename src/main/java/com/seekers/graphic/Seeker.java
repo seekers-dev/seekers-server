@@ -3,8 +3,7 @@ package com.seekers.graphic;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.karlz.exchange.Reference;
-
+import io.scvis.proto.Reference;
 import javafx.animation.ScaleTransition;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -43,7 +42,7 @@ public class Seeker extends Pane implements Reference<com.seekers.grpc.game.Seek
 			transition.setByY(1);
 			transition.setToX(2);
 			transition.setToY(2);
-			transition.setDelay(Duration.millis(150 * i));
+			transition.setDelay(Duration.millis(150.0 * i));
 			transition.setCycleCount((int) Double.POSITIVE_INFINITY);
 			transition.play();
 

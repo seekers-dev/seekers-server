@@ -4,14 +4,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.karlz.exchange.Corresponding;
-import com.karlz.exchange.ExchangeHelper.DispatchHelper;
 import com.seekers.game.Camp;
 import com.seekers.game.Game;
 import com.seekers.game.Goal;
 import com.seekers.game.Player;
 import com.seekers.game.Seeker;
 import com.seekers.grpc.game.StatusResponse;
+
+import io.scvis.proto.Corresponding;
+import io.scvis.proto.ExchangeHelper.DispatchHelper;
 
 public class SeekersDispatchHelper implements DispatchHelper<Corresponding<?>, StatusResponse> {
 	private final Set<Player> players = new HashSet<>();

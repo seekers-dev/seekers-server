@@ -1,18 +1,19 @@
 package com.seekers.game;
 
 import com.google.protobuf.Message;
-import com.karlz.bounds.Vector;
-import com.karlz.entity.Entity;
-import com.karlz.exchange.Corresponding;
-import com.karlz.exchange.Corresponding.ExtendableCorresponding;
-import com.karlz.exchange.Identifier;
 
-public abstract class Physical implements Entity, Identifier, ExtendableCorresponding {
+import io.scvis.game.Entity;
+import io.scvis.geometry.Vector2D;
+import io.scvis.proto.Corresponding;
+import io.scvis.proto.Corresponding.ExtendableCorresponding;
+import io.scvis.proto.Identifiable;
+
+public abstract class Physical implements Entity, Identifiable, ExtendableCorresponding {
 	private final Game game;
 
-	private Vector acceleration = Vector.ZERO;
-	private Vector velocity = Vector.ZERO;
-	private Vector position;
+	private Vector2D acceleration = Vector2D.ZERO;
+	private Vector2D velocity = Vector2D.ZERO;
+	private Vector2D position;
 
 	private double maxSpeed;
 	private double mass;
@@ -20,7 +21,7 @@ public abstract class Physical implements Entity, Identifier, ExtendableCorrespo
 	private double friction;
 	private double baseThrust;
 
-	public Physical(Game game, Vector position) {
+	protected Physical(Game game, Vector2D position) {
 		this.game = game;
 		this.position = position;
 
@@ -60,10 +61,10 @@ public abstract class Physical implements Entity, Identifier, ExtendableCorrespo
 	}
 
 	public void collision(Physical another, double minDistance) {
-		Vector distance = game.getTorusDifference(getPosition(), another.getPosition());
+		Vector2D distance = game.getTorusDifference(getPosition(), another.getPosition());
 
-		Vector deltaR = distance.normalize();
-		Vector deltaV = getVelocity().subtract(another.getVelocity());
+		Vector2D deltaR = distance.normalize();
+		Vector2D deltaV = getVelocity().subtract(another.getVelocity());
 
 		double dualV = deltaV.getX() * deltaR.getX() + deltaV.getY() * deltaR.getY();
 		double dualM = 2 / (mass + another.mass);
@@ -87,28 +88,28 @@ public abstract class Physical implements Entity, Identifier, ExtendableCorrespo
 		return game;
 	}
 
-	public Vector getPosition() {
+	public Vector2D getPosition() {
 		return position;
 	}
 
-	public void setPosition(Vector position) {
+	public void setPosition(Vector2D position) {
 		this.position = position;
 		changed();
 	}
 
-	public Vector getVelocity() {
+	public Vector2D getVelocity() {
 		return velocity;
 	}
 
-	public void setVelocity(Vector velocity) {
+	public void setVelocity(Vector2D velocity) {
 		this.velocity = velocity;
 	}
 
-	public Vector getAcceleration() {
+	public Vector2D getAcceleration() {
 		return acceleration;
 	}
 
-	public void setAcceleration(Vector acceleration) {
+	public void setAcceleration(Vector2D acceleration) {
 		this.acceleration = acceleration;
 	}
 
