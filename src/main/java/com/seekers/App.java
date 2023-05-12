@@ -16,8 +16,8 @@ public class App extends Application {
 			try {
 				client.stop();
 				server.stop();
-			} catch (Exception ex) {
-				ex.printStackTrace();
+			} catch (InterruptedException ex) {
+				Thread.currentThread().interrupt();
 			}
 		});
 		stage.setScene(client.getGame());
