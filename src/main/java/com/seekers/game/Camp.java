@@ -5,6 +5,9 @@ import com.seekers.grpc.SeekersDispatchHelper;
 import io.scvis.geometry.Vector2D;
 import io.scvis.proto.Corresponding;
 import io.scvis.proto.Identifiable;
+import io.scvis.proto.Mirror;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 
 public class Camp implements Identifiable {
 	private final Player player;
@@ -14,9 +17,19 @@ public class Camp implements Identifiable {
 	private double width;
 	private double height;
 
+	private final Mirror<Camp, Rectangle> mirror = new Mirror<Camp, Rectangle>(this, new Rectangle()) {
+		@Override
+		public void update(Camp reference) {
+			getReflection().setWidth(reference.width);
+			getReflection().setHeight(reference.height);
+		}
+	};
+
 	public Camp(Player player, Vector2D position) {
 		this.player = player;
 		this.position = position;
+
+		mirror.getReflection().setFill(Color.web(player.getColor()));
 
 		width = Double.valueOf(player.getGame().getProperties().getProperty("camp.width"));
 		height = Double.valueOf(player.getGame().getProperties().getProperty("camp.height"));
@@ -48,5 +61,9 @@ public class Camp implements Identifiable {
 		for (SeekersDispatchHelper helper : getPlayer().getGame().getHelpers().values()) {
 			helper.getCamps().add(this);
 		}
+	}
+
+	public Mirror<Camp, Rectangle> getMirror() {
+		return mirror;
 	}
 }
