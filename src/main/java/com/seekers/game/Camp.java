@@ -1,15 +1,21 @@
 package com.seekers.game;
 
-import com.seekers.grpc.SeekersDispatchHelper;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.seekers.grpc.SeekerProperties;
 
 import io.scvis.geometry.Vector2D;
+import io.scvis.observable.InvalidationListener;
+import io.scvis.observable.InvalidationListener.InvalidationEvent;
+import io.scvis.observable.Observable;
 import io.scvis.proto.Corresponding;
 import io.scvis.proto.Identifiable;
 import io.scvis.proto.Mirror;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-public class Camp implements Identifiable {
+public class Camp implements Identifiable, Observable<Camp> {
 	private final Player player;
 
 	public final Vector2D position;
@@ -20,27 +26,59 @@ public class Camp implements Identifiable {
 	private final Mirror<Camp, Rectangle> mirror = new Mirror<Camp, Rectangle>(this, new Rectangle()) {
 		@Override
 		public void update(Camp reference) {
-			getReflection().setWidth(reference.width);
-			getReflection().setHeight(reference.height);
+			mirror.getReflection().setLayoutX(position.getX() - width / 2);
+			mirror.getReflection().setLayoutY(position.getY() - height / 2);
 		}
 	};
 
 	public Camp(Player player, Vector2D position) {
 		this.player = player;
 		this.position = position;
+		player.getGame().getCamps().put(getId(), this);
 
-		mirror.getReflection().setFill(Color.web(player.getColor()));
+		width = SeekerProperties.getDefault().getCampWidth();
+		height = SeekerProperties.getDefault().getCampHeight();
 
-		width = Double.valueOf(player.getGame().getProperties().getProperty("camp.width"));
-		height = Double.valueOf(player.getGame().getProperties().getProperty("camp.height"));
+		mirror.getReflection().setWidth(width);
+		mirror.getReflection().setHeight(height);
+		mirror.getReflection().setFill(Color.TRANSPARENT);
+		mirror.getReflection().setStroke(player.getColor());
+		mirror.getReflection().setStrokeWidth(SeekerProperties.getDefault().getGoalRadius());
+		addInvalidationListener(e -> mirror.update(this));
+		addInvalidationListener(e -> getPlayer().getGame().getHelpers().values().forEach(h -> h.getCamps().add(this)));
 
-		player.getGame().getCamps().add(this);
-		changed();
+		invalidated();
 	}
 
 	public boolean contains(Vector2D p) {
 		Vector2D deltaR = position.subtract(p);
 		return 2 * Math.abs(deltaR.getX()) < width && 2 * Math.abs(deltaR.getY()) < height;
+	}
+
+	private List<InvalidationListener<Camp>> listeners = new ArrayList<>();
+
+	public void fireInvalidationEvent(InvalidationEvent<Camp> event) {
+		for (int i = 0; i < listeners.size(); i++) {
+			listeners.get(i).invalidated(event);
+		}
+	}
+
+	protected void invalidated() {
+		fireInvalidationEvent(new InvalidationEvent<>(this));
+	}
+
+	@Override
+	public void addInvalidationListener(InvalidationListener<Camp> listener) {
+		this.listeners.add(listener);
+	}
+
+	@Override
+	public void removeInvalidationListener(InvalidationListener<Camp> listener) {
+		this.listeners.remove(listener);
+	}
+
+	public Mirror<Camp, Rectangle> getMirror() {
+		return mirror;
 	}
 
 	public Player getPlayer() {
@@ -55,15 +93,5 @@ public class Camp implements Identifiable {
 	public com.seekers.grpc.game.Camp associated() {
 		return com.seekers.grpc.game.Camp.newBuilder().setId(getId()).setPlayerId(player.getId())
 				.setPosition(Corresponding.transform(position)).setWidth(width).setHeight(height).build();
-	}
-
-	public void changed() {
-		for (SeekersDispatchHelper helper : getPlayer().getGame().getHelpers().values()) {
-			helper.getCamps().add(this);
-		}
-	}
-
-	public Mirror<Camp, Rectangle> getMirror() {
-		return mirror;
 	}
 }

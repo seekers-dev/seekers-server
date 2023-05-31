@@ -1,26 +1,36 @@
 package com.seekers;
 
-import com.seekers.grpc.SeekersClient;
+import com.seekers.game.Game;
+import com.seekers.grpc.SeekersPythonClient;
 import com.seekers.grpc.SeekersServer;
 
 import javafx.application.Application;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class App extends Application {
 	private final SeekersServer server = new SeekersServer();
-	private final SeekersClient client = new SeekersClient();
+
+//	private final SeekersJavaClient client0 = new SeekersJavaClient();
+//	private final SeekersJavaClient client1 = new SeekersJavaClient();
+
+	private final SeekersPythonClient client0 = new SeekersPythonClient("target/seekers-py/examples/ai-decide.py");
+	private final SeekersPythonClient client1 = new SeekersPythonClient("target/seekers-py/examples/ai-magnet.py");
 
 	@Override
 	public void start(Stage stage) throws Exception {
 		stage.setOnCloseRequest(c -> {
 			try {
-				client.stop();
+				client0.stop();
+				client1.stop();
 				server.stop();
 			} catch (InterruptedException ex) {
-				Thread.currentThread().interrupt();
+				ex.printStackTrace();
 			}
 		});
-		stage.setScene(client.getGame());
+		Game game = server.getGame();
+
+		stage.setScene(new Scene(game.getRender(), game.getWidth(), game.getHeight()));
 		stage.setResizable(false);
 		stage.show();
 	}

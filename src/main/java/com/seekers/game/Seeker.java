@@ -1,11 +1,10 @@
 package com.seekers.game;
 
-import java.util.Collection;
-
-import com.seekers.grpc.SeekersDispatchHelper;
+import com.seekers.grpc.SeekerProperties;
 
 import io.scvis.geometry.Vector2D;
 import io.scvis.proto.Corresponding;
+import javafx.scene.paint.Color;
 
 public class Seeker extends Physical {
 	private final Player player;
@@ -13,20 +12,26 @@ public class Seeker extends Physical {
 	private Vector2D target = getPosition();
 
 	private double magnet = 0;
-	private double magnetSlowdown;
-	private double disabledTime;
+	private double magnetSlowdown = SeekerProperties.getDefault().getSeekerMagnetSlowdown();
+	private double disabledTime = SeekerProperties.getDefault().getSeekerDisabledTime();
 	private double disabledCounter = 0;
 
 	public Seeker(Player player, Vector2D position) {
 		super(player.getGame(), position);
 		this.player = player;
-		magnetSlowdown = Double.valueOf(player.getGame().getProperties().getProperty("seeker.magnet-slowdown"));
-		disabledTime = Double.valueOf(player.getGame().getProperties().getProperty("seeker.disabled-time"));
-		setMass(Double.valueOf(player.getGame().getProperties().getProperty("seeker.mass")));
-		setRange(Double.valueOf(player.getGame().getProperties().getProperty("seeker.radius")));
+		setRange(SeekerProperties.getDefault().getSeekerRadius());
+		getMirror().getReflection().setFill(player.getColor());
+		addInvalidationListener(e -> {
+			if (isDisabled()) {
+				getMirror().getReflection().setFill(disabled);
+			} else {
+				getMirror().getReflection().setFill(activated);
+			}
+		});
+		addInvalidationListener(e -> getGame().getHelpers().values().forEach(h -> h.getSeekers().add(this)));
+
 		player.getSeekers().put(getId(), this);
-		getGame().getSeekers().add(this);
-		changed();
+		getGame().getSeekers().put(getId(), this);
 	}
 
 	@Override
@@ -38,7 +43,7 @@ public class Seeker extends Physical {
 	}
 
 	@Override
-	protected void accelerate(double deltaT) {
+	public void accelerate(double deltaT) {
 		if (!isDisabled()) {
 			setAcceleration(getGame().getTorusDirection(getPosition(), getTarget()).multiply(deltaT));
 		} else {
@@ -66,10 +71,8 @@ public class Seeker extends Physical {
 	}
 
 	public void setAutoCommands() {
-		@SuppressWarnings("unchecked")
-		Goal goal = (Goal) getGame().getNearestPhysicalOf(getPosition(),
-				(Collection<Physical>) (Collection<?>) getGame().getGoals());
-		if (getGame().getTorusDistance(getPosition(), goal.getPosition()) > 20) {
+		Goal goal = (Goal) getGame().getNearestPhysicalOf(getPosition(), getGame().getGoals().values());
+		if (getGame().getTorusDistance(getPosition(), goal.getPosition()) > 30) {
 			setTarget(goal.getPosition());
 			setMagnet(0);
 		} else {
@@ -100,13 +103,13 @@ public class Seeker extends Physical {
 
 	public void setMagnet(double magnet) {
 		this.magnet = Math.max(Math.min(magnet, 1), -8);
-		changed();
+		invalidated();
 	}
 
 	public void disable() {
 		if (!isDisabled()) {
 			disabledCounter = disabledTime;
-			changed();
+			invalidated();
 		}
 	}
 
@@ -120,7 +123,19 @@ public class Seeker extends Physical {
 
 	public void setTarget(Vector2D target) {
 		this.target = target;
-		changed();
+	}
+
+	private Color activated;
+	private Color disabled;
+
+	public Color getColor() {
+		return activated;
+	}
+
+	public void setColor(Color color) {
+		this.activated = color;
+		this.disabled = color.darker().darker();
+		invalidated();
 	}
 
 	@Override
@@ -128,11 +143,5 @@ public class Seeker extends Physical {
 		return com.seekers.grpc.game.Seeker.newBuilder().setSuper((com.seekers.grpc.game.Physical) super.associated())
 				.setPlayerId(player.getId()).setMagnet(magnet).setTarget(Corresponding.transform(target))
 				.setDisableCounter(disabledCounter).build();
-	}
-
-	@Override
-	public void changed() {
-		for (SeekersDispatchHelper helper : getGame().getHelpers().values())
-			helper.getSeekers().add(this);
 	}
 }

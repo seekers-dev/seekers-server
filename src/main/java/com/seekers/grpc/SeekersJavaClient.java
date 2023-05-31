@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import com.seekers.graphic.Game;
 import com.seekers.grpc.game.CommandRequest;
 import com.seekers.grpc.game.CommandResponse;
 import com.seekers.grpc.game.PropertiesRequest;
@@ -21,16 +20,18 @@ import io.scvis.grpc.game.HostingGrpc.HostingBlockingStub;
 import io.scvis.grpc.game.JoinRequest;
 import io.scvis.grpc.game.JoinResponse;
 import io.scvis.grpc.geometry.Vector2D;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 
-public class SeekersClient {
-	private static final Logger logger = Logger.getLogger(SeekersClient.class.getName());
+public class SeekersJavaClient {
+	private static final Logger logger = Logger.getLogger(SeekersJavaClient.class.getName());
 
 	private final ManagedChannel channel;
 	private final SeekersBlockingStub seekersBlockingStub;
 	private final HostingBlockingStub hostingBlockingStub;
 
-	public SeekersClient() {
+	private final SeekersStoreHelper helper = new SeekersStoreHelper();
+
+	public SeekersJavaClient() {
 		channel = ManagedChannelBuilder.forAddress("localhost", 7777).usePlaintext().build();
 		seekersBlockingStub = SeekersGrpc.newBlockingStub(channel);
 		hostingBlockingStub = HostingGrpc.newBlockingStub(channel);
@@ -38,7 +39,7 @@ public class SeekersClient {
 	}
 
 	public void start() {
-		game.start(this);
+		join(toString(), Color.color(Math.random(), Math.random(), Math.random()).toString());
 		logger.info("Client started");
 	}
 
@@ -46,8 +47,6 @@ public class SeekersClient {
 		channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
 		logger.info("Client shutdown");
 	}
-
-	private final Game game = new Game(new BorderPane());
 
 	private String token = "";
 	private String playerId = "";
@@ -63,6 +62,10 @@ public class SeekersClient {
 		}
 	}
 
+	public SeekersStoreHelper getHelper() {
+		return helper;
+	}
+
 	public PropertiesResponse getProperties() {
 		try {
 			return seekersBlockingStub.properties(PropertiesRequest.newBuilder().build());
@@ -73,7 +76,9 @@ public class SeekersClient {
 
 	public StatusResponse getStatus() {
 		try {
-			return seekersBlockingStub.status(StatusRequest.newBuilder().setToken(token).build());
+			StatusResponse response = seekersBlockingStub.status(StatusRequest.newBuilder().setToken(token).build());
+			helper.update(response);
+			return response;
 		} catch (Exception ex) {
 			return StatusResponse.newBuilder().build();
 		}
@@ -94,9 +99,5 @@ public class SeekersClient {
 
 	public String getPlayerId() {
 		return playerId;
-	}
-
-	public Game getGame() {
-		return game;
 	}
 }

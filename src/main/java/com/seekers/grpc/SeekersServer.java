@@ -1,6 +1,5 @@
 package com.seekers.grpc;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -31,13 +30,12 @@ import io.scvis.grpc.game.JoinRequest;
 import io.scvis.grpc.game.JoinResponse;
 import io.scvis.grpc.game.PingRequest;
 import io.scvis.grpc.game.PingResponse;
+import javafx.scene.paint.Color;
 
 public class SeekersServer {
 	private static final Logger logger = Logger.getLogger(SeekersServer.class.getName());
 
 	private final Server server;
-
-	private Game game = new Game(new File("server.properties"));
 
 	public SeekersServer() {
 		server = ServerBuilder.forPort(7777).addService(new HostingService()).addService(new SeekersService()).build();
@@ -50,35 +48,30 @@ public class SeekersServer {
 
 	public void start() throws IOException {
 		server.start();
-		game.getClock().start();
-		logger.info("Server started, listening on " + server.getPort());
+		logger.info("Server started");
 	}
 
 	public void stop() throws InterruptedException {
-		server.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-		game.getClock().markAsDone();
+		server.shutdown().awaitTermination(5l, TimeUnit.SECONDS);
 		logger.info("Server shutdown");
 	}
 
+	private Game game = new Game();
+
 	private final Map<String, Player> players = new HashMap<>();
 
-	class HostingService extends HostingImplBase {
+	protected class HostingService extends HostingImplBase {
 		@Override
 		public void join(JoinRequest request, StreamObserver<JoinResponse> responseObserver) {
-			String name = request.getDetailsMap().get("name");
-			String color = request.getDetailsMap().get("color");
-			if (name.isEmpty() && color.isEmpty()) {
-				String token = Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
-						.toString();
-				game.getHelpers().put(token, new SeekersDispatchHelper(game));
-				responseObserver.onNext(JoinResponse.newBuilder().setToken(token).build());
-				responseObserver.onCompleted();
-			} else if (game.hasOpenSlots()) {
+			if (game.hasOpenSlots()) {
 				Player player = game.addPlayer();
+				player.setName(request.getDetailsMap().get("name"));
+				player.setColor(Color.web(request.getDetailsMap().get("color")));
 				String token = Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
 						.toString();
 				game.getHelpers().put(token, new SeekersDispatchHelper(game));
 				players.put(token, player);
+
 				responseObserver.onNext(JoinResponse.newBuilder().setPlayerId(player.getId()).setToken(token).build());
 				responseObserver.onCompleted();
 			} else {
@@ -96,9 +89,8 @@ public class SeekersServer {
 	protected class SeekersService extends SeekersImplBase {
 		@Override
 		public void properties(PropertiesRequest request, StreamObserver<PropertiesResponse> responseObserver) {
-			@SuppressWarnings("unchecked")
 			PropertiesResponse reply = PropertiesResponse.newBuilder()
-					.putAllEntries((Map<String, String>) (Map<?, ?>) game.getProperties()).build();
+					.putAllEntries(SeekerProperties.getDefault().associated()).build();
 			responseObserver.onNext(reply);
 			responseObserver.onCompleted();
 		}
@@ -131,5 +123,9 @@ public class SeekersServer {
 				responseObserver.onError(new StatusException(Status.PERMISSION_DENIED));
 			}
 		}
+	}
+
+	public Game getGame() {
+		return game;
 	}
 }

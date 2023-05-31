@@ -1,22 +1,24 @@
 package com.seekers.game;
 
-import com.seekers.grpc.SeekersDispatchHelper;
+import com.seekers.grpc.SeekerProperties;
 
 import io.scvis.geometry.Vector2D;
+import javafx.scene.paint.Color;
 
 public class Goal extends Physical {
 	private Camp capture;
 
-	private double scoringTime;
+	private double scoringTime = SeekerProperties.getDefault().getGoalScoringTime();
 	private double timeOwned = 0;
 
 	public Goal(Game game, Vector2D position) {
 		super(game, position);
-		scoringTime = Double.valueOf(game.getProperties().getProperty("goal.scoring-time"));
+		addInvalidationListener(e -> getGame().getHelpers().values().forEach(h -> h.getGoals().add(this)));
 
-		getGame().getGoals().add(this);
-		setMass(Double.valueOf(game.getProperties().getProperty("goal.mass")));
-		setRange(Double.valueOf(game.getProperties().getProperty("goal.radius")));
+		getMirror().getReflection().setFill(Color.WHITESMOKE);
+		setMass(SeekerProperties.getDefault().getGoalMass());
+		setRange(SeekerProperties.getDefault().getGoalRadius());
+		getGame().getGoals().put(getId(), this);
 	}
 
 	@Override
@@ -26,16 +28,16 @@ public class Goal extends Physical {
 	}
 
 	@Override
-	protected void accelerate(double deltaT) {
+	public void accelerate(double deltaT) {
 		Vector2D force = Vector2D.ZERO;
-		for (Seeker seeker : getGame().getSeekers()) {
+		for (Seeker seeker : getGame().getSeekers().values()) {
 			force = force.add(seeker.getMagneticForce(getPosition()));
 		}
 		setAcceleration(force.multiply(deltaT));
 	}
 
 	private void adopt(double deltaT) {
-		for (Camp camp : getGame().getCamps()) {
+		for (Camp camp : getGame().getCamps().values()) {
 			if (camp.contains(getPosition())) {
 				if (this.capture == camp) {
 					timeOwned += deltaT;
@@ -66,11 +68,5 @@ public class Goal extends Physical {
 	public com.seekers.grpc.game.Goal associated() {
 		return com.seekers.grpc.game.Goal.newBuilder().setSuper((com.seekers.grpc.game.Physical) super.associated())
 				.setCampId((capture != null) ? capture.getId() : "").setTimeOwned(timeOwned).build();
-	}
-
-	@Override
-	public void changed() {
-		for (SeekersDispatchHelper helper : getGame().getHelpers().values())
-			helper.getGoals().add(this);
 	}
 }

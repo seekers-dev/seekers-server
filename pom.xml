@@ -76,7 +76,7 @@
 		<dependency>
 			<groupId>com.github.karl-zschiebsch</groupId>
 			<artifactId>scvis</artifactId>
-			<version>386ba3f</version>
+			<version>00dce9b</version>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>

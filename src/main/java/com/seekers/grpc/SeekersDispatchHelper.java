@@ -43,10 +43,10 @@ public class SeekersDispatchHelper implements DispatchHelper<Corresponding<?>, S
 	}
 
 	public void init(Game game) {
-		players.addAll(game.getPlayers());
-		seekers.addAll(game.getSeekers());
-		goals.addAll(game.getGoals());
-		camps.addAll(game.getCamps());
+		players.addAll(game.getPlayers().values());
+		seekers.addAll(game.getSeekers().values());
+		goals.addAll(game.getGoals().values());
+		camps.addAll(game.getCamps().values());
 	}
 
 	public void clean() {

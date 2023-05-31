@@ -1,91 +1,81 @@
 package com.seekers.game;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
+import com.seekers.grpc.SeekerProperties;
 import com.seekers.grpc.SeekersDispatchHelper;
 
-import io.scvis.game.Clock;
 import io.scvis.geometry.Vector2D;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener.Change;
+import javafx.collections.ObservableMap;
+import javafx.scene.Group;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.util.Duration;
 
-public class Game {
-	static final Properties DEFAULT = new Properties();
-	static {
-		DEFAULT.putAll(Map.ofEntries(Map.entry("global.auto-play", "true"), Map.entry("global.playtime", "5000"),
-				Map.entry("global.speed", "1"), Map.entry("global.players", "2"), Map.entry("global.seekers", "5"),
-				Map.entry("global.goals", "6"), Map.entry("map.width", "768"), Map.entry("map.height", "768"),
-				Map.entry("camp.width", "45"), Map.entry("camp.height", "45"), Map.entry("physical.max-speed", "5"),
-				Map.entry("physical.friction", ".02"), Map.entry("seeker.magnet-slowdown", ".2"),
-				Map.entry("seeker.disabled-time", "25"), Map.entry("seeker.radius", "10"),
-				Map.entry("seeker.mass", "1"), Map.entry("goal.scoring-time", "100"), Map.entry("goal.radius", "6"),
-				Map.entry("goal.mass", ".5")));
-	}
+public class Game extends TorusMap {
 
 	private final Map<String, SeekersDispatchHelper> helpers = new HashMap<>();
 
 	private final List<Physical> physicals = new ArrayList<>();
 
-	private final Set<Seeker> seekers = new HashSet<>();
-	private final Set<Player> players = new HashSet<>();
-	private final Set<Goal> goals = new HashSet<>();
-	private final Set<Camp> camps = new HashSet<>();
+	private final ObservableMap<String, Player> players = FXCollections.observableHashMap();
+	private final ObservableMap<String, Seeker> seekers = FXCollections.observableHashMap();
+	private final ObservableMap<String, Goal> goals = FXCollections.observableHashMap();
+	private final ObservableMap<String, Camp> camps = FXCollections.observableHashMap();
 
-	private final Properties properties = new Properties();
+	private double width = SeekerProperties.getDefault().getMapWidth();
+	private double height = SeekerProperties.getDefault().getMapHeight();
+	private double speed = SeekerProperties.getDefault().getGlobalSpeed();
+	private double passed = 0.0;
+	private double playtime = SeekerProperties.getDefault().getGlobalPlaytime();
+	private int playerCount = SeekerProperties.getDefault().getGlobalPlayers();
+	private int seekerCount = SeekerProperties.getDefault().getGlobalSeekers();
+	private int goalCount = SeekerProperties.getDefault().getGlobalGoals();
+	private boolean autoPlay = SeekerProperties.getDefault().getGlobalAutoPlay();
 
-	private double width;
-	private double height;
-	private double speed;
-	private double passed;
-	private double playtime;
-	private int playerCount;
-	private int seekerCount;
-	private int goalCount;
-	private boolean autoPlay;
-
-	private final Clock clock = new Clock(() -> {
+	private final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10.0), e -> {
 		if (hasOpenSlots())
 			return;
-		double before = passed;
-		passed = Math.min(passed + speed, playtime);
 		for (Physical physical : physicals) {
-			physical.update(passed - before);
-			if (autoPlay && physical instanceof Seeker) {
+			physical.update(speed);
+			if (autoPlay && (physical instanceof Seeker)) {
 				((Seeker) physical).setAutoCommands();
 			}
 		}
-	}, 5l);
+	}));
 
-	public Game(File file) {
-		if (file.exists() && file.getName().endsWith(".properties"))
-			try (FileInputStream stream = new FileInputStream(file)) {
-				properties.load(stream);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		else {
-			properties.putAll(DEFAULT);
-		}
-		this.width = Double.valueOf(properties.getProperty("map.width"));
-		this.height = Double.valueOf(properties.getProperty("map.height"));
-		this.speed = Double.valueOf(properties.getProperty("global.speed"));
-		this.playtime = Double.valueOf(properties.getProperty("global.playtime"));
-		this.playerCount = Integer.valueOf(properties.getProperty("global.players"));
-		this.seekerCount = Integer.valueOf(properties.getProperty("global.seekers"));
-		this.goalCount = Integer.valueOf(properties.getProperty("global.goals"));
-		this.autoPlay = Boolean.parseBoolean(properties.getProperty("global.auto-play"));
-		if (autoPlay) {
-			while (hasOpenSlots())
-				addPlayer();
-		}
+	private final BorderPane render = new BorderPane();
+
+	public Game() {
+		Group group = new Group();
+		VBox box = new VBox();
+
+		camps.addListener((Change<? extends String, ? extends Camp> e) -> group.getChildren()
+				.add(e.getValueAdded().getMirror().getReflection()));
+		seekers.addListener((Change<? extends String, ? extends Seeker> e) -> group.getChildren()
+				.add(e.getValueAdded().getMirror().getReflection()));
+		goals.addListener((Change<? extends String, ? extends Goal> e) -> group.getChildren()
+				.add(e.getValueAdded().getMirror().getReflection()));
+		players.addListener((Change<? extends String, ? extends Player> e) -> box.getChildren()
+				.add(e.getValueAdded().getMirror().getReflection()));
+
+		render.setBackground(new Background(new BackgroundFill(Color.gray(.1), null, null)));
+		render.getChildren().add(group);
+		render.setTop(box);
+
+		timeline.setCycleCount(Timeline.INDEFINITE);
+		timeline.play();
+
 		addGoals();
 	}
 
@@ -112,50 +102,8 @@ public class Game {
 		}
 	}
 
-	public void putNormalizedPosition(Physical physical) {
-		Vector2D p = physical.getPosition();
-
-		physical.setPosition(physical.getPosition().subtract(Math.floor(p.getX() / width) * width,
-				Math.floor(p.getY() / height) * height));
-	}
-
-	public Physical getNearestPhysicalOf(Vector2D p, Collection<Physical> physicals) {
-		if (physicals.isEmpty())
-			return null;
-
-		double distance = width * height;
-		Physical nearest = null;
-
-		for (Physical physical : physicals) {
-			double dif = getTorusDistance(p, physical.getPosition());
-			if (dif < distance) {
-				distance = dif;
-				nearest = physical;
-			}
-		}
-		return nearest;
-	}
-
-	private double distance(double p0, double p1, double d) {
-		double temp = Math.abs(p0 - p1);
-		return Math.min(temp, d - temp);
-	}
-
-	public double getTorusDistance(Vector2D p0, Vector2D p1) {
-		return new Vector2D(distance(p0.getX(), p1.getX(), width), distance(p0.getY(), p1.getY(), height)).magnitude();
-	}
-
-	private double difference(double p0, double p1, double d) {
-		double temp = Math.abs(p0 - p1);
-		return (temp < d - temp) ? p1 - p0 : p0 - p1;
-	}
-
-	public Vector2D getTorusDifference(Vector2D p0, Vector2D p1) {
-		return new Vector2D(difference(p0.getX(), p1.getX(), width), difference(p0.getY(), p1.getY(), height));
-	}
-
-	public Vector2D getTorusDirection(Vector2D p0, Vector2D p1) {
-		return getTorusDifference(p0, p1).normalize();
+	public BorderPane getRender() {
+		return render;
 	}
 
 	public Map<String, SeekersDispatchHelper> getHelpers() {
@@ -166,48 +114,20 @@ public class Game {
 		return physicals;
 	}
 
-	public Set<Seeker> getSeekers() {
+	public ObservableMap<String, Seeker> getSeekers() {
 		return seekers;
 	}
 
-	public Set<Player> getPlayers() {
+	public ObservableMap<String, Player> getPlayers() {
 		return players;
 	}
 
-	public Set<Goal> getGoals() {
+	public ObservableMap<String, Goal> getGoals() {
 		return goals;
 	}
 
-	public Set<Camp> getCamps() {
+	public ObservableMap<String, Camp> getCamps() {
 		return camps;
-	}
-
-	public Properties getProperties() {
-		return properties;
-	}
-
-	public Clock getClock() {
-		return clock;
-	}
-
-	public Vector2D getRandomPosition() {
-		return new Vector2D(Math.random() * width, Math.random() * height);
-	}
-
-	public double getDiameter() {
-		return Math.hypot(width, height);
-	}
-
-	public Vector2D getCenter() {
-		return new Vector2D(width / 2, height / 2);
-	}
-
-	public double getWidth() {
-		return width;
-	}
-
-	public double getHeight() {
-		return height;
 	}
 
 	public double getMaxPlaytime() {
