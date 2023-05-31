@@ -1,4 +1,4 @@
-package com.seekers.game;
+package org.seekers.game;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package com.seekers.grpc;
+package org.seekers.grpc;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -7,10 +7,11 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import org.seekers.game.Game;
+import org.seekers.game.Player;
+import org.seekers.game.Seeker;
+
 import com.google.common.hash.Hashing;
-import com.seekers.game.Game;
-import com.seekers.game.Player;
-import com.seekers.game.Seeker;
 import com.seekers.grpc.game.CommandRequest;
 import com.seekers.grpc.game.CommandResponse;
 import com.seekers.grpc.game.PropertiesRequest;

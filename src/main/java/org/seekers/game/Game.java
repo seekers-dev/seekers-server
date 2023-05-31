@@ -1,12 +1,12 @@
-package com.seekers.game;
+package org.seekers.game;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.seekers.grpc.SeekerProperties;
-import com.seekers.grpc.SeekersDispatchHelper;
+import org.seekers.grpc.SeekerProperties;
+import org.seekers.grpc.SeekersDispatchHelper;
 
 import io.scvis.geometry.Vector2D;
 import javafx.animation.KeyFrame;
@@ -88,7 +88,7 @@ public class Game extends TorusMap {
 		int max = playerCount;
 
 		Player player = new Player(this);
-		player.setCamp(new Camp(player, new Vector2D(width * 0.5, height * (max - cur) / (max + 1))));
+		player.setCamp(new Camp(player, new Vector2D(width / max * (cur + 0.5), height * 0.5)));
 		for (int s = 0; s < seekerCount; s++) {
 			new Seeker(player, getRandomPosition());
 		}

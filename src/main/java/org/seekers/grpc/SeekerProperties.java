@@ -1,4 +1,4 @@
-package com.seekers.grpc;
+package org.seekers.grpc;
 
 import java.io.File;
 import java.io.FileInputStream;

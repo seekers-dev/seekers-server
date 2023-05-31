@@ -1,9 +1,9 @@
-package com.seekers.game;
+package org.seekers.game;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.seekers.grpc.SeekerProperties;
+import org.seekers.grpc.SeekerProperties;
 
 import io.scvis.geometry.Vector2D;
 import io.scvis.observable.InvalidationListener;

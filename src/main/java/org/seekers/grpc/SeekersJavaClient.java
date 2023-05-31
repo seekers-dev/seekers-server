@@ -1,4 +1,4 @@
-package com.seekers.grpc;
+package org.seekers.grpc;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;

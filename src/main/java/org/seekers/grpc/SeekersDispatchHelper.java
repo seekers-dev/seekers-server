@@ -1,14 +1,15 @@
-package com.seekers.grpc;
+package org.seekers.grpc;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.seekers.game.Camp;
-import com.seekers.game.Game;
-import com.seekers.game.Goal;
-import com.seekers.game.Player;
-import com.seekers.game.Seeker;
+import org.seekers.game.Camp;
+import org.seekers.game.Game;
+import org.seekers.game.Goal;
+import org.seekers.game.Player;
+import org.seekers.game.Seeker;
+
 import com.seekers.grpc.game.StatusResponse;
 
 import io.scvis.proto.Corresponding;

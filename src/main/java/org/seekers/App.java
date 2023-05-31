@@ -1,8 +1,8 @@
-package com.seekers;
+package org.seekers;
 
-import com.seekers.game.Game;
-import com.seekers.grpc.SeekersPythonClient;
-import com.seekers.grpc.SeekersServer;
+import org.seekers.game.Game;
+import org.seekers.grpc.SeekersJavaClient;
+import org.seekers.grpc.SeekersServer;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -11,11 +11,11 @@ import javafx.stage.Stage;
 public class App extends Application {
 	private final SeekersServer server = new SeekersServer();
 
-//	private final SeekersJavaClient client0 = new SeekersJavaClient();
-//	private final SeekersJavaClient client1 = new SeekersJavaClient();
+	private final SeekersJavaClient client0 = new SeekersJavaClient();
+	private final SeekersJavaClient client1 = new SeekersJavaClient();
 
-	private final SeekersPythonClient client0 = new SeekersPythonClient("target/seekers-py/examples/ai-decide.py");
-	private final SeekersPythonClient client1 = new SeekersPythonClient("target/seekers-py/examples/ai-magnet.py");
+//	private final SeekersPythonClient client0 = new SeekersPythonClient("target/seekers-py/examples/ai-decide.py");
+//	private final SeekersPythonClient client1 = new SeekersPythonClient("target/seekers-py/examples/ai-magnet.py");
 
 	@Override
 	public void start(Stage stage) throws Exception {

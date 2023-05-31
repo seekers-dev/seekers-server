@@ -1,4 +1,4 @@
-package com.seekers;
+package org.seekers;
 
 import javafx.application.Application;
 

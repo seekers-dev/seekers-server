@@ -1,4 +1,4 @@
-package com.seekers.grpc;
+package org.seekers.grpc;
 
 import com.google.protobuf.Message;
 import com.seekers.grpc.game.StatusResponse;

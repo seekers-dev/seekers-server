@@ -1,6 +1,6 @@
-package com.seekers.game;
+package org.seekers.game;
 
-import com.seekers.grpc.SeekerProperties;
+import org.seekers.grpc.SeekerProperties;
 
 import io.scvis.geometry.Vector2D;
 import javafx.scene.paint.Color;

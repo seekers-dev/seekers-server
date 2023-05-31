@@ -1,10 +1,11 @@
-package com.seekers.game;
+package org.seekers.game;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.seekers.grpc.SeekerProperties;
+
 import com.google.protobuf.Message;
-import com.seekers.grpc.SeekerProperties;
 
 import io.scvis.entity.Entity;
 import io.scvis.geometry.Kinetic;

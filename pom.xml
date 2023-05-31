@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.seekers</groupId>
+	<groupId>org.seekers</groupId>
 	<artifactId>seekers</artifactId>
 	<version>0.0.2-alpha-2</version>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.mainClass>com.seekers.Launcher</project.mainClass>
+		<project.mainClass>org.seekers.Launcher</project.mainClass>
 		<project.javaVersion>11</project.javaVersion>
 		<grpc.version>1.49.2</grpc.version>
 		<javafx.version>19</javafx.version>
