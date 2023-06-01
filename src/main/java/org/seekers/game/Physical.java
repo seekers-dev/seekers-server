@@ -13,7 +13,6 @@ import io.scvis.geometry.Vector2D;
 import io.scvis.observable.InvalidationListener;
 import io.scvis.observable.InvalidationListener.InvalidationEvent;
 import io.scvis.observable.Observable;
-import io.scvis.proto.Corresponding;
 import io.scvis.proto.Corresponding.ExtendableCorresponding;
 import io.scvis.proto.Identifiable;
 import io.scvis.proto.Mirror;
@@ -170,8 +169,8 @@ public abstract class Physical implements Entity, Kinetic, Observable<Physical>,
 
 	@Override
 	public Message associated() {
-		return com.seekers.grpc.game.Physical.newBuilder().setId(getId())
-				.setAcceleration(Corresponding.transform(acceleration)).setPosition(Corresponding.transform(position))
-				.setVelocity(Corresponding.transform(velocity)).build();
+		return org.seekers.grpc.game.Physical.newBuilder().setId(getId())
+				.setAcceleration(TorusMap.toMessage(acceleration)).setPosition(TorusMap.toMessage(position))
+				.setVelocity(TorusMap.toMessage(velocity)).build();
 	}
 }

@@ -9,7 +9,6 @@ import io.scvis.geometry.Vector2D;
 import io.scvis.observable.InvalidationListener;
 import io.scvis.observable.InvalidationListener.InvalidationEvent;
 import io.scvis.observable.Observable;
-import io.scvis.proto.Corresponding;
 import io.scvis.proto.Identifiable;
 import io.scvis.proto.Mirror;
 import javafx.scene.paint.Color;
@@ -90,8 +89,8 @@ public class Camp implements Identifiable, Observable<Camp> {
 	}
 
 	@Override
-	public com.seekers.grpc.game.Camp associated() {
-		return com.seekers.grpc.game.Camp.newBuilder().setId(getId()).setPlayerId(player.getId())
-				.setPosition(Corresponding.transform(position)).setWidth(width).setHeight(height).build();
+	public org.seekers.grpc.game.Camp associated() {
+		return org.seekers.grpc.game.Camp.newBuilder().setId(getId()).setPlayerId(player.getId())
+				.setPosition(TorusMap.toMessage(position)).setWidth(width).setHeight(height).build();
 	}
 }

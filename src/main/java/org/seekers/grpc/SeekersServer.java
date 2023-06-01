@@ -10,15 +10,15 @@ import java.util.logging.Logger;
 import org.seekers.game.Game;
 import org.seekers.game.Player;
 import org.seekers.game.Seeker;
+import org.seekers.grpc.net.CommandRequest;
+import org.seekers.grpc.net.CommandResponse;
+import org.seekers.grpc.net.PropertiesRequest;
+import org.seekers.grpc.net.PropertiesResponse;
+import org.seekers.grpc.net.SeekersGrpc.SeekersImplBase;
+import org.seekers.grpc.net.StatusRequest;
+import org.seekers.grpc.net.StatusResponse;
 
 import com.google.common.hash.Hashing;
-import com.seekers.grpc.game.CommandRequest;
-import com.seekers.grpc.game.CommandResponse;
-import com.seekers.grpc.game.PropertiesRequest;
-import com.seekers.grpc.game.PropertiesResponse;
-import com.seekers.grpc.game.SeekersGrpc.SeekersImplBase;
-import com.seekers.grpc.game.StatusRequest;
-import com.seekers.grpc.game.StatusResponse;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;

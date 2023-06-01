@@ -3,7 +3,6 @@ package org.seekers.game;
 import org.seekers.grpc.SeekerProperties;
 
 import io.scvis.geometry.Vector2D;
-import io.scvis.proto.Corresponding;
 import javafx.scene.paint.Color;
 
 public class Seeker extends Physical {
@@ -139,9 +138,9 @@ public class Seeker extends Physical {
 	}
 
 	@Override
-	public com.seekers.grpc.game.Seeker associated() {
-		return com.seekers.grpc.game.Seeker.newBuilder().setSuper((com.seekers.grpc.game.Physical) super.associated())
-				.setPlayerId(player.getId()).setMagnet(magnet).setTarget(Corresponding.transform(target))
+	public org.seekers.grpc.game.Seeker associated() {
+		return org.seekers.grpc.game.Seeker.newBuilder().setSuper((org.seekers.grpc.game.Physical) super.associated())
+				.setPlayerId(player.getId()).setMagnet(magnet).setTarget(TorusMap.toMessage(target))
 				.setDisableCounter(disabledCounter).build();
 	}
 }

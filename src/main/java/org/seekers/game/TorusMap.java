@@ -6,6 +6,10 @@ import io.scvis.geometry.Vector2D;
 
 public class TorusMap {
 
+	public static org.seekers.grpc.game.Vector2D toMessage(Vector2D vec) {
+		return org.seekers.grpc.game.Vector2D.newBuilder().setX(vec.getX()).setY(vec.getY()).build();
+	}
+
 	private double height = SeekerProperties.getDefault().getMapHeight();
 	private double width = SeekerProperties.getDefault().getMapWidth();
 

@@ -9,8 +9,7 @@ import org.seekers.game.Game;
 import org.seekers.game.Goal;
 import org.seekers.game.Player;
 import org.seekers.game.Seeker;
-
-import com.seekers.grpc.game.StatusResponse;
+import org.seekers.grpc.net.StatusResponse;
 
 import io.scvis.proto.Corresponding;
 import io.scvis.proto.ExchangeHelper.DispatchHelper;
@@ -33,11 +32,11 @@ public class SeekersDispatchHelper implements DispatchHelper<Corresponding<?>, S
 		@SuppressWarnings("unchecked")
 		StatusResponse reply = StatusResponse.newBuilder()
 				.addAllPlayers(
-						(Collection<com.seekers.grpc.game.Player>) (Collection<?>) Corresponding.transform(players))
-				.addAllCamps((Collection<com.seekers.grpc.game.Camp>) (Collection<?>) Corresponding.transform(camps))
+						(Collection<org.seekers.grpc.game.Player>) (Collection<?>) Corresponding.transform(players))
+				.addAllCamps((Collection<org.seekers.grpc.game.Camp>) (Collection<?>) Corresponding.transform(camps))
 				.addAllSeekers(
-						(Collection<com.seekers.grpc.game.Seeker>) (Collection<?>) Corresponding.transform(seekers))
-				.addAllGoals((Collection<com.seekers.grpc.game.Goal>) (Collection<?>) Corresponding.transform(goals))
+						(Collection<org.seekers.grpc.game.Seeker>) (Collection<?>) Corresponding.transform(seekers))
+				.addAllGoals((Collection<org.seekers.grpc.game.Goal>) (Collection<?>) Corresponding.transform(goals))
 				.setPassedPlaytime(game.getPassedPlaytime()).build();
 		clean();
 		return reply;

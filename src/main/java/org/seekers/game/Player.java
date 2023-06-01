@@ -132,8 +132,8 @@ public class Player implements Identifiable, Observable<Player> {
 	}
 
 	@Override
-	public com.seekers.grpc.game.Player associated() {
-		return com.seekers.grpc.game.Player.newBuilder().setId(getId()).addAllSeekerIds(seekers.keySet())
+	public org.seekers.grpc.game.Player associated() {
+		return org.seekers.grpc.game.Player.newBuilder().setId(getId()).addAllSeekerIds(seekers.keySet())
 				.setCampId(camp.toString()).setName(name).setColor(color.toString()).setScore(score).build();
 	}
 }

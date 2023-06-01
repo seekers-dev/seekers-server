@@ -4,14 +4,15 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import com.seekers.grpc.game.CommandRequest;
-import com.seekers.grpc.game.CommandResponse;
-import com.seekers.grpc.game.PropertiesRequest;
-import com.seekers.grpc.game.PropertiesResponse;
-import com.seekers.grpc.game.SeekersGrpc;
-import com.seekers.grpc.game.SeekersGrpc.SeekersBlockingStub;
-import com.seekers.grpc.game.StatusRequest;
-import com.seekers.grpc.game.StatusResponse;
+import org.seekers.grpc.game.Vector2D;
+import org.seekers.grpc.net.CommandRequest;
+import org.seekers.grpc.net.CommandResponse;
+import org.seekers.grpc.net.PropertiesRequest;
+import org.seekers.grpc.net.PropertiesResponse;
+import org.seekers.grpc.net.SeekersGrpc;
+import org.seekers.grpc.net.SeekersGrpc.SeekersBlockingStub;
+import org.seekers.grpc.net.StatusRequest;
+import org.seekers.grpc.net.StatusResponse;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -19,7 +20,6 @@ import io.scvis.grpc.game.HostingGrpc;
 import io.scvis.grpc.game.HostingGrpc.HostingBlockingStub;
 import io.scvis.grpc.game.JoinRequest;
 import io.scvis.grpc.game.JoinResponse;
-import io.scvis.grpc.geometry.Vector2D;
 import javafx.scene.paint.Color;
 
 public class SeekersJavaClient {
