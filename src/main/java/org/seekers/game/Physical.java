@@ -16,6 +16,7 @@ import io.scvis.observable.Observable;
 import io.scvis.proto.Corresponding.ExtendableCorresponding;
 import io.scvis.proto.Identifiable;
 import io.scvis.proto.Mirror;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
@@ -32,11 +33,17 @@ public abstract class Physical implements Entity, Kinetic, Observable<Physical>,
 	private double friction = SeekerProperties.getDefault().getPhysicalFriction();
 	private double baseThrust = maxSpeed * friction;
 
-	private final Mirror<Physical, Circle> mirror = new Mirror<>(this, new Circle(10, Color.CRIMSON)) {
+	private final Circle object = new Circle(10, Color.CRIMSON);
+
+	private final Mirror<Physical, Pane> mirror = new Mirror<>(this, new Pane(object)) {
 		@Override
 		public void update(Physical reference) {
-			getReflection().setCenterX(reference.getPosition().getX());
-			getReflection().setCenterY(reference.getPosition().getY());
+			getReflection().setLayoutX(reference.getPosition().getX()
+//					- getReflection().getWidth() / 2
+			);
+			getReflection().setLayoutY(reference.getPosition().getY()
+//					- getReflection().getHeight() / 2
+			);
 		}
 	};
 
@@ -121,8 +128,12 @@ public abstract class Physical implements Entity, Kinetic, Observable<Physical>,
 		this.listeners.remove(listener);
 	}
 
-	public Mirror<Physical, Circle> getMirror() {
+	public Mirror<Physical, Pane> getMirror() {
 		return mirror;
+	}
+
+	public Circle getObject() {
+		return object;
 	}
 
 	public double getThrust() {
@@ -162,9 +173,17 @@ public abstract class Physical implements Entity, Kinetic, Observable<Physical>,
 		this.mass = mass;
 	}
 
+	public double getMass() {
+		return mass;
+	}
+
 	public void setRange(double range) {
 		this.range = range;
-		mirror.getReflection().setRadius(range);
+		object.setRadius(range);
+	}
+
+	public double getRange() {
+		return range;
 	}
 
 	@Override

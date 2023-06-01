@@ -31,6 +31,7 @@ public class App extends Application {
 		Game game = server.getGame();
 
 		stage.setScene(new Scene(game.getRender(), game.getWidth(), game.getHeight()));
+		stage.setAlwaysOnTop(true);
 		stage.setResizable(false);
 		stage.show();
 	}

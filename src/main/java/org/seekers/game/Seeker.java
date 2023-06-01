@@ -1,9 +1,13 @@
 package org.seekers.game;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.seekers.grpc.SeekerProperties;
 
 import io.scvis.geometry.Vector2D;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 public class Seeker extends Physical {
 	private final Player player;
@@ -15,16 +19,31 @@ public class Seeker extends Physical {
 	private double disabledTime = SeekerProperties.getDefault().getSeekerDisabledTime();
 	private double disabledCounter = 0;
 
+	private final List<Circle> indicators = new ArrayList<>();
+
 	public Seeker(Player player, Vector2D position) {
 		super(player.getGame(), position);
 		this.player = player;
 		setRange(SeekerProperties.getDefault().getSeekerRadius());
-		getMirror().getReflection().setFill(player.getColor());
+		getObject().setFill(player.getColor());
+		for (int i = 1; i < 4; i++) {
+			Circle indicator = new Circle(getRange() + i * 4);
+			indicator.setFill(Color.TRANSPARENT);
+			indicator.setStroke(player.getColor());
+			indicators.add(indicator);
+		}
+		getMirror().getReflection().getChildren().addAll(indicators);
+
 		addInvalidationListener(e -> {
 			if (isDisabled()) {
-				getMirror().getReflection().setFill(disabled);
+				getObject().setFill(disabled);
 			} else {
-				getMirror().getReflection().setFill(activated);
+				getObject().setFill(activated);
+			}
+			if (getMagnet() != 0) {
+				indicators.forEach(c -> c.setVisible(true));
+			} else {
+				indicators.forEach(c -> c.setVisible(false));
 			}
 		});
 		addInvalidationListener(e -> getGame().getHelpers().values().forEach(h -> h.getSeekers().add(this)));
@@ -36,6 +55,7 @@ public class Seeker extends Physical {
 	@Override
 	public void update(double deltaT) {
 		super.update(deltaT);
+		animate(deltaT);
 		if (isDisabled()) {
 			disabledCounter = Math.max(disabledCounter - deltaT, 0);
 		}
@@ -67,6 +87,13 @@ public class Seeker extends Physical {
 		}
 
 		super.collision(another, minDistance);
+	}
+
+	public void animate(double deltaT) {
+		for (Circle indicator : indicators) {
+			indicator.setRadius(
+					(indicator.getRadius() + Math.signum(magnet) * (getRange() - deltaT)) % getAnimationRange());
+		}
 	}
 
 	public void setAutoCommands() {
@@ -135,6 +162,10 @@ public class Seeker extends Physical {
 		this.activated = color;
 		this.disabled = color.darker().darker();
 		invalidated();
+	}
+
+	public double getAnimationRange() {
+		return getRange() + 3 * 4;
 	}
 
 	@Override

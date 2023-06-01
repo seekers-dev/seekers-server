@@ -15,7 +15,7 @@ public class Goal extends Physical {
 		super(game, position);
 		addInvalidationListener(e -> getGame().getHelpers().values().forEach(h -> h.getGoals().add(this)));
 
-		getMirror().getReflection().setFill(Color.WHITESMOKE);
+		getObject().setFill(Color.WHITESMOKE);
 		setMass(SeekerProperties.getDefault().getGoalMass());
 		setRange(SeekerProperties.getDefault().getGoalRadius());
 		getGame().getGoals().put(getId(), this);

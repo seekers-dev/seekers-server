@@ -57,21 +57,23 @@ public class Game extends TorusMap {
 	private final BorderPane render = new BorderPane();
 
 	public Game() {
-		Group group = new Group();
-		VBox box = new VBox();
+		VBox info = new VBox();
 
-		camps.addListener((Change<? extends String, ? extends Camp> e) -> group.getChildren()
+		Group front = new Group();
+		Group back = new Group();
+
+		camps.addListener((Change<? extends String, ? extends Camp> e) -> back.getChildren()
 				.add(e.getValueAdded().getMirror().getReflection()));
-		seekers.addListener((Change<? extends String, ? extends Seeker> e) -> group.getChildren()
+		seekers.addListener((Change<? extends String, ? extends Seeker> e) -> front.getChildren()
 				.add(e.getValueAdded().getMirror().getReflection()));
-		goals.addListener((Change<? extends String, ? extends Goal> e) -> group.getChildren()
+		goals.addListener((Change<? extends String, ? extends Goal> e) -> front.getChildren()
 				.add(e.getValueAdded().getMirror().getReflection()));
-		players.addListener((Change<? extends String, ? extends Player> e) -> box.getChildren()
+		players.addListener((Change<? extends String, ? extends Player> e) -> info.getChildren()
 				.add(e.getValueAdded().getMirror().getReflection()));
 
 		render.setBackground(new Background(new BackgroundFill(Color.gray(.1), null, null)));
-		render.getChildren().add(group);
-		render.setTop(box);
+		render.getChildren().addAll(back, front);
+		render.setTop(info);
 
 		timeline.setCycleCount(Timeline.INDEFINITE);
 		timeline.play();
