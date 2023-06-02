@@ -16,6 +16,11 @@ import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
+/**
+ * The Player class represents a player in the game.
+ * 
+ * @author karlz
+ */
 public class Player implements Identifiable, Observable<Player> {
 	private final Map<String, Seeker> seekers = new HashMap<>();
 
@@ -35,6 +40,11 @@ public class Player implements Identifiable, Observable<Player> {
 		}
 	};
 
+	/**
+	 * Constructs a new instance of the Player class.
+	 *
+	 * @param game The Game object associated with the Player object.
+	 */
 	public Player(Game game) {
 		this.game = game;
 		this.color = Color.rgb(rand.nextInt(124) + 124, rand.nextInt(124) + 124, rand.nextInt(124) + 124);
@@ -71,6 +81,14 @@ public class Player implements Identifiable, Observable<Player> {
 		this.listeners.remove(listener);
 	}
 
+	/**
+	 * Increases the score of the Player by 1.
+	 */
+	/**
+	 * Gets the map of Seekers associated with the Player.
+	 *
+	 * @return The map of Seekers associated with the Player.
+	 */
 	public Map<String, Seeker> getSeekers() {
 		return seekers;
 	}
@@ -84,35 +102,75 @@ public class Player implements Identifiable, Observable<Player> {
 		return id;
 	}
 
+	/**
+	 * Gets the Mirror object associated with the Player.
+	 *
+	 * @return The Mirror object associated with the Player.
+	 */
 	public Mirror<Player, Label> getMirror() {
 		return mirror;
 	}
 
+	/**
+	 * Gets the Game object associated with the Player.
+	 *
+	 * @return The Game object associated with the Player.
+	 */
 	public Game getGame() {
 		return game;
 	}
 
+	/**
+	 * Gets the Camp associated with the Player.
+	 *
+	 * @return The Camp associated with the Player.
+	 */
 	public Camp getCamp() {
 		return camp;
 	}
 
+	/**
+	 * Sets the Camp associated with the Player.
+	 *
+	 * @param camp The Camp to set.
+	 */
 	public void setCamp(Camp camp) {
 		this.camp = camp;
 	}
 
+	/**
+	 * Gets the name of the Player.
+	 *
+	 * @return The name of the Player.
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * Sets the name of the Player.
+	 *
+	 * @param name The name to set.
+	 */
 	public void setName(String name) {
 		this.name = name;
 		invalidated();
 	}
 
+	/**
+	 * Gets the color of the Player.
+	 *
+	 * @return The color of the Player.
+	 */
 	public Color getColor() {
 		return color;
 	}
 
+	/**
+	 * Sets the color of the Player.
+	 *
+	 * @param color The color to set.
+	 */
 	public void setColor(Color color) {
 		this.color = color;
 		for (Seeker seeker : seekers.values()) {
@@ -122,10 +180,18 @@ public class Player implements Identifiable, Observable<Player> {
 		camp.getMirror().getReflection().setStroke(color);
 	}
 
+	/**
+	 * Gets the score of the Player.
+	 *
+	 * @return The score of the Player.
+	 */
 	public int getScore() {
 		return score;
 	}
 
+	/**
+	 * Increases the score of the Player by 1.
+	 */
 	public void putUp() {
 		score++;
 		invalidated();

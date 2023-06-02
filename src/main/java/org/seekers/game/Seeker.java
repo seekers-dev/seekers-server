@@ -9,6 +9,11 @@ import io.scvis.geometry.Vector2D;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
+/**
+ * The Seeker class represents a seeker in the game.
+ * 
+ * @author karlz
+ */
 public class Seeker extends Physical {
 	private final Player player;
 
@@ -21,6 +26,12 @@ public class Seeker extends Physical {
 
 	private final List<Circle> indicators = new ArrayList<>();
 
+	/**
+	 * Constructs a new instance of the Seeker class.
+	 *
+	 * @param player   The Player object associated with the Seeker.
+	 * @param position The position of the Seeker.
+	 */
 	public Seeker(Player player, Vector2D position) {
 		super(player.getGame(), position);
 		this.player = player;
@@ -89,6 +100,11 @@ public class Seeker extends Physical {
 		super.collision(another, minDistance);
 	}
 
+	/**
+	 * Animates the Seeker based on the time passed.
+	 *
+	 * @param deltaT The time passed since the last animation.
+	 */
 	public void animate(double deltaT) {
 		for (Circle indicator : indicators) {
 			indicator.setRadius(
@@ -96,6 +112,9 @@ public class Seeker extends Physical {
 		}
 	}
 
+	/**
+	 * Sets the automatic commands for the Seeker.
+	 */
 	public void setAutoCommands() {
 		Goal goal = (Goal) getGame().getNearestPhysicalOf(getPosition(), getGame().getGoals().values());
 		if (getGame().getTorusDistance(getPosition(), goal.getPosition()) > 30) {
@@ -107,6 +126,12 @@ public class Seeker extends Physical {
 		}
 	}
 
+	/**
+	 * Calculates the magnetic force between the Seeker and a given position.
+	 *
+	 * @param p The position to calculate the magnetic force with.
+	 * @return The magnetic force vector.
+	 */
 	public Vector2D getMagneticForce(Vector2D p) {
 		double r = getGame().getTorusDistance(getPosition(), p) / getGame().getDiameter() * 10;
 		Vector2D d = getGame().getTorusDirection(getPosition(), p);
@@ -114,24 +139,47 @@ public class Seeker extends Physical {
 		return (isDisabled()) ? Vector2D.ZERO : d.multiply(-getMagnet() * s);
 	}
 
+	/**
+	 * Returns the thrust of the Seeker, taking into account the magnet's effect.
+	 *
+	 * @return The thrust of the Seeker.
+	 */
 	@Override
 	public double getThrust() {
 		return super.getThrust() * (magnet != 0 ? magnetSlowdown : 1);
 	}
 
+	/**
+	 * Returns the Player object associated with the Seeker.
+	 *
+	 * @return The Player object associated with the Seeker.
+	 */
 	public Player getPlayer() {
 		return player;
 	}
 
+	/**
+	 * Returns the magnet value of the Seeker.
+	 *
+	 * @return The magnet value of the Seeker.
+	 */
 	public double getMagnet() {
 		return magnet;
 	}
 
+	/**
+	 * Sets the magnet value of the Seeker.
+	 *
+	 * @param magnet The magnet value to set.
+	 */
 	public void setMagnet(double magnet) {
 		this.magnet = Math.max(Math.min(magnet, 1), -8);
 		invalidated();
 	}
 
+	/**
+	 * Disables the Seeker.
+	 */
 	public void disable() {
 		if (!isDisabled()) {
 			disabledCounter = disabledTime;
@@ -139,14 +187,29 @@ public class Seeker extends Physical {
 		}
 	}
 
+	/**
+	 * Checks if the Seeker is disabled.
+	 *
+	 * @return True if the Seeker is disabled, false otherwise.
+	 */
 	public boolean isDisabled() {
 		return disabledCounter > 0;
 	}
 
+	/**
+	 * Returns the target position of the Seeker.
+	 *
+	 * @return The target position of the Seeker.
+	 */
 	public Vector2D getTarget() {
 		return target;
 	}
 
+	/**
+	 * Sets the target position of the Seeker.
+	 *
+	 * @param target The target position to set.
+	 */
 	public void setTarget(Vector2D target) {
 		this.target = target;
 	}
@@ -154,16 +217,31 @@ public class Seeker extends Physical {
 	private Color activated;
 	private Color disabled;
 
+	/**
+	 * Returns the color of the Seeker.
+	 *
+	 * @return The color of the Seeker.
+	 */
 	public Color getColor() {
 		return activated;
 	}
 
+	/**
+	 * Sets the color of the Seeker.
+	 *
+	 * @param color The color to set.
+	 */
 	public void setColor(Color color) {
 		this.activated = color;
 		this.disabled = color.darker().darker();
 		invalidated();
 	}
 
+	/**
+	 * Returns the animation range of the Seeker.
+	 *
+	 * @return The animation range of the Seeker.
+	 */
 	public double getAnimationRange() {
 		return getRange() + 3 * 4;
 	}

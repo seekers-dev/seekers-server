@@ -38,15 +38,17 @@ public abstract class Physical implements Entity, Kinetic, Observable<Physical>,
 	private final Mirror<Physical, Pane> mirror = new Mirror<>(this, new Pane(object)) {
 		@Override
 		public void update(Physical reference) {
-			getReflection().setLayoutX(reference.getPosition().getX()
-//					- getReflection().getWidth() / 2
-			);
-			getReflection().setLayoutY(reference.getPosition().getY()
-//					- getReflection().getHeight() / 2
-			);
+			getReflection().setLayoutX(reference.getPosition().getX());
+			getReflection().setLayoutY(reference.getPosition().getY());
 		}
 	};
 
+	/**
+	 * Constructs a new instance of the Physical class.
+	 *
+	 * @param game     The Game object associated with the Physical object.
+	 * @param position The initial position of the Physical object.
+	 */
 	protected Physical(Game game, Vector2D position) {
 		this.game = game;
 		this.position = position;
@@ -74,6 +76,9 @@ public abstract class Physical implements Entity, Kinetic, Observable<Physical>,
 		getGame().putNormalizedPosition(this);
 	}
 
+	/**
+	 * Performs collision checks with other Physical objects.
+	 */
 	private void checks() {
 		for (Physical physical : getGame().getPhysicals()) {
 			if (physical == this)
@@ -86,6 +91,12 @@ public abstract class Physical implements Entity, Kinetic, Observable<Physical>,
 		}
 	}
 
+	/**
+	 * Handles a collision with another Physical object.
+	 *
+	 * @param another     The Physical object with which a collision occurred.
+	 * @param minDistance The minimum distance required for a collision to occur.
+	 */
 	public void collision(Physical another, double minDistance) {
 		Vector2D distance = game.getTorusDifference(getPosition(), another.getPosition());
 
@@ -108,12 +119,20 @@ public abstract class Physical implements Entity, Kinetic, Observable<Physical>,
 
 	private List<InvalidationListener<Physical>> listeners = new ArrayList<>();
 
+	/**
+	 * Fires an invalidation event to all registered listeners.
+	 *
+	 * @param event The invalidation event to be fired.
+	 */
 	public void fireInvalidationEvent(InvalidationEvent<Physical> event) {
 		for (int i = 0; i < listeners.size(); i++) {
 			listeners.get(i).invalidated(event);
 		}
 	}
 
+	/**
+	 * Notifies listeners that the Physical object has been invalidated.
+	 */
 	protected void invalidated() {
 		fireInvalidationEvent(new InvalidationEvent<>(this));
 	}
@@ -128,60 +147,130 @@ public abstract class Physical implements Entity, Kinetic, Observable<Physical>,
 		this.listeners.remove(listener);
 	}
 
+	/**
+	 * Retrieves the Mirror object associated with the Physical object.
+	 *
+	 * @return The Mirror object.
+	 */
 	public Mirror<Physical, Pane> getMirror() {
 		return mirror;
 	}
 
+	/**
+	 * Retrieves the Circle object representing the Physical object in the UI.
+	 *
+	 * @return The Circle object.
+	 */
 	public Circle getObject() {
 		return object;
 	}
 
+	/**
+	 * Retrieves the thrust applied to the Physical object.
+	 *
+	 * @return The thrust value.
+	 */
 	public double getThrust() {
 		return baseThrust;
 	}
 
+	/**
+	 * Retrieves the Game object associated with the Physical object.
+	 *
+	 * @return The Game object.
+	 */
 	public Game getGame() {
 		return game;
 	}
 
+	/**
+	 * Retrieves the position of the Physical object.
+	 *
+	 * @return The position vector.
+	 */
 	public Vector2D getPosition() {
 		return position;
 	}
 
+	/**
+	 * Sets the position of the Physical object.
+	 *
+	 * @param position The new position vector.
+	 */
 	public void setPosition(Vector2D position) {
 		this.position = position;
 		invalidated();
 	}
 
+	/**
+	 * Retrieves the velocity of the Physical object.
+	 *
+	 * @return The velocity vector.
+	 */
 	public Vector2D getVelocity() {
 		return velocity;
 	}
 
+	/**
+	 * Sets the velocity of the Physical object.
+	 *
+	 * @param velocity The new velocity vector.
+	 */
 	public void setVelocity(Vector2D velocity) {
 		this.velocity = velocity;
 	}
 
+	/**
+	 * Retrieves the acceleration of the Physical object.
+	 *
+	 * @return The acceleration vector.
+	 */
 	public Vector2D getAcceleration() {
 		return acceleration;
 	}
 
+	/**
+	 * Sets the acceleration of the Physical object.
+	 *
+	 * @param acceleration The new acceleration vector.
+	 */
 	public void setAcceleration(Vector2D acceleration) {
 		this.acceleration = acceleration;
 	}
 
+	/**
+	 * Sets the mass of the Physical object.
+	 *
+	 * @param mass The new mass value.
+	 */
 	public void setMass(double mass) {
 		this.mass = mass;
 	}
 
+	/**
+	 * Retrieves the mass of the Physical object.
+	 *
+	 * @return The mass value.
+	 */
 	public double getMass() {
 		return mass;
 	}
 
+	/**
+	 * Sets the range of the Physical object.
+	 *
+	 * @param range The new range value.
+	 */
 	public void setRange(double range) {
 		this.range = range;
 		object.setRadius(range);
 	}
 
+	/**
+	 * Retrieves the range of the Physical object.
+	 *
+	 * @return The range value.
+	 */
 	public double getRange() {
 		return range;
 	}

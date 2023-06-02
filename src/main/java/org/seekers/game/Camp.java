@@ -14,6 +14,12 @@ import io.scvis.proto.Mirror;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
+/**
+ * The Camp class represents a camp in the game. It is associated with a
+ * specific player and has a shape of a rectangle.
+ * 
+ * @author karlz
+ */
 public class Camp implements Identifiable, Observable<Camp> {
 	private final Player player;
 
@@ -30,6 +36,13 @@ public class Camp implements Identifiable, Observable<Camp> {
 		}
 	};
 
+	/**
+	 * Constructs a new Camp object associated with the specified player and
+	 * positioned at the given position.
+	 *
+	 * @param player   the player that owns the camp
+	 * @param position the position of the camp
+	 */
 	public Camp(Player player, Vector2D position) {
 		this.player = player;
 		this.position = position;
@@ -49,6 +62,12 @@ public class Camp implements Identifiable, Observable<Camp> {
 		invalidated();
 	}
 
+	/**
+	 * Checks if a given position is inside the camp.
+	 *
+	 * @param p the position to check
+	 * @return true if the position is inside the camp, false otherwise
+	 */
 	public boolean contains(Vector2D p) {
 		Vector2D deltaR = position.subtract(p);
 		return 2 * Math.abs(deltaR.getX()) < width && 2 * Math.abs(deltaR.getY()) < height;
@@ -62,6 +81,9 @@ public class Camp implements Identifiable, Observable<Camp> {
 		}
 	}
 
+	/**
+	 * Notifies all registered listeners that the camp has been invalidated.
+	 */
 	protected void invalidated() {
 		fireInvalidationEvent(new InvalidationEvent<>(this));
 	}
@@ -76,14 +98,29 @@ public class Camp implements Identifiable, Observable<Camp> {
 		this.listeners.remove(listener);
 	}
 
+	/**
+	 * Returns the mirror object associated with this camp.
+	 *
+	 * @return the mirror object
+	 */
 	public Mirror<Camp, Rectangle> getMirror() {
 		return mirror;
 	}
 
+	/**
+	 * Returns the player associated with this camp.
+	 *
+	 * @return the player
+	 */
 	public Player getPlayer() {
 		return player;
 	}
 
+	/**
+	 * Returns the position of the camp.
+	 *
+	 * @return the position
+	 */
 	public Vector2D getPosition() {
 		return position;
 	}

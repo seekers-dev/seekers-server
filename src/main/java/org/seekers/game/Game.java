@@ -22,6 +22,13 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
+/**
+ * The Game class represents a game environment where players, seekers, goals,
+ * and camps interact. It manages the game state, updates the positions of game
+ * entities, and provides visual rendering.
+ * 
+ * @author karlz
+ */
 public class Game extends TorusMap {
 
 	private final Map<String, SeekersDispatchHelper> helpers = new HashMap<>();
@@ -56,6 +63,10 @@ public class Game extends TorusMap {
 
 	private final BorderPane render = new BorderPane();
 
+	/**
+	 * Constructs a new Game object. Initializes the game environment, creates the
+	 * game rendering components, and starts the game timeline.
+	 */
 	public Game() {
 		VBox info = new VBox();
 
@@ -81,10 +92,21 @@ public class Game extends TorusMap {
 		addGoals();
 	}
 
+	/**
+	 * Checks if there are open slots for players to join the game.
+	 *
+	 * @return true if there are open slots, false otherwise
+	 */
 	public boolean hasOpenSlots() {
 		return players.size() < playerCount;
 	}
 
+	/**
+	 * Adds a new player to the game environment. Creates a camp and a specified
+	 * number of seekers for the player.
+	 *
+	 * @return the newly added player
+	 */
 	public Player addPlayer() {
 		int cur = players.size();
 		int max = playerCount;
@@ -98,44 +120,92 @@ public class Game extends TorusMap {
 		return player;
 	}
 
+	/**
+	 * Adds a specified number of goals to the game environment at random positions.
+	 */
 	public void addGoals() {
 		for (int i = 0; i < goalCount; i++) {
 			new Goal(this, getRandomPosition());
 		}
 	}
 
+	/**
+	 * Returns the rendering component of the game.
+	 *
+	 * @return the game rendering component
+	 */
 	public BorderPane getRender() {
 		return render;
 	}
 
+	/**
+	 * Returns the map of helpers associated with the game.
+	 *
+	 * @return the map of helpers
+	 */
 	public Map<String, SeekersDispatchHelper> getHelpers() {
 		return helpers;
 	}
 
+	/**
+	 * Returns the list of physical entities in the game.
+	 *
+	 * @return the list of physical entities
+	 */
 	public List<Physical> getPhysicals() {
 		return physicals;
 	}
 
+	/**
+	 * Returns the map of seekers in the game.
+	 *
+	 * @return the map of seekers
+	 */
 	public ObservableMap<String, Seeker> getSeekers() {
 		return seekers;
 	}
 
+	/**
+	 * Returns the map of players in the game.
+	 *
+	 * @return the map of players
+	 */
 	public ObservableMap<String, Player> getPlayers() {
 		return players;
 	}
 
+	/**
+	 * Returns the map of goals in the game.
+	 *
+	 * @return the map of goals
+	 */
 	public ObservableMap<String, Goal> getGoals() {
 		return goals;
 	}
 
+	/**
+	 * Returns the map of camps in the game.
+	 *
+	 * @return the map of camps
+	 */
 	public ObservableMap<String, Camp> getCamps() {
 		return camps;
 	}
 
+	/**
+	 * Returns the maximum playtime allowed for the game.
+	 *
+	 * @return the maximum playtime
+	 */
 	public double getMaxPlaytime() {
 		return playtime;
 	}
 
+	/**
+	 * Returns the passed playtime in the game.
+	 *
+	 * @return the passed playtime
+	 */
 	public double getPassedPlaytime() {
 		return passed;
 	}

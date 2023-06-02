@@ -33,11 +33,22 @@ import io.scvis.grpc.game.PingRequest;
 import io.scvis.grpc.game.PingResponse;
 import javafx.scene.paint.Color;
 
+/**
+ * The SeekersServer class represents the server-side implementation of the
+ * Seekers game. It provides the server functionality for hosting the game,
+ * handling client requests, and managing game state. The server uses gRPC for
+ * communication with clients.
+ * 
+ * @author karlz
+ */
 public class SeekersServer {
 	private static final Logger logger = Logger.getLogger(SeekersServer.class.getName());
 
 	private final Server server;
 
+	/**
+	 * Constructs a new SeekersServer instance.
+	 */
 	public SeekersServer() {
 		server = ServerBuilder.forPort(7777).addService(new HostingService()).addService(new SeekersService()).build();
 		try {
@@ -47,11 +58,21 @@ public class SeekersServer {
 		}
 	}
 
+	/**
+	 * Starts the server.
+	 *
+	 * @throws IOException if unable to bind
+	 */
 	public void start() throws IOException {
 		server.start();
 		logger.info("Server started");
 	}
 
+	/**
+	 * Stops the server.
+	 *
+	 * @throws InterruptedException if the shutdown is interrupted.
+	 */
 	public void stop() throws InterruptedException {
 		server.shutdown().awaitTermination(5l, TimeUnit.SECONDS);
 		logger.info("Server shutdown");
@@ -61,7 +82,19 @@ public class SeekersServer {
 
 	private final Map<String, Player> players = new HashMap<>();
 
+	/**
+	 * The HostingService class handles the hosting-related gRPC service requests.
+	 */
 	protected class HostingService extends HostingImplBase {
+		/**
+		 * Handles the "join" request from a client. If there are open slots in the
+		 * game, a new player is added and assigned a token. The player details are
+		 * stored in the players map along with the associated token and dispatch
+		 * helper.
+		 *
+		 * @param request          The join request.
+		 * @param responseObserver The response observer.
+		 */
 		@Override
 		public void join(JoinRequest request, StreamObserver<JoinResponse> responseObserver) {
 			if (game.hasOpenSlots()) {
@@ -80,6 +113,13 @@ public class SeekersServer {
 			}
 		}
 
+		/**
+		 * Handles the "ping" request from a client. Responds with a PingResponse
+		 * containing the current server timestamp.
+		 *
+		 * @param request          The ping request.
+		 * @param responseObserver The response observer.
+		 */
 		@Override
 		public void ping(PingRequest request, StreamObserver<PingResponse> responseObserver) {
 			responseObserver.onNext(PingResponse.newBuilder().setPing(System.currentTimeMillis()).build());
@@ -87,7 +127,17 @@ public class SeekersServer {
 		}
 	}
 
+	/**
+	 * The SeekersService class handles the game-related gRPC service requests.
+	 */
 	protected class SeekersService extends SeekersImplBase {
+		/**
+		 * Handles the "properties" request from a client. Responds with a
+		 * PropertiesResponse containing the default seeker properties.
+		 *
+		 * @param request          The properties request.
+		 * @param responseObserver The response observer.
+		 */
 		@Override
 		public void properties(PropertiesRequest request, StreamObserver<PropertiesResponse> responseObserver) {
 			PropertiesResponse reply = PropertiesResponse.newBuilder()
@@ -96,6 +146,13 @@ public class SeekersServer {
 			responseObserver.onCompleted();
 		}
 
+		/**
+		 * Handles the "status" request from a client. Responds with a StatusResponse
+		 * containing the associated game data for the given token.
+		 *
+		 * @param request          The status request.
+		 * @param responseObserver The response observer.
+		 */
 		@Override
 		public void status(StatusRequest request, StreamObserver<StatusResponse> responseObserver) {
 			SeekersDispatchHelper helper = game.getHelpers().get(request.getToken());
@@ -107,6 +164,13 @@ public class SeekersServer {
 			}
 		}
 
+		/**
+		 * Handles the "command" request from a client. Updates the target and magnet
+		 * properties of the specified seeker.
+		 *
+		 * @param request          The command request.
+		 * @param responseObserver The response observer.
+		 */
 		@Override
 		public void command(CommandRequest request, StreamObserver<CommandResponse> responseObserver) {
 			Player player = players.get(request.getToken());
@@ -126,6 +190,11 @@ public class SeekersServer {
 		}
 	}
 
+	/**
+	 * Retrieves the game instance.
+	 *
+	 * @return The game.
+	 */
 	public Game getGame() {
 		return game;
 	}

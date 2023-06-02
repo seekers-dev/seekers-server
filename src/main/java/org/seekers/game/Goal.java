@@ -5,12 +5,22 @@ import org.seekers.grpc.SeekerProperties;
 import io.scvis.geometry.Vector2D;
 import javafx.scene.paint.Color;
 
+/**
+ * 
+ * @author karlz
+ */
 public class Goal extends Physical {
 	private Camp capture;
 
 	private double scoringTime = SeekerProperties.getDefault().getGoalScoringTime();
 	private double timeOwned = 0;
 
+	/**
+	 * Constructs a new instance of the Goal class.
+	 *
+	 * @param game     The Game object associated with the Goal object.
+	 * @param position The initial position of the Goal object.
+	 */
 	public Goal(Game game, Vector2D position) {
 		super(game, position);
 		addInvalidationListener(e -> getGame().getHelpers().values().forEach(h -> h.getGoals().add(this)));
@@ -36,6 +46,11 @@ public class Goal extends Physical {
 		setAcceleration(force.multiply(deltaT));
 	}
 
+	/**
+	 * Adopts the Goal object to a camp and checks for scoring.
+	 *
+	 * @param deltaT The time elapsed since the last update.
+	 */
 	private void adopt(double deltaT) {
 		for (Camp camp : getGame().getCamps().values()) {
 			if (camp.contains(getPosition())) {
@@ -53,11 +68,19 @@ public class Goal extends Physical {
 		}
 	}
 
+	/**
+	 * Scores a goal for the given player and resets the Goal object.
+	 *
+	 * @param player The player who scored the goal.
+	 */
 	private void score(Player player) {
 		player.putUp();
 		reset();
 	}
 
+	/**
+	 * Resets the state of the Goal object.
+	 */
 	private void reset() {
 		setPosition(getGame().getRandomPosition());
 		capture = null;
