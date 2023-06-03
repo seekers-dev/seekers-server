@@ -13,6 +13,7 @@ import io.scvis.geometry.Vector2D;
 import io.scvis.observable.InvalidationListener;
 import io.scvis.observable.InvalidationListener.InvalidationEvent;
 import io.scvis.observable.Observable;
+import io.scvis.observable.WrappedObject;
 import io.scvis.proto.Corresponding.ExtendableCorresponding;
 import io.scvis.proto.Identifiable;
 import io.scvis.proto.Mirror;
@@ -20,7 +21,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
-public abstract class Physical implements Entity, Kinetic, Observable<Physical>, Identifiable, ExtendableCorresponding {
+public abstract class Physical
+		implements Entity, Kinetic, WrappedObject, Observable<Physical>, Identifiable, ExtendableCorresponding {
 	private final Game game;
 
 	private Vector2D acceleration = Vector2D.ZERO;
@@ -280,5 +282,10 @@ public abstract class Physical implements Entity, Kinetic, Observable<Physical>,
 		return org.seekers.grpc.game.Physical.newBuilder().setId(getId())
 				.setAcceleration(TorusMap.toMessage(acceleration)).setPosition(TorusMap.toMessage(position))
 				.setVelocity(TorusMap.toMessage(velocity)).build();
+	}
+
+	@Override
+	public Mirror<Physical, Pane> get() {
+		return mirror;
 	}
 }

@@ -79,6 +79,14 @@ public class SeekerProperties implements Corresponding<Map<String, String>> {
 
 	private Map<String, Object> used = new HashMap<>();
 
+	public String getProjectPathToExec() {
+		return getOrDefault("project.path-to-exec", k -> k, "run_clients.py");
+	}
+
+	public String getProjectPathToAis() {
+		return getOrDefault("project.path-to-ais", k -> k, "ais/");
+	}
+
 	/**
 	 * Retrieves the value of the "global.auto-play" property.
 	 *

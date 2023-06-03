@@ -31,6 +31,7 @@ import io.scvis.grpc.game.JoinRequest;
 import io.scvis.grpc.game.JoinResponse;
 import io.scvis.grpc.game.PingRequest;
 import io.scvis.grpc.game.PingResponse;
+import javafx.application.Platform;
 import javafx.scene.paint.Color;
 
 /**
@@ -98,16 +99,16 @@ public class SeekersServer {
 		@Override
 		public void join(JoinRequest request, StreamObserver<JoinResponse> responseObserver) {
 			if (game.hasOpenSlots()) {
-				Player player = game.addPlayer();
-				player.setName(request.getDetailsMap().get("name"));
-				player.setColor(Color.web(request.getDetailsMap().get("color")));
-				String token = Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
-						.toString();
-				game.getHelpers().put(token, new SeekersDispatchHelper(game));
-				players.put(token, player);
+						Player player = game.addPlayer();
+						player.setName(request.getDetailsMap().get("name"));
+						player.setColor(Color.web(request.getDetailsMap().get("color")));
+						String token = Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
+								.toString();
+						game.getHelpers().put(token, new SeekersDispatchHelper(game));
+						players.put(token, player);
 
-				responseObserver.onNext(JoinResponse.newBuilder().setPlayerId(player.getId()).setToken(token).build());
-				responseObserver.onCompleted();
+						responseObserver.onNext(JoinResponse.newBuilder().setPlayerId(player.getId()).setToken(token).build());
+						responseObserver.onCompleted();
 			} else {
 				responseObserver.onError(new StatusException(Status.RESOURCE_EXHAUSTED));
 			}

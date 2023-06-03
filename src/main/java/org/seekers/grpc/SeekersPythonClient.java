@@ -9,8 +9,6 @@ import java.io.IOException;
  */
 public class SeekersPythonClient {
 
-	private static final String EXEC_CLIENT = "target/seekers-py/run_clients.py";
-
 	private ProcessBuilder builder;
 
 	/**
@@ -19,11 +17,11 @@ public class SeekersPythonClient {
 	 * @param file The path to the Python file.
 	 */
 	public SeekersPythonClient(String file) {
-		this.builder = new ProcessBuilder("python3", EXEC_CLIENT, file);
-		File log = new File(file + ".log");
-
+		String path = SeekerProperties.getDefault().getProjectPathToExec() + file;
+		builder = new ProcessBuilder("python3", SeekerProperties.getDefault().getProjectPathToExec(), path);
 		builder.redirectErrorStream(true);
 
+		File log = new File(path + ".log");
 		try {
 			if (!log.exists()) {
 				log.createNewFile();

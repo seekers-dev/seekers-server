@@ -9,6 +9,7 @@ import io.scvis.geometry.Vector2D;
 import io.scvis.observable.InvalidationListener;
 import io.scvis.observable.InvalidationListener.InvalidationEvent;
 import io.scvis.observable.Observable;
+import io.scvis.observable.WrappedObject;
 import io.scvis.proto.Identifiable;
 import io.scvis.proto.Mirror;
 import javafx.scene.paint.Color;
@@ -20,7 +21,7 @@ import javafx.scene.shape.Rectangle;
  * 
  * @author karlz
  */
-public class Camp implements Identifiable, Observable<Camp> {
+public class Camp implements Identifiable, WrappedObject, Observable<Camp> {
 	private final Player player;
 
 	public final Vector2D position;
@@ -129,5 +130,10 @@ public class Camp implements Identifiable, Observable<Camp> {
 	public org.seekers.grpc.game.Camp associated() {
 		return org.seekers.grpc.game.Camp.newBuilder().setId(getId()).setPlayerId(player.getId())
 				.setPosition(TorusMap.toMessage(position)).setWidth(width).setHeight(height).build();
+	}
+
+	@Override
+	public Mirror<Camp, Rectangle> get() {
+		return mirror;
 	}
 }

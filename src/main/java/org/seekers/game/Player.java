@@ -9,6 +9,7 @@ import java.util.Random;
 import io.scvis.observable.InvalidationListener;
 import io.scvis.observable.InvalidationListener.InvalidationEvent;
 import io.scvis.observable.Observable;
+import io.scvis.observable.WrappedObject;
 import io.scvis.proto.Identifiable;
 import io.scvis.proto.Mirror;
 import javafx.geometry.Insets;
@@ -21,7 +22,7 @@ import javafx.scene.text.Font;
  * 
  * @author karlz
  */
-public class Player implements Identifiable, Observable<Player> {
+public class Player implements Identifiable, WrappedObject, Observable<Player> {
 	private final Map<String, Seeker> seekers = new HashMap<>();
 
 	private final Game game;
@@ -201,5 +202,10 @@ public class Player implements Identifiable, Observable<Player> {
 	public org.seekers.grpc.game.Player associated() {
 		return org.seekers.grpc.game.Player.newBuilder().setId(getId()).addAllSeekerIds(seekers.keySet())
 				.setCampId(camp.toString()).setName(name).setColor(color.toString()).setScore(score).build();
+	}
+
+	@Override
+	public Mirror<Player, Label> get() {
+		return mirror;
 	}
 }

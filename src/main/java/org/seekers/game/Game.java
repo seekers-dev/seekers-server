@@ -1,6 +1,7 @@
 package org.seekers.game;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,12 +10,16 @@ import org.seekers.grpc.SeekerProperties;
 import org.seekers.grpc.SeekersDispatchHelper;
 
 import io.scvis.geometry.Vector2D;
+import io.scvis.observable.WrappedObject;
+import io.scvis.proto.Mirror;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.MapChangeListener.Change;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
@@ -53,7 +58,8 @@ public class Game extends TorusMap {
 	private final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10.0), e -> {
 		if (hasOpenSlots())
 			return;
-		for (Physical physical : physicals) {
+		for (int i = 0; i < physicals.size(); i++) {
+			Physical physical = physicals.get(i);
 			physical.update(speed);
 			if (autoPlay && (physical instanceof Seeker)) {
 				((Seeker) physical).setAutoCommands();
@@ -73,14 +79,10 @@ public class Game extends TorusMap {
 		Group front = new Group();
 		Group back = new Group();
 
-		camps.addListener((Change<? extends String, ? extends Camp> e) -> back.getChildren()
-				.add(e.getValueAdded().getMirror().getReflection()));
-		seekers.addListener((Change<? extends String, ? extends Seeker> e) -> front.getChildren()
-				.add(e.getValueAdded().getMirror().getReflection()));
-		goals.addListener((Change<? extends String, ? extends Goal> e) -> front.getChildren()
-				.add(e.getValueAdded().getMirror().getReflection()));
-		players.addListener((Change<? extends String, ? extends Player> e) -> info.getChildren()
-				.add(e.getValueAdded().getMirror().getReflection()));
+		camps.addListener(getListener(back.getChildren()));
+		seekers.addListener(getListener(front.getChildren()));
+		goals.addListener(getListener(front.getChildren()));
+		players.addListener(getListener(info.getChildren()));
 
 		render.setBackground(new Background(new BackgroundFill(Color.gray(.1), null, null)));
 		render.getChildren().addAll(back, front);
@@ -90,6 +92,18 @@ public class Game extends TorusMap {
 		timeline.play();
 
 		addGoals();
+	}
+
+	private static <T extends WrappedObject> MapChangeListener<String, T> getListener(Collection<Node> coll) {
+		return e -> {
+			Platform.runLater(new Runnable() {
+				@SuppressWarnings("unchecked")
+				@Override
+				public void run() {
+					coll.add(((Mirror<?, ? extends Node>) e.getValueAdded().get()).getReflection());
+				}
+			});
+		};
 	}
 
 	/**
