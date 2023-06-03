@@ -1,8 +1,6 @@
 package org.seekers.grpc;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.seekers.game.Camp;
 import org.seekers.game.Game;
@@ -12,7 +10,6 @@ import org.seekers.game.Seeker;
 import org.seekers.grpc.net.StatusResponse;
 
 import io.scvis.proto.Corresponding;
-import io.scvis.proto.ExchangeHelper.DispatchHelper;
 
 /**
  * The SeekersDispatchHelper class is responsible for managing the
@@ -21,11 +18,7 @@ import io.scvis.proto.ExchangeHelper.DispatchHelper;
  * 
  * @author karlz
  */
-public class SeekersDispatchHelper implements DispatchHelper<Corresponding<?>, StatusResponse> {
-	private final Set<Player> players = new HashSet<>();
-	private final Set<Seeker> seekers = new HashSet<>();
-	private final Set<Goal> goals = new HashSet<>();
-	private final Set<Camp> camps = new HashSet<>();
+public class SeekersDispatchHelper implements Corresponding<StatusResponse> {
 
 	private final Game game;
 
@@ -36,7 +29,6 @@ public class SeekersDispatchHelper implements DispatchHelper<Corresponding<?>, S
 	 */
 	public SeekersDispatchHelper(Game game) {
 		this.game = game;
-		init(game);
 	}
 
 	/**
@@ -49,52 +41,16 @@ public class SeekersDispatchHelper implements DispatchHelper<Corresponding<?>, S
 	@Override
 	public StatusResponse associated() {
 		@SuppressWarnings("unchecked")
-		StatusResponse reply = StatusResponse.newBuilder()
-				.addAllPlayers(
-						(Collection<org.seekers.grpc.game.Player>) (Collection<?>) Corresponding.transform(players))
-				.addAllCamps((Collection<org.seekers.grpc.game.Camp>) (Collection<?>) Corresponding.transform(camps))
-				.addAllSeekers(
-						(Collection<org.seekers.grpc.game.Seeker>) (Collection<?>) Corresponding.transform(seekers))
-				.addAllGoals((Collection<org.seekers.grpc.game.Goal>) (Collection<?>) Corresponding.transform(goals))
+		StatusResponse reply = StatusResponse.newBuilder().addAllPlayers(
+				(Collection<org.seekers.grpc.game.Player>) (Collection<?>) Corresponding.transform(getPlayers()))
+				.addAllCamps(
+						(Collection<org.seekers.grpc.game.Camp>) (Collection<?>) Corresponding.transform(getCamps()))
+				.addAllSeekers((Collection<org.seekers.grpc.game.Seeker>) (Collection<?>) Corresponding
+						.transform(getSeekers()))
+				.addAllGoals(
+						(Collection<org.seekers.grpc.game.Goal>) (Collection<?>) Corresponding.transform(getGoals()))
 				.setPassedPlaytime(game.getPassedPlaytime()).build();
-		clean();
 		return reply;
-	}
-
-	/**
-	 * Initializes the sets of players, seekers, goals, and camps with the
-	 * corresponding entities from the game.
-	 *
-	 * @param game The game instance from which to initialize the entities.
-	 */
-	public void init(Game game) {
-		players.addAll(game.getPlayers().values());
-		seekers.addAll(game.getSeekers().values());
-		goals.addAll(game.getGoals().values());
-		camps.addAll(game.getCamps().values());
-	}
-
-	/**
-	 * Clears the sets of players, seekers, goals, and camps. This method is called
-	 * after the associated StatusResponse is sent to clients to prepare for the
-	 * next synchronization.
-	 */
-	public void clean() {
-		players.clear();
-		seekers.clear();
-		goals.clear();
-		camps.clear();
-	}
-
-	/**
-	 * Adds an element to the given collection.
-	 *
-	 * @param collection The collection to which the element is added.
-	 * @param element    The element to be added.
-	 */
-	@Override
-	public void push(Collection<Corresponding<?>> collection, Corresponding<?> element) {
-		collection.add(element);
 	}
 
 	/**
@@ -102,8 +58,8 @@ public class SeekersDispatchHelper implements DispatchHelper<Corresponding<?>, S
 	 *
 	 * @return The set of players.
 	 */
-	public Set<Player> getPlayers() {
-		return players;
+	public Collection<Player> getPlayers() {
+		return game.getPlayers().values();
 	}
 
 	/**
@@ -111,8 +67,8 @@ public class SeekersDispatchHelper implements DispatchHelper<Corresponding<?>, S
 	 *
 	 * @return The set of seekers.
 	 */
-	public Set<Seeker> getSeekers() {
-		return seekers;
+	public Collection<Seeker> getSeekers() {
+		return game.getSeekers().values();
 	}
 
 	/**
@@ -120,8 +76,8 @@ public class SeekersDispatchHelper implements DispatchHelper<Corresponding<?>, S
 	 *
 	 * @return The set of goals.
 	 */
-	public Set<Goal> getGoals() {
-		return goals;
+	public Collection<Goal> getGoals() {
+		return game.getGoals().values();
 	}
 
 	/**
@@ -129,7 +85,7 @@ public class SeekersDispatchHelper implements DispatchHelper<Corresponding<?>, S
 	 *
 	 * @return The set of camps.
 	 */
-	public Set<Camp> getCamps() {
-		return camps;
+	public Collection<Camp> getCamps() {
+		return game.getCamps().values();
 	}
 }

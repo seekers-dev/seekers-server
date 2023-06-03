@@ -57,7 +57,6 @@ public class Seeker extends Physical {
 				indicators.forEach(c -> c.setVisible(false));
 			}
 		});
-		addInvalidationListener(e -> getGame().getHelpers().values().forEach(h -> h.getSeekers().add(this)));
 
 		player.getSeekers().put(getId(), this);
 		getGame().getSeekers().put(getId(), this);

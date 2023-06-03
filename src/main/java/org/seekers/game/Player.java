@@ -54,7 +54,6 @@ public class Player implements Identifiable, WrappedObject, Observable<Player> {
 		mirror.getReflection().setPadding(new Insets(2.0));
 		mirror.getReflection().setFont(Font.font("Ubuntu", 24.0));
 		addInvalidationListener(e -> mirror.update(this));
-		addInvalidationListener(e -> getGame().getHelpers().values().forEach(h -> h.getPlayers().add(this)));
 
 		game.getPlayers().put(getId(), this);
 		invalidated();

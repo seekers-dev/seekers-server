@@ -58,7 +58,6 @@ public class Camp implements Identifiable, WrappedObject, Observable<Camp> {
 		mirror.getReflection().setStroke(player.getColor());
 		mirror.getReflection().setStrokeWidth(SeekerProperties.getDefault().getGoalRadius());
 		addInvalidationListener(e -> mirror.update(this));
-		addInvalidationListener(e -> getPlayer().getGame().getHelpers().values().forEach(h -> h.getCamps().add(this)));
 
 		invalidated();
 	}

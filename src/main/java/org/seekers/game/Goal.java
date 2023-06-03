@@ -23,7 +23,6 @@ public class Goal extends Physical {
 	 */
 	public Goal(Game game, Vector2D position) {
 		super(game, position);
-		addInvalidationListener(e -> getGame().getHelpers().values().forEach(h -> h.getGoals().add(this)));
 
 		getObject().setFill(Color.WHITESMOKE);
 		setMass(SeekerProperties.getDefault().getGoalMass());
