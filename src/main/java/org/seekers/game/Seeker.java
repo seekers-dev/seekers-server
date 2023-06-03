@@ -24,7 +24,7 @@ public class Seeker extends Physical {
 	private double disabledTime = SeekerProperties.getDefault().getSeekerDisabledTime();
 	private double disabledCounter = 0;
 
-	private final List<Circle> indicators = new ArrayList<>();
+	private List<Circle> indicators;
 
 	/**
 	 * Constructs a new instance of the Seeker class.
@@ -41,9 +41,9 @@ public class Seeker extends Physical {
 			Circle indicator = new Circle(getRange() + i * 4);
 			indicator.setFill(Color.TRANSPARENT);
 			indicator.setStroke(player.getColor());
-			indicators.add(indicator);
+			getIndicators().add(indicator);
 		}
-		getMirror().getReflection().getChildren().addAll(indicators);
+		getMirror().getReflection().getChildren().addAll(getIndicators());
 
 		addInvalidationListener(e -> {
 			if (isDisabled()) {
@@ -52,9 +52,9 @@ public class Seeker extends Physical {
 				getObject().setFill(activated);
 			}
 			if (getMagnet() != 0) {
-				indicators.forEach(c -> c.setVisible(true));
+				getIndicators().forEach(c -> c.setVisible(true));
 			} else {
-				indicators.forEach(c -> c.setVisible(false));
+				getIndicators().forEach(c -> c.setVisible(false));
 			}
 		});
 
@@ -105,7 +105,7 @@ public class Seeker extends Physical {
 	 * @param deltaT The time passed since the last animation.
 	 */
 	public void animate(double deltaT) {
-		for (Circle indicator : indicators) {
+		for (Circle indicator : getIndicators()) {
 			indicator.setRadius(
 					(indicator.getRadius() + Math.signum(magnet) * (getRange() - deltaT)) % getAnimationRange());
 		}
@@ -136,6 +136,13 @@ public class Seeker extends Physical {
 		Vector2D d = getGame().getTorusDirection(getPosition(), p);
 		double s = (r < 1) ? Math.exp(1 / (Math.pow(r, 2) - 1)) : 0;
 		return (isDisabled()) ? Vector2D.ZERO : d.multiply(-getMagnet() * s);
+	}
+
+	public List<Circle> getIndicators() {
+		if (indicators == null) {
+			indicators = new ArrayList<>();
+		}
+		return indicators;
 	}
 
 	/**
