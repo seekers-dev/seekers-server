@@ -4,22 +4,19 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import org.seekers.grpc.game.Vector2D;
+import org.seekers.grpc.net.Command;
 import org.seekers.grpc.net.CommandRequest;
 import org.seekers.grpc.net.CommandResponse;
-import org.seekers.grpc.net.PropertiesRequest;
+import org.seekers.grpc.net.Empty;
+import org.seekers.grpc.net.JoinRequest;
+import org.seekers.grpc.net.JoinResponse;
 import org.seekers.grpc.net.PropertiesResponse;
 import org.seekers.grpc.net.SeekersGrpc;
 import org.seekers.grpc.net.SeekersGrpc.SeekersBlockingStub;
-import org.seekers.grpc.net.StatusRequest;
 import org.seekers.grpc.net.StatusResponse;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.scvis.grpc.game.HostingGrpc;
-import io.scvis.grpc.game.HostingGrpc.HostingBlockingStub;
-import io.scvis.grpc.game.JoinRequest;
-import io.scvis.grpc.game.JoinResponse;
 import javafx.scene.paint.Color;
 
 /**
@@ -34,7 +31,6 @@ public class SeekersJavaClient {
 
 	private final ManagedChannel channel;
 	private final SeekersBlockingStub seekersBlockingStub;
-	private final HostingBlockingStub hostingBlockingStub;
 
 	private final SeekersStoreHelper helper = new SeekersStoreHelper();
 
@@ -45,7 +41,6 @@ public class SeekersJavaClient {
 	public SeekersJavaClient() {
 		channel = ManagedChannelBuilder.forAddress("localhost", 7777).usePlaintext().build();
 		seekersBlockingStub = SeekersGrpc.newBlockingStub(channel);
-		hostingBlockingStub = HostingGrpc.newBlockingStub(channel);
 		start();
 	}
 
@@ -81,7 +76,7 @@ public class SeekersJavaClient {
 	 */
 	public void join(String name, String color) {
 		try {
-			JoinResponse reply = hostingBlockingStub
+			JoinResponse reply = seekersBlockingStub
 					.join(JoinRequest.newBuilder().putAllDetails(Map.of("name", name, "color", color)).build());
 			token = reply.getToken();
 			playerId = reply.getPlayerId();
@@ -106,7 +101,7 @@ public class SeekersJavaClient {
 	 */
 	public PropertiesResponse getProperties() {
 		try {
-			return seekersBlockingStub.properties(PropertiesRequest.newBuilder().build());
+			return seekersBlockingStub.properties(Empty.newBuilder().build());
 		} catch (Exception ex) {
 			return PropertiesResponse.newBuilder().build();
 		}
@@ -120,7 +115,7 @@ public class SeekersJavaClient {
 	 */
 	public StatusResponse getStatus() {
 		try {
-			StatusResponse response = seekersBlockingStub.status(StatusRequest.newBuilder().setToken(token).build());
+			StatusResponse response = seekersBlockingStub.status(Empty.newBuilder().build());
 			helper.update(response);
 			return response;
 		} catch (Exception ex) {
@@ -131,15 +126,14 @@ public class SeekersJavaClient {
 	/**
 	 * Sets a command for a specific seeker in the Seekers game.
 	 *
-	 * @param id     The ID of the seeker.
-	 * @param target The target vector for the seeker.
-	 * @param magnet The magnet value for the seeker.
+	 * @param commands The commands with the ID, target vector and magnet value for
+	 *                 the seeker.
 	 * @return The CommandResponse indicating the success of the command.
 	 */
-	public CommandResponse setCommand(String id, Vector2D target, double magnet) {
+	public CommandResponse setCommand(Iterable<? extends Command> commands) {
 		try {
-			return seekersBlockingStub.command(CommandRequest.newBuilder().setToken(token).setSeekerId(id)
-					.setTarget(target).setMagnet(magnet).build());
+			return seekersBlockingStub
+					.command(CommandRequest.newBuilder().setToken(token).addAllCommands(commands).build());
 		} catch (Exception ex) {
 			return CommandResponse.newBuilder().build();
 		}

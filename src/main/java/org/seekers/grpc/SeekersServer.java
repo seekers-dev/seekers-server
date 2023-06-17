@@ -10,12 +10,15 @@ import java.util.logging.Logger;
 import org.seekers.game.Game;
 import org.seekers.game.Player;
 import org.seekers.game.Seeker;
+import org.seekers.grpc.net.Command;
 import org.seekers.grpc.net.CommandRequest;
 import org.seekers.grpc.net.CommandResponse;
-import org.seekers.grpc.net.PropertiesRequest;
+import org.seekers.grpc.net.Empty;
+import org.seekers.grpc.net.JoinRequest;
+import org.seekers.grpc.net.JoinResponse;
+import org.seekers.grpc.net.PingResponse;
 import org.seekers.grpc.net.PropertiesResponse;
 import org.seekers.grpc.net.SeekersGrpc.SeekersImplBase;
-import org.seekers.grpc.net.StatusRequest;
 import org.seekers.grpc.net.StatusResponse;
 
 import com.google.common.hash.Hashing;
@@ -26,12 +29,6 @@ import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
 import io.scvis.geometry.Vector2D;
-import io.scvis.grpc.game.HostingGrpc.HostingImplBase;
-import io.scvis.grpc.game.JoinRequest;
-import io.scvis.grpc.game.JoinResponse;
-import io.scvis.grpc.game.PingRequest;
-import io.scvis.grpc.game.PingResponse;
-import javafx.application.Platform;
 import javafx.scene.paint.Color;
 
 /**
@@ -51,7 +48,7 @@ public class SeekersServer {
 	 * Constructs a new SeekersServer instance.
 	 */
 	public SeekersServer() {
-		server = ServerBuilder.forPort(7777).addService(new HostingService()).addService(new SeekersService()).build();
+		server = ServerBuilder.forPort(7777).addService(new SeekersService()).build();
 		try {
 			start();
 		} catch (Exception e) {
@@ -84,54 +81,10 @@ public class SeekersServer {
 	private final Map<String, Player> players = new HashMap<>();
 
 	/**
-	 * The HostingService class handles the hosting-related gRPC service requests.
-	 */
-	protected class HostingService extends HostingImplBase {
-		/**
-		 * Handles the "join" request from a client. If there are open slots in the
-		 * game, a new player is added and assigned a token. The player details are
-		 * stored in the players map along with the associated token and dispatch
-		 * helper.
-		 *
-		 * @param request          The join request.
-		 * @param responseObserver The response observer.
-		 */
-		@Override
-		public void join(JoinRequest request, StreamObserver<JoinResponse> responseObserver) {
-			if (game.hasOpenSlots()) {
-						Player player = game.addPlayer();
-						player.setName(request.getDetailsMap().get("name"));
-						player.setColor(Color.web(request.getDetailsMap().get("color")));
-						String token = Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
-								.toString();
-						game.getHelpers().put(token, new SeekersDispatchHelper(game));
-						players.put(token, player);
-
-						responseObserver.onNext(JoinResponse.newBuilder().setPlayerId(player.getId()).setToken(token).build());
-						responseObserver.onCompleted();
-			} else {
-				responseObserver.onError(new StatusException(Status.RESOURCE_EXHAUSTED));
-			}
-		}
-
-		/**
-		 * Handles the "ping" request from a client. Responds with a PingResponse
-		 * containing the current server timestamp.
-		 *
-		 * @param request          The ping request.
-		 * @param responseObserver The response observer.
-		 */
-		@Override
-		public void ping(PingRequest request, StreamObserver<PingResponse> responseObserver) {
-			responseObserver.onNext(PingResponse.newBuilder().setPing(System.currentTimeMillis()).build());
-			responseObserver.onCompleted();
-		}
-	}
-
-	/**
 	 * The SeekersService class handles the game-related gRPC service requests.
 	 */
 	protected class SeekersService extends SeekersImplBase {
+
 		/**
 		 * Handles the "properties" request from a client. Responds with a
 		 * PropertiesResponse containing the default seeker properties.
@@ -140,7 +93,7 @@ public class SeekersServer {
 		 * @param responseObserver The response observer.
 		 */
 		@Override
-		public void properties(PropertiesRequest request, StreamObserver<PropertiesResponse> responseObserver) {
+		public void properties(Empty request, StreamObserver<PropertiesResponse> responseObserver) {
 			PropertiesResponse reply = PropertiesResponse.newBuilder()
 					.putAllEntries(SeekerProperties.getDefault().associated()).build();
 			responseObserver.onNext(reply);
@@ -155,14 +108,10 @@ public class SeekersServer {
 		 * @param responseObserver The response observer.
 		 */
 		@Override
-		public void status(StatusRequest request, StreamObserver<StatusResponse> responseObserver) {
-			SeekersDispatchHelper helper = game.getHelpers().get(request.getToken());
-			if (helper != null) {
-				responseObserver.onNext(helper.associated());
-				responseObserver.onCompleted();
-			} else {
-				responseObserver.onError(new StatusException(Status.PERMISSION_DENIED));
-			}
+		public void status(Empty request, StreamObserver<StatusResponse> responseObserver) {
+			SeekersDispatchHelper helper = game.getDispatchHelper();
+			responseObserver.onNext(helper.associated());
+			responseObserver.onCompleted();
 		}
 
 		/**
@@ -176,18 +125,63 @@ public class SeekersServer {
 		public void command(CommandRequest request, StreamObserver<CommandResponse> responseObserver) {
 			Player player = players.get(request.getToken());
 			if (player != null) {
-				Seeker seeker = player.getSeekers().get(request.getSeekerId());
-				if (seeker != null) {
-					seeker.setTarget(new Vector2D(request.getTarget().getX(), request.getTarget().getY()));
-					seeker.setMagnet(request.getMagnet());
-					responseObserver.onNext(CommandResponse.newBuilder().build());
-					responseObserver.onCompleted();
-				} else {
-					responseObserver.onError(new StatusException(Status.NOT_FOUND));
+				int changed = 0;
+				for (Command command : request.getCommandsList()) {
+					Seeker seeker = player.getSeekers().get(command.getSeekerId());
+					if (seeker != null) {
+						Vector2D target = new Vector2D(command.getTarget().getX(), command.getTarget().getY());
+						if (seeker.getMagnet() != command.getMagnet() || !seeker.getTarget().equals(target)) {
+							seeker.setTarget(target);
+							seeker.setMagnet(command.getMagnet());
+							changed++;
+						}
+					}
 				}
+				responseObserver.onNext(CommandResponse.newBuilder().setStatus(game.getDispatchHelper().associated())
+						.setSeekersChanged(changed).build());
+				responseObserver.onCompleted();
 			} else {
 				responseObserver.onError(new StatusException(Status.PERMISSION_DENIED));
 			}
+		}
+
+		/**
+		 * Handles the "join" request from a client. If there are open slots in the
+		 * game, a new player is added and assigned a token. The player details are
+		 * stored in the players map along with the associated token and dispatch
+		 * helper.
+		 *
+		 * @param request          The join request.
+		 * @param responseObserver The response observer.
+		 */
+		@Override
+		public void join(JoinRequest request, StreamObserver<JoinResponse> responseObserver) {
+			if (game.hasOpenSlots()) {
+				Player player = game.addPlayer();
+				player.setName(request.getDetailsMap().getOrDefault("name", "Unnamed Player"));
+				player.setColor(Color.web(request.getDetailsMap().getOrDefault("color", player.getColor().toString())));
+				String token = Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
+						.toString();
+				players.put(token, player);
+
+				responseObserver.onNext(JoinResponse.newBuilder().setPlayerId(player.getId()).setToken(token).build());
+				responseObserver.onCompleted();
+			} else {
+				responseObserver.onError(new StatusException(Status.RESOURCE_EXHAUSTED));
+			}
+		}
+
+		/**
+		 * Handles the "ping" request from a client. Responds with a PingResponse
+		 * containing the current server timestamp.
+		 *
+		 * @param request          The ping request.
+		 * @param responseObserver The response observer.
+		 */
+		@Override
+		public void ping(Empty request, StreamObserver<PingResponse> responseObserver) {
+			responseObserver.onNext(PingResponse.newBuilder().setTimestamp(System.nanoTime()).build());
+			responseObserver.onCompleted();
 		}
 	}
 

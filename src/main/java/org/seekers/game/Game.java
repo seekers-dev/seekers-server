@@ -2,9 +2,7 @@ package org.seekers.game;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.seekers.grpc.SeekerProperties;
 import org.seekers.grpc.SeekersDispatchHelper;
@@ -36,7 +34,7 @@ import javafx.util.Duration;
  */
 public class Game extends TorusMap {
 
-	private final Map<String, SeekersDispatchHelper> helpers = new HashMap<>();
+	private final SeekersDispatchHelper helper = new SeekersDispatchHelper(this);
 
 	private final List<Physical> physicals = new ArrayList<>();
 
@@ -153,12 +151,12 @@ public class Game extends TorusMap {
 	}
 
 	/**
-	 * Returns the map of helpers associated with the game.
+	 * Returns dispatch helper associated with the game.
 	 *
-	 * @return the map of helpers
+	 * @return the helper
 	 */
-	public Map<String, SeekersDispatchHelper> getHelpers() {
-		return helpers;
+	public SeekersDispatchHelper getDispatchHelper() {
+		return helper;
 	}
 
 	/**
