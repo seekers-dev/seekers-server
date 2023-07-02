@@ -11,7 +11,6 @@ import org.seekers.grpc.SeekersDispatchHelper;
 
 import io.scvis.geometry.Vector2D;
 import io.scvis.observable.WrappedObject;
-import io.scvis.proto.Mirror;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -55,9 +54,10 @@ public class Game extends TorusMap {
 	private int seekerCount = SeekerProperties.getDefault().getGlobalSeekers();
 	private int goalCount = SeekerProperties.getDefault().getGlobalGoals();
 	private boolean autoPlay = SeekerProperties.getDefault().getGlobalAutoPlay();
+
 	@Nonnull
 	private final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10.0), e -> {
-		if (hasOpenSlots())
+		if (hasOpenSlots() && passed < playtime)
 			return;
 		for (int i = 0; i < physicals.size(); i++) {
 			Physical physical = physicals.get(i);
@@ -66,7 +66,9 @@ public class Game extends TorusMap {
 				((Seeker) physical).setAutoCommands();
 			}
 		}
+		passed += speed;
 	}));
+
 	@Nonnull
 	private final BorderPane render = new BorderPane();
 
@@ -96,13 +98,7 @@ public class Game extends TorusMap {
 	}
 
 	private static <T extends WrappedObject> MapChangeListener<String, T> getListener(Collection<Node> coll) {
-		return e -> Platform.runLater(new Runnable() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void run() {
-				coll.add(((Mirror<?, ? extends Node>) e.getValueAdded().get()).getReflection());
-			}
-		});
+		return e -> Platform.runLater(() -> coll.add((Node) e.getValueAdded().get()));
 	}
 
 	/**
@@ -125,7 +121,7 @@ public class Game extends TorusMap {
 		int max = playerCount;
 
 		Player player = new Player(this);
-		player.setCamp(new Camp(player, new Vector2D(width / max * (cur + 0.5), height * 0.5)));
+		new Camp(player, new Vector2D(width / max * (cur + 0.5), height * 0.5));
 		for (int s = 0; s < seekerCount; s++) {
 			new Seeker(player, getRandomPosition());
 		}

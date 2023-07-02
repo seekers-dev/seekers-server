@@ -1,19 +1,13 @@
 package org.seekers.game;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import javax.annotation.Nonnull;
 
-import io.scvis.observable.InvalidationListener;
-import io.scvis.observable.InvalidationListener.InvalidationEvent;
-import io.scvis.observable.Observable;
 import io.scvis.observable.WrappedObject;
 import io.scvis.proto.Identifiable;
-import io.scvis.proto.Mirror;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
@@ -24,7 +18,7 @@ import javafx.scene.text.Font;
  * 
  * @author karlz
  */
-public class Player implements Identifiable, WrappedObject, Observable<Player> {
+public class Player implements Identifiable, WrappedObject {
 	private final Map<String, Seeker> seekers = new HashMap<>();
 	@Nonnull
 	private final Game game;
@@ -36,12 +30,7 @@ public class Player implements Identifiable, WrappedObject, Observable<Player> {
 
 	private static final Random rand = new Random();
 
-	private final Mirror<Player, Label> mirror = new Mirror<>(this, new Label()) {
-		@Override
-		public void update(Player reference) {
-			getReflection().setText(name + ": " + score);
-		}
-	};
+	private final Label render = new Label();
 
 	/**
 	 * Constructs a new instance of the Player class.
@@ -50,37 +39,13 @@ public class Player implements Identifiable, WrappedObject, Observable<Player> {
 	 */
 	public Player(@Nonnull Game game) {
 		this.game = game;
-		this.color = Color.rgb(rand.nextInt(124) + 124, rand.nextInt(124) + 124, rand.nextInt(124) + 124);
 		this.name = "Player " + hashCode();
-		mirror.getReflection().setTextFill(color);
-		mirror.getReflection().setPadding(new Insets(2.0));
-		mirror.getReflection().setFont(Font.font("Ubuntu", 24.0));
-		addInvalidationListener(e -> mirror.update(this));
+		this.color = Color.rgb(rand.nextInt(124) + 124, rand.nextInt(124) + 124, rand.nextInt(124) + 124);
+		render.setPadding(new Insets(2.0));
+		render.setFont(Font.font("Ubuntu", 24.0));
+		render.setTextFill(color);
 
 		game.getPlayers().put(getId(), this);
-		invalidated();
-	}
-
-	private List<InvalidationListener<Player>> listeners = new ArrayList<>();
-
-	public void fireInvalidationEvent(InvalidationEvent<Player> event) {
-		for (int i = 0; i < listeners.size(); i++) {
-			listeners.get(i).invalidated(event);
-		}
-	}
-
-	protected void invalidated() {
-		fireInvalidationEvent(new InvalidationEvent<>(this));
-	}
-
-	@Override
-	public void addInvalidationListener(InvalidationListener<Player> listener) {
-		this.listeners.add(listener);
-	}
-
-	@Override
-	public void removeInvalidationListener(InvalidationListener<Player> listener) {
-		this.listeners.remove(listener);
 	}
 
 	/**
@@ -105,15 +70,6 @@ public class Player implements Identifiable, WrappedObject, Observable<Player> {
 	}
 
 	/**
-	 * Gets the Mirror object associated with the Player.
-	 *
-	 * @return The Mirror object associated with the Player.
-	 */
-	public Mirror<Player, Label> getMirror() {
-		return mirror;
-	}
-
-	/**
 	 * Gets the Game object associated with the Player.
 	 *
 	 * @return The Game object associated with the Player.
@@ -121,6 +77,16 @@ public class Player implements Identifiable, WrappedObject, Observable<Player> {
 	@Nonnull
 	public Game getGame() {
 		return game;
+	}
+
+	/**
+	 * Gets the Mirror object associated with the Player.
+	 *
+	 * @return The Mirror object associated with the Player.
+	 */
+	@Override
+	public Label get() {
+		return render;
 	}
 
 	/**
@@ -158,7 +124,7 @@ public class Player implements Identifiable, WrappedObject, Observable<Player> {
 	 */
 	public void setName(String name) {
 		this.name = name;
-		invalidated();
+		render.setText(name + ": " + score);
 	}
 
 	/**
@@ -180,8 +146,8 @@ public class Player implements Identifiable, WrappedObject, Observable<Player> {
 		for (Seeker seeker : seekers.values()) {
 			seeker.setColor(color);
 		}
-		mirror.getReflection().setTextFill(color);
-		camp.getMirror().getReflection().setStroke(color);
+		render.setTextFill(color);
+		getCamp().get().setStroke(color);
 	}
 
 	/**
@@ -198,7 +164,7 @@ public class Player implements Identifiable, WrappedObject, Observable<Player> {
 	 */
 	public void putUp() {
 		score++;
-		invalidated();
+		render.setText(name + ": " + score);
 	}
 
 	@Override
@@ -207,8 +173,4 @@ public class Player implements Identifiable, WrappedObject, Observable<Player> {
 				.setCampId(camp.toString()).setName(name).setColor(color.toString()).setScore(score).build();
 	}
 
-	@Override
-	public Mirror<Player, Label> get() {
-		return mirror;
-	}
 }

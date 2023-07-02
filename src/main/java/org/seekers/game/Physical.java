@@ -1,10 +1,8 @@
 package org.seekers.game;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.seekers.grpc.SeekerProperties;
 
@@ -13,19 +11,14 @@ import com.google.protobuf.Message;
 import io.scvis.entity.Entity;
 import io.scvis.geometry.Kinetic;
 import io.scvis.geometry.Vector2D;
-import io.scvis.observable.InvalidationListener;
-import io.scvis.observable.InvalidationListener.InvalidationEvent;
-import io.scvis.observable.Observable;
 import io.scvis.observable.WrappedObject;
 import io.scvis.proto.Corresponding.ExtendableCorresponding;
 import io.scvis.proto.Identifiable;
-import io.scvis.proto.Mirror;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
-public abstract class Physical
-		implements Entity, Kinetic, WrappedObject, Observable<Physical>, Identifiable, ExtendableCorresponding {
+public abstract class Physical implements Entity, Kinetic, WrappedObject, Identifiable, ExtendableCorresponding {
 	@Nonnull
 	private final Game game;
 	@Nonnull
@@ -40,16 +33,11 @@ public abstract class Physical
 	private double range = 1.0;
 	private double friction = SeekerProperties.getDefault().getPhysicalFriction();
 	private double baseThrust = maxSpeed * friction;
+
 	@Nonnull
 	private final Circle object = new Circle(10, Color.CRIMSON);
-
-	private final Mirror<Physical, Pane> mirror = new Mirror<>(this, new Pane(object)) {
-		@Override
-		public void update(Physical reference) {
-			getReflection().setLayoutX(reference.getPosition().getX());
-			getReflection().setLayoutY(reference.getPosition().getY());
-		}
-	};
+	@Nonnull
+	private final Pane render = new Pane(object);
 
 	/**
 	 * Constructs a new instance of the Physical class.
@@ -60,8 +48,6 @@ public abstract class Physical
 	protected Physical(@Nonnull Game game, @Nullable Vector2D position) {
 		this.game = game;
 		this.position = position == null ? Vector2D.ZERO : position;
-
-		addInvalidationListener(e -> mirror.update(this));
 		getGame().getPhysicals().add(this);
 	}
 
@@ -69,7 +55,6 @@ public abstract class Physical
 	public void update(double deltaT) {
 		Kinetic.super.update(deltaT);
 		checks();
-		invalidated();
 	}
 
 	@Override
@@ -105,6 +90,7 @@ public abstract class Physical
 	 * @param another     The Physical object with which a collision occurred.
 	 * @param minDistance The minimum distance required for a collision to occur.
 	 */
+	@OverridingMethodsMustInvokeSuper
 	public void collision(Physical another, double minDistance) {
 		Vector2D distance = game.getTorusDifference(getPosition(), another.getPosition());
 
@@ -123,45 +109,6 @@ public abstract class Physical
 			setPosition(getPosition().add(deltaR.multiply(ddn - minDistance)));
 			another.setPosition(another.getPosition().subtract(deltaR.multiply(ddn - minDistance)));
 		}
-	}
-
-	private List<InvalidationListener<Physical>> listeners = new ArrayList<>();
-
-	/**
-	 * Fires an invalidation event to all registered listeners.
-	 *
-	 * @param event The invalidation event to be fired.
-	 */
-	public void fireInvalidationEvent(InvalidationEvent<Physical> event) {
-		for (int i = 0; i < listeners.size(); i++) {
-			listeners.get(i).invalidated(event);
-		}
-	}
-
-	/**
-	 * Notifies listeners that the Physical object has been invalidated.
-	 */
-	protected void invalidated() {
-		fireInvalidationEvent(new InvalidationEvent<>(this));
-	}
-
-	@Override
-	public void addInvalidationListener(InvalidationListener<Physical> listener) {
-		this.listeners.add(listener);
-	}
-
-	@Override
-	public void removeInvalidationListener(InvalidationListener<Physical> listener) {
-		this.listeners.remove(listener);
-	}
-
-	/**
-	 * Retrieves the Mirror object associated with the Physical object.
-	 *
-	 * @return The Mirror object.
-	 */
-	public Mirror<Physical, Pane> getMirror() {
-		return mirror;
 	}
 
 	/**
@@ -187,8 +134,19 @@ public abstract class Physical
 	 *
 	 * @return The Game object.
 	 */
+	@Nonnull
 	public Game getGame() {
 		return game;
+	}
+
+	/**
+	 * Retrieves the Mirror object associated with the Physical object.
+	 *
+	 * @return The Mirror object.
+	 */
+	@Override
+	public Pane get() {
+		return render;
 	}
 
 	/**
@@ -196,6 +154,7 @@ public abstract class Physical
 	 *
 	 * @return The position vector.
 	 */
+	@Nonnull
 	public Vector2D getPosition() {
 		return position;
 	}
@@ -205,9 +164,10 @@ public abstract class Physical
 	 *
 	 * @param position The new position vector.
 	 */
-	public void setPosition(Vector2D position) {
+	public void setPosition(@Nonnull Vector2D position) {
 		this.position = position;
-		invalidated();
+		render.setLayoutX(position.getX());
+		render.setLayoutY(position.getY());
 	}
 
 	/**
@@ -215,6 +175,7 @@ public abstract class Physical
 	 *
 	 * @return The velocity vector.
 	 */
+	@Nonnull
 	public Vector2D getVelocity() {
 		return velocity;
 	}
@@ -224,7 +185,7 @@ public abstract class Physical
 	 *
 	 * @param velocity The new velocity vector.
 	 */
-	public void setVelocity(Vector2D velocity) {
+	public void setVelocity(@Nonnull Vector2D velocity) {
 		this.velocity = velocity;
 	}
 
@@ -233,6 +194,7 @@ public abstract class Physical
 	 *
 	 * @return The acceleration vector.
 	 */
+	@Nonnull
 	public Vector2D getAcceleration() {
 		return acceleration;
 	}
@@ -242,7 +204,7 @@ public abstract class Physical
 	 *
 	 * @param acceleration The new acceleration vector.
 	 */
-	public void setAcceleration(Vector2D acceleration) {
+	public void setAcceleration(@Nonnull Vector2D acceleration) {
 		this.acceleration = acceleration;
 	}
 
@@ -290,8 +252,4 @@ public abstract class Physical
 				.setVelocity(TorusMap.toMessage(velocity)).build();
 	}
 
-	@Override
-	public Mirror<Physical, Pane> get() {
-		return mirror;
-	}
 }

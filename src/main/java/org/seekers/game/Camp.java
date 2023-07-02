@@ -1,19 +1,12 @@
 package org.seekers.game;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.annotation.Nonnull;
 
 import org.seekers.grpc.SeekerProperties;
 
 import io.scvis.geometry.Vector2D;
-import io.scvis.observable.InvalidationListener;
-import io.scvis.observable.InvalidationListener.InvalidationEvent;
-import io.scvis.observable.Observable;
 import io.scvis.observable.WrappedObject;
 import io.scvis.proto.Identifiable;
-import io.scvis.proto.Mirror;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
@@ -23,23 +16,16 @@ import javafx.scene.shape.Rectangle;
  * 
  * @author karlz
  */
-public class Camp implements Identifiable, WrappedObject, Observable<Camp> {
+public class Camp implements Identifiable, WrappedObject {
 	@Nonnull
 	private final Player player;
-
 	@Nonnull
-	public final Vector2D position;
+	private final Vector2D position;
 
 	private double width;
 	private double height;
 
-	private final Mirror<Camp, Rectangle> mirror = new Mirror<Camp, Rectangle>(this, new Rectangle()) {
-		@Override
-		public void update(Camp reference) {
-			mirror.getReflection().setLayoutX(position.getX() - width / 2);
-			mirror.getReflection().setLayoutY(position.getY() - height / 2);
-		}
-	};
+	private final Rectangle render = new Rectangle();
 
 	/**
 	 * Constructs a new Camp object associated with the specified player and
@@ -51,19 +37,19 @@ public class Camp implements Identifiable, WrappedObject, Observable<Camp> {
 	public Camp(@Nonnull Player player, @Nonnull Vector2D position) {
 		this.player = player;
 		this.position = position;
+		this.width = SeekerProperties.getDefault().getCampWidth();
+		this.height = SeekerProperties.getDefault().getCampHeight();
+
+		render.setLayoutX(position.getX() - width / 2);
+		render.setLayoutY(position.getY() - height / 2);
+		render.setWidth(width);
+		render.setHeight(height);
+		render.setFill(Color.TRANSPARENT);
+		render.setStroke(player.getColor());
+		render.setStrokeWidth(SeekerProperties.getDefault().getGoalRadius());
+
+		player.setCamp(this);
 		player.getGame().getCamps().put(getId(), this);
-
-		width = SeekerProperties.getDefault().getCampWidth();
-		height = SeekerProperties.getDefault().getCampHeight();
-
-		mirror.getReflection().setWidth(width);
-		mirror.getReflection().setHeight(height);
-		mirror.getReflection().setFill(Color.TRANSPARENT);
-		mirror.getReflection().setStroke(player.getColor());
-		mirror.getReflection().setStrokeWidth(SeekerProperties.getDefault().getGoalRadius());
-		addInvalidationListener(e -> mirror.update(this));
-
-		invalidated();
 	}
 
 	/**
@@ -77,40 +63,6 @@ public class Camp implements Identifiable, WrappedObject, Observable<Camp> {
 		return 2 * Math.abs(deltaR.getX()) < width && 2 * Math.abs(deltaR.getY()) < height;
 	}
 
-	private List<InvalidationListener<Camp>> listeners = new ArrayList<>();
-
-	public void fireInvalidationEvent(InvalidationEvent<Camp> event) {
-		for (int i = 0; i < listeners.size(); i++) {
-			listeners.get(i).invalidated(event);
-		}
-	}
-
-	/**
-	 * Notifies all registered listeners that the camp has been invalidated.
-	 */
-	protected void invalidated() {
-		fireInvalidationEvent(new InvalidationEvent<>(this));
-	}
-
-	@Override
-	public void addInvalidationListener(InvalidationListener<Camp> listener) {
-		this.listeners.add(listener);
-	}
-
-	@Override
-	public void removeInvalidationListener(InvalidationListener<Camp> listener) {
-		this.listeners.remove(listener);
-	}
-
-	/**
-	 * Returns the mirror object associated with this camp.
-	 *
-	 * @return the mirror object
-	 */
-	public Mirror<Camp, Rectangle> getMirror() {
-		return mirror;
-	}
-
 	/**
 	 * Returns the player associated with this camp.
 	 *
@@ -118,6 +70,16 @@ public class Camp implements Identifiable, WrappedObject, Observable<Camp> {
 	 */
 	public Player getPlayer() {
 		return player;
+	}
+
+	/**
+	 * Returns the mirror object associated with this camp.
+	 *
+	 * @return the mirror object
+	 */
+	@Override
+	public Rectangle get() {
+		return render;
 	}
 
 	/**
@@ -135,8 +97,4 @@ public class Camp implements Identifiable, WrappedObject, Observable<Camp> {
 				.setPosition(TorusMap.toMessage(position)).setWidth(width).setHeight(height).build();
 	}
 
-	@Override
-	public Mirror<Camp, Rectangle> get() {
-		return mirror;
-	}
 }

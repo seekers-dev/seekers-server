@@ -9,6 +9,9 @@ import io.scvis.geometry.Vector2D;
 import javafx.scene.paint.Color;
 
 /**
+ * A goal is a physical object that can be adopted by a camp and used for
+ * scoring. It keeps track of the time owned by a camp and triggers scoring when
+ * the required time is reached.
  * 
  * @author karlz
  */
@@ -27,7 +30,6 @@ public class Goal extends Physical {
 	 */
 	public Goal(@Nonnull Game game, @Nullable Vector2D position) {
 		super(game, position);
-
 		getObject().setFill(Color.WHITESMOKE);
 		setMass(SeekerProperties.getDefault().getGoalMass());
 		setRange(SeekerProperties.getDefault().getGoalRadius());

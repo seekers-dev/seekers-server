@@ -81,7 +81,7 @@ public class SeekersServer {
 
 	@Nonnull
 	private Game game = new Game();
-
+	@Nonnull
 	private final Map<String, Player> players = new HashMap<>();
 
 	/**

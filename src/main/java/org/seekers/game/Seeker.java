@@ -22,13 +22,13 @@ public class Seeker extends Physical {
 	private final Player player;
 	@Nonnull
 	private Vector2D target = getPosition();
-
-	private double magnet = 0;
-	private double magnetSlowdown = SeekerProperties.getDefault().getSeekerMagnetSlowdown();
-	private double disabledTime = SeekerProperties.getDefault().getSeekerDisabledTime();
-	private double disabledCounter = 0;
 	@Nonnull
 	private List<Circle> indicators = new ArrayList<>();
+
+	private double magnet = 0.0;
+	private double magnetSlowdown = SeekerProperties.getDefault().getSeekerMagnetSlowdown();
+	private double disabledTime = SeekerProperties.getDefault().getSeekerDisabledTime();
+	private double disabledCounter = 0.0;
 
 	/**
 	 * Constructs a new instance of the Seeker class.
@@ -40,28 +40,14 @@ public class Seeker extends Physical {
 		super(player.getGame(), position);
 		this.player = player;
 		setRange(SeekerProperties.getDefault().getSeekerRadius());
-		getObject().setFill(player.getColor());
 		for (int i = 1; i < 3; i++) {
 			Circle indicator = new Circle(getRange() + i * 0.25 * getAnimationRange());
 			indicator.setFill(Color.TRANSPARENT);
-			indicator.setStroke(player.getColor());
 			indicator.setStrokeWidth(2);
 			getIndicators().add(indicator);
 		}
-		getMirror().getReflection().getChildren().addAll(getIndicators());
-
-		addInvalidationListener(e -> {
-			if (isDisabled()) {
-				getObject().setFill(disabled);
-			} else {
-				getObject().setFill(activated);
-			}
-			if (getMagnet() != 0) {
-				getIndicators().forEach(c -> c.setVisible(true));
-			} else {
-				getIndicators().forEach(c -> c.setVisible(false));
-			}
-		});
+		get().getChildren().addAll(getIndicators());
+		setColor(player.getColor());
 
 		player.getSeekers().put(getId(), this);
 		getGame().getSeekers().put(getId(), this);
@@ -73,6 +59,12 @@ public class Seeker extends Physical {
 		animate(deltaT);
 		if (isDisabled()) {
 			disabledCounter = Math.max(disabledCounter - deltaT, 0);
+			if (disabledCounter == 0) {
+				getObject().setFill(activated);
+				if (getMagnet() != 0) {
+					getIndicators().forEach(c -> c.setVisible(true));
+				}
+			}
 		}
 	}
 
@@ -147,7 +139,8 @@ public class Seeker extends Physical {
 	 * @param p The position to calculate the magnetic force with.
 	 * @return The magnetic force vector.
 	 */
-	public Vector2D getMagneticForce(Vector2D p) {
+	@Nonnull
+	public Vector2D getMagneticForce(@Nonnull Vector2D p) {
 		double r = getGame().getTorusDistance(getPosition(), p) / getGame().getDiameter() * 10;
 		Vector2D d = getGame().getTorusDirection(getPosition(), p);
 		double s = (r < 1) ? Math.exp(1 / (Math.pow(r, 2) - 1)) : 0;
@@ -196,7 +189,11 @@ public class Seeker extends Physical {
 	public void setMagnet(double magnet) {
 		if (!isDisabled()) {
 			this.magnet = Math.max(Math.min(magnet, 1), -8);
-			invalidated();
+			if (magnet != 0) {
+				getIndicators().forEach(c -> c.setVisible(true));
+			} else {
+				getIndicators().forEach(c -> c.setVisible(false));
+			}
 		}
 	}
 
@@ -207,7 +204,10 @@ public class Seeker extends Physical {
 		if (!isDisabled()) {
 			disabledCounter = disabledTime;
 			setMagnet(0.0);
-			invalidated();
+			for (Circle indicator : getIndicators()) {
+				indicator.setVisible(false);
+			}
+			getObject().setFill(disabled);
 		}
 	}
 
@@ -239,14 +239,17 @@ public class Seeker extends Physical {
 		this.target = target;
 	}
 
-	private Color activated;
-	private Color disabled;
+	@Nonnull
+	private Color activated = Color.WHITE;
+	@Nonnull
+	private Color disabled = Color.WHITE;
 
 	/**
 	 * Returns the color of the Seeker.
 	 *
 	 * @return The color of the Seeker.
 	 */
+	@Nonnull
 	public Color getColor() {
 		return activated;
 	}
@@ -256,13 +259,13 @@ public class Seeker extends Physical {
 	 *
 	 * @param color The color to set.
 	 */
-	public void setColor(Color color) {
+	public void setColor(final @Nonnull Color color) {
 		this.activated = color;
 		this.disabled = color.darker().darker();
+		getObject().setFill(color);
 		for (Circle circle : getIndicators()) {
 			circle.setStroke(color);
 		}
-		invalidated();
 	}
 
 	@Override
