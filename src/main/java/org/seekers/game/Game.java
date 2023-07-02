@@ -10,6 +10,7 @@ import org.seekers.grpc.SeekersDispatchHelper;
 import io.scvis.geometry.Vector2D;
 import io.scvis.observable.WrappedObject;
 import io.scvis.proto.Mirror;
+import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -86,22 +87,20 @@ public class Game extends TorusMap {
 		render.getChildren().addAll(back, front);
 		render.setTop(info);
 
-		timeline.setCycleCount(Timeline.INDEFINITE);
+		timeline.setCycleCount(Animation.INDEFINITE);
 		timeline.play();
 
 		addGoals();
 	}
 
 	private static <T extends WrappedObject> MapChangeListener<String, T> getListener(Collection<Node> coll) {
-		return e -> {
-			Platform.runLater(new Runnable() {
-				@SuppressWarnings("unchecked")
-				@Override
-				public void run() {
-					coll.add(((Mirror<?, ? extends Node>) e.getValueAdded().get()).getReflection());
-				}
-			});
-		};
+		return e -> Platform.runLater(new Runnable() {
+			@SuppressWarnings("unchecked")
+			@Override
+			public void run() {
+				coll.add(((Mirror<?, ? extends Node>) e.getValueAdded().get()).getReflection());
+			}
+		});
 	}
 
 	/**

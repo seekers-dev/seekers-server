@@ -37,10 +37,11 @@ public class Seeker extends Physical {
 		this.player = player;
 		setRange(SeekerProperties.getDefault().getSeekerRadius());
 		getObject().setFill(player.getColor());
-		for (int i = 1; i < 4; i++) {
-			Circle indicator = new Circle(getRange() + i * 4);
+		for (int i = 1; i < 3; i++) {
+			Circle indicator = new Circle(getRange() + i * 0.25 * getAnimationRange());
 			indicator.setFill(Color.TRANSPARENT);
 			indicator.setStroke(player.getColor());
+			indicator.setStrokeWidth(2);
 			getIndicators().add(indicator);
 		}
 		getMirror().getReflection().getChildren().addAll(getIndicators());
@@ -106,8 +107,8 @@ public class Seeker extends Physical {
 	 */
 	public void animate(double deltaT) {
 		for (Circle indicator : getIndicators()) {
-			indicator.setRadius(
-					(indicator.getRadius() + Math.signum(magnet) * (getRange() - deltaT)) % getAnimationRange());
+			indicator.setRadius(getRange()
+					+ (indicator.getRadius() - Math.signum(magnet) * (getRange() - deltaT)) % getAnimationRange());
 		}
 	}
 
@@ -123,6 +124,17 @@ public class Seeker extends Physical {
 			setTarget(getPlayer().getCamp().getPosition());
 			setMagnet(1);
 		}
+	}
+
+	private static final double ANIMATION_RANGE = 18.0;
+
+	/**
+	 * Returns the animation range of the Seeker.
+	 *
+	 * @return The animation range of the Seeker.
+	 */
+	public double getAnimationRange() {
+		return ANIMATION_RANGE;
 	}
 
 	/**
@@ -179,8 +191,10 @@ public class Seeker extends Physical {
 	 * @param magnet The magnet value to set.
 	 */
 	public void setMagnet(double magnet) {
-		this.magnet = Math.max(Math.min(magnet, 1), -8);
-		invalidated();
+		if (!isDisabled()) {
+			this.magnet = Math.max(Math.min(magnet, 1), -8);
+			invalidated();
+		}
 	}
 
 	/**
@@ -189,6 +203,7 @@ public class Seeker extends Physical {
 	public void disable() {
 		if (!isDisabled()) {
 			disabledCounter = disabledTime;
+			setMagnet(0.0);
 			invalidated();
 		}
 	}
@@ -240,16 +255,10 @@ public class Seeker extends Physical {
 	public void setColor(Color color) {
 		this.activated = color;
 		this.disabled = color.darker().darker();
+		for (Circle circle : getIndicators()) {
+			circle.setStroke(color);
+		}
 		invalidated();
-	}
-
-	/**
-	 * Returns the animation range of the Seeker.
-	 *
-	 * @return The animation range of the Seeker.
-	 */
-	public double getAnimationRange() {
-		return getRange() + 3 * 4;
 	}
 
 	@Override

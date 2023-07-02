@@ -103,7 +103,7 @@ public abstract class Physical
 		Vector2D distance = game.getTorusDifference(getPosition(), another.getPosition());
 
 		Vector2D deltaR = distance.normalize();
-		Vector2D deltaV = getVelocity().subtract(another.getVelocity());
+		Vector2D deltaV = another.getVelocity().subtract(getVelocity());
 
 		double dualV = deltaV.getX() * deltaR.getX() + deltaV.getY() * deltaR.getY();
 		double dualM = 2 / (mass + another.mass);

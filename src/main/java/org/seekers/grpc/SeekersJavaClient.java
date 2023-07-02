@@ -51,7 +51,7 @@ public class SeekersJavaClient {
 	 * @param color The color of the player.
 	 */
 	public void start() {
-		join(toString(), Color.color(Math.random(), Math.random(), Math.random()).toString());
+		join("Client " + hashCode(), Color.color(Math.random(), Math.random(), Math.random()).toString());
 		logger.info("Client started");
 	}
 

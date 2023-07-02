@@ -155,7 +155,7 @@ public class SeekersServer {
 		 * @param responseObserver The response observer.
 		 */
 		@Override
-		public void join(JoinRequest request, StreamObserver<JoinResponse> responseObserver) {
+		public synchronized void join(JoinRequest request, StreamObserver<JoinResponse> responseObserver) {
 			if (game.hasOpenSlots()) {
 				Player player = game.addPlayer();
 				player.setName(request.getDetailsMap().getOrDefault("name", "Unnamed Player"));
