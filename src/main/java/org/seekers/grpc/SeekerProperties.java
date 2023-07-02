@@ -166,8 +166,8 @@ public class SeekerProperties implements Corresponding<Map<String, String>> {
 	 *
 	 * @return The value of the "camp.width" property.
 	 */
-	public int getCampWidth() {
-		return getOrDefault("camp.width", Integer::valueOf, 55);
+	public double getCampWidth() {
+		return getOrDefault("camp.width", Double::valueOf, 55.0);
 	}
 
 	/**
@@ -175,17 +175,8 @@ public class SeekerProperties implements Corresponding<Map<String, String>> {
 	 *
 	 * @return The value of the "camp.height" property.
 	 */
-	public int getCampHeight() {
-		return getOrDefault("camp.height", Integer::valueOf, 55);
-	}
-
-	/**
-	 * Retrieves the value of the "physical.max-speed" property.
-	 *
-	 * @return The value of the "physical.max-speed" property.
-	 */
-	public double getPhysicalMaxSpeed() {
-		return getOrDefault("physical.max-speed", Double::valueOf, 5.0);
+	public double getCampHeight() {
+		return getOrDefault("camp.height", Double::valueOf, 55.0);
 	}
 
 	/**
@@ -195,6 +186,15 @@ public class SeekerProperties implements Corresponding<Map<String, String>> {
 	 */
 	public double getPhysicalFriction() {
 		return getOrDefault("physical.friction", Double::valueOf, 0.02);
+	}
+
+	/**
+	 * Retrieves the value of the "physical.thrust" property.
+	 *
+	 * @return The value of the "physical.thrust" property.
+	 */
+	public double getPhysicalThrust() {
+		return getOrDefault("physical.thrust", Double::valueOf, 0.1);
 	}
 
 	/**

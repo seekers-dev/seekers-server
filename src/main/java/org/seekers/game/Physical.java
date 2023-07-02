@@ -28,11 +28,10 @@ public abstract class Physical implements Entity, Kinetic, WrappedObject, Identi
 	@Nonnull
 	private Vector2D position;
 
-	private double maxSpeed = SeekerProperties.getDefault().getPhysicalMaxSpeed();
 	private double mass = 1.0;
 	private double range = 1.0;
 	private double friction = SeekerProperties.getDefault().getPhysicalFriction();
-	private double baseThrust = maxSpeed * friction;
+	private double thrust = SeekerProperties.getDefault().getPhysicalThrust();
 
 	@Nonnull
 	private final Circle object = new Circle(10, Color.CRIMSON);
@@ -126,7 +125,7 @@ public abstract class Physical implements Entity, Kinetic, WrappedObject, Identi
 	 * @return The thrust value.
 	 */
 	public double getThrust() {
-		return baseThrust;
+		return thrust;
 	}
 
 	/**
