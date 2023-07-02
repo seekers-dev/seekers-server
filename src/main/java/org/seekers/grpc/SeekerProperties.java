@@ -80,8 +80,8 @@ public class SeekerProperties implements Corresponding<Map<String, String>> {
 	@Nonnull
 	private final Map<String, Object> used = new HashMap<>();
 
-	public String getProjectPathToExec() {
-		return getOrDefault("project.path-to-exec", k -> k, "run_clients.py");
+	public String getProjectExecCommand() {
+		return getOrDefault("project.exec-command", k -> k, "python3 run_clients.py");
 	}
 
 	public String getProjectPathToAis() {

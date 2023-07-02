@@ -21,8 +21,8 @@ public class SeekersPythonClient {
 	 */
 	public SeekersPythonClient(String file) {
 		String path = SeekerProperties.getDefault().getProjectPathToAis() + file;
-		builder = new ProcessBuilder("target/seekers-py/venv/Scripts/python",
-				SeekerProperties.getDefault().getProjectPathToExec(), path);
+		builder = new ProcessBuilder(
+				SeekerProperties.getDefault().getProjectExecCommand().concat(" " + path).split(" "));
 		builder.redirectErrorStream(true);
 
 		File log = new File(path + ".log");
