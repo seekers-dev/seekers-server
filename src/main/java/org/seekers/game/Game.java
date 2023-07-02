@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import org.seekers.grpc.SeekerProperties;
 import org.seekers.grpc.SeekersDispatchHelper;
 
@@ -36,7 +38,7 @@ import javafx.util.Duration;
 public class Game extends TorusMap {
 
 	private final SeekersDispatchHelper helper = new SeekersDispatchHelper(this);
-
+	@Nonnull
 	private final List<Physical> physicals = new ArrayList<>();
 
 	private final ObservableMap<String, Player> players = FXCollections.observableHashMap();
@@ -53,7 +55,7 @@ public class Game extends TorusMap {
 	private int seekerCount = SeekerProperties.getDefault().getGlobalSeekers();
 	private int goalCount = SeekerProperties.getDefault().getGlobalGoals();
 	private boolean autoPlay = SeekerProperties.getDefault().getGlobalAutoPlay();
-
+	@Nonnull
 	private final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10.0), e -> {
 		if (hasOpenSlots())
 			return;
@@ -65,7 +67,7 @@ public class Game extends TorusMap {
 			}
 		}
 	}));
-
+	@Nonnull
 	private final BorderPane render = new BorderPane();
 
 	/**
@@ -145,6 +147,7 @@ public class Game extends TorusMap {
 	 *
 	 * @return the game rendering component
 	 */
+	@Nonnull
 	public BorderPane getRender() {
 		return render;
 	}
@@ -163,6 +166,7 @@ public class Game extends TorusMap {
 	 *
 	 * @return the list of physical entities
 	 */
+	@Nonnull
 	public List<Physical> getPhysicals() {
 		return physicals;
 	}

@@ -130,7 +130,7 @@ public class SeekersJavaClient {
 	 *                 the seeker.
 	 * @return The CommandResponse indicating the success of the command.
 	 */
-	public CommandResponse setCommand(Iterable<? extends Command> commands) {
+	public CommandResponse setCommand(Iterable<Command> commands) {
 		try {
 			return seekersBlockingStub
 					.command(CommandRequest.newBuilder().setToken(token).addAllCommands(commands).build());

@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import javax.annotation.Nonnull;
+
 import org.seekers.game.Game;
 import org.seekers.game.Player;
 import org.seekers.game.Seeker;
@@ -29,6 +31,7 @@ import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
 import io.scvis.geometry.Vector2D;
+import javafx.application.Platform;
 import javafx.scene.paint.Color;
 
 /**
@@ -76,6 +79,7 @@ public class SeekersServer {
 		logger.info("Server shutdown");
 	}
 
+	@Nonnull
 	private Game game = new Game();
 
 	private final Map<String, Player> players = new HashMap<>();
@@ -131,8 +135,10 @@ public class SeekersServer {
 					if (seeker != null) {
 						Vector2D target = new Vector2D(command.getTarget().getX(), command.getTarget().getY());
 						if (seeker.getMagnet() != command.getMagnet() || !seeker.getTarget().equals(target)) {
-							seeker.setTarget(target);
-							seeker.setMagnet(command.getMagnet());
+							Platform.runLater(() -> {
+								seeker.setTarget(target);
+								seeker.setMagnet(command.getMagnet());
+							});
 							changed++;
 						}
 					}
@@ -190,6 +196,7 @@ public class SeekersServer {
 	 *
 	 * @return The game.
 	 */
+	@Nonnull
 	public Game getGame() {
 		return game;
 	}

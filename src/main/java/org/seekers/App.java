@@ -26,6 +26,7 @@ public class App extends Application {
 				server.stop();
 			} catch (InterruptedException ex) {
 				ex.printStackTrace();
+				Thread.currentThread().interrupt();
 			}
 		});
 		Game game = server.getGame();
@@ -34,6 +35,5 @@ public class App extends Application {
 		stage.setAlwaysOnTop(true);
 		stage.setResizable(false);
 		stage.show();
-		System.out.println("DEBUG°!");
 	}
 }

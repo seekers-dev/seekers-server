@@ -3,6 +3,9 @@ package org.seekers.game;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.seekers.grpc.SeekerProperties;
 
 import com.google.protobuf.Message;
@@ -23,10 +26,13 @@ import javafx.scene.shape.Circle;
 
 public abstract class Physical
 		implements Entity, Kinetic, WrappedObject, Observable<Physical>, Identifiable, ExtendableCorresponding {
+	@Nonnull
 	private final Game game;
-
+	@Nonnull
 	private Vector2D acceleration = Vector2D.ZERO;
+	@Nonnull
 	private Vector2D velocity = Vector2D.ZERO;
+	@Nonnull
 	private Vector2D position;
 
 	private double maxSpeed = SeekerProperties.getDefault().getPhysicalMaxSpeed();
@@ -34,7 +40,7 @@ public abstract class Physical
 	private double range = 1.0;
 	private double friction = SeekerProperties.getDefault().getPhysicalFriction();
 	private double baseThrust = maxSpeed * friction;
-
+	@Nonnull
 	private final Circle object = new Circle(10, Color.CRIMSON);
 
 	private final Mirror<Physical, Pane> mirror = new Mirror<>(this, new Pane(object)) {
@@ -51,9 +57,9 @@ public abstract class Physical
 	 * @param game     The Game object associated with the Physical object.
 	 * @param position The initial position of the Physical object.
 	 */
-	protected Physical(Game game, Vector2D position) {
+	protected Physical(@Nonnull Game game, @Nullable Vector2D position) {
 		this.game = game;
-		this.position = position;
+		this.position = position == null ? Vector2D.ZERO : position;
 
 		addInvalidationListener(e -> mirror.update(this));
 		getGame().getPhysicals().add(this);

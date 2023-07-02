@@ -3,6 +3,9 @@ package org.seekers.game;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.seekers.grpc.SeekerProperties;
 
 import io.scvis.geometry.Vector2D;
@@ -15,16 +18,17 @@ import javafx.scene.shape.Circle;
  * @author karlz
  */
 public class Seeker extends Physical {
+	@Nonnull
 	private final Player player;
-
+	@Nonnull
 	private Vector2D target = getPosition();
 
 	private double magnet = 0;
 	private double magnetSlowdown = SeekerProperties.getDefault().getSeekerMagnetSlowdown();
 	private double disabledTime = SeekerProperties.getDefault().getSeekerDisabledTime();
 	private double disabledCounter = 0;
-
-	private List<Circle> indicators;
+	@Nonnull
+	private List<Circle> indicators = new ArrayList<>();
 
 	/**
 	 * Constructs a new instance of the Seeker class.
@@ -32,7 +36,7 @@ public class Seeker extends Physical {
 	 * @param player   The Player object associated with the Seeker.
 	 * @param position The position of the Seeker.
 	 */
-	public Seeker(Player player, Vector2D position) {
+	public Seeker(@Nonnull Player player, @Nullable Vector2D position) {
 		super(player.getGame(), position);
 		this.player = player;
 		setRange(SeekerProperties.getDefault().getSeekerRadius());
@@ -150,10 +154,8 @@ public class Seeker extends Physical {
 		return (isDisabled()) ? Vector2D.ZERO : d.multiply(-getMagnet() * s);
 	}
 
+	@Nonnull
 	public List<Circle> getIndicators() {
-		if (indicators == null) {
-			indicators = new ArrayList<>();
-		}
 		return indicators;
 	}
 
@@ -172,6 +174,7 @@ public class Seeker extends Physical {
 	 *
 	 * @return The Player object associated with the Seeker.
 	 */
+	@Nonnull
 	public Player getPlayer() {
 		return player;
 	}
@@ -222,6 +225,7 @@ public class Seeker extends Physical {
 	 *
 	 * @return The target position of the Seeker.
 	 */
+	@Nonnull
 	public Vector2D getTarget() {
 		return target;
 	}
@@ -231,7 +235,7 @@ public class Seeker extends Physical {
 	 *
 	 * @param target The target position to set.
 	 */
-	public void setTarget(Vector2D target) {
+	public void setTarget(@Nonnull Vector2D target) {
 		this.target = target;
 	}
 

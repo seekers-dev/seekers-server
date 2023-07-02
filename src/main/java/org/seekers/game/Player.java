@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import javax.annotation.Nonnull;
+
 import io.scvis.observable.InvalidationListener;
 import io.scvis.observable.InvalidationListener.InvalidationEvent;
 import io.scvis.observable.Observable;
@@ -24,7 +26,7 @@ import javafx.scene.text.Font;
  */
 public class Player implements Identifiable, WrappedObject, Observable<Player> {
 	private final Map<String, Seeker> seekers = new HashMap<>();
-
+	@Nonnull
 	private final Game game;
 
 	private Camp camp;
@@ -46,7 +48,7 @@ public class Player implements Identifiable, WrappedObject, Observable<Player> {
 	 *
 	 * @param game The Game object associated with the Player object.
 	 */
-	public Player(Game game) {
+	public Player(@Nonnull Game game) {
 		this.game = game;
 		this.color = Color.rgb(rand.nextInt(124) + 124, rand.nextInt(124) + 124, rand.nextInt(124) + 124);
 		this.name = "Player " + hashCode();
@@ -116,6 +118,7 @@ public class Player implements Identifiable, WrappedObject, Observable<Player> {
 	 *
 	 * @return The Game object associated with the Player.
 	 */
+	@Nonnull
 	public Game getGame() {
 		return game;
 	}
@@ -125,6 +128,7 @@ public class Player implements Identifiable, WrappedObject, Observable<Player> {
 	 *
 	 * @return The Camp associated with the Player.
 	 */
+	@Nonnull
 	public Camp getCamp() {
 		return camp;
 	}
@@ -134,7 +138,7 @@ public class Player implements Identifiable, WrappedObject, Observable<Player> {
 	 *
 	 * @param camp The Camp to set.
 	 */
-	public void setCamp(Camp camp) {
+	public void setCamp(@Nonnull Camp camp) {
 		this.camp = camp;
 	}
 

@@ -1,5 +1,8 @@
 package org.seekers.game;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.seekers.grpc.SeekerProperties;
 
 import io.scvis.geometry.Vector2D;
@@ -10,6 +13,7 @@ import javafx.scene.paint.Color;
  * @author karlz
  */
 public class Goal extends Physical {
+	@Nullable
 	private Camp capture;
 
 	private double scoringTime = SeekerProperties.getDefault().getGoalScoringTime();
@@ -21,7 +25,7 @@ public class Goal extends Physical {
 	 * @param game     The Game object associated with the Goal object.
 	 * @param position The initial position of the Goal object.
 	 */
-	public Goal(Game game, Vector2D position) {
+	public Goal(@Nonnull Game game, @Nullable Vector2D position) {
 		super(game, position);
 
 		getObject().setFill(Color.WHITESMOKE);

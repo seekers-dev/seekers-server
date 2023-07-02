@@ -2,12 +2,13 @@ package org.seekers.grpc;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
+
+import javax.annotation.Nonnull;
 
 import io.scvis.proto.Corresponding;
 
@@ -15,7 +16,7 @@ import io.scvis.proto.Corresponding;
  * The SeekerProperties class represents the properties for the Seeker game.
  */
 public class SeekerProperties implements Corresponding<Map<String, String>> {
-
+	@Nonnull
 	private static SeekerProperties defaul = new SeekerProperties("server.properties");
 
 	/**
@@ -23,7 +24,7 @@ public class SeekerProperties implements Corresponding<Map<String, String>> {
 	 *
 	 * @param defaul The default SeekerProperties instance to set.
 	 */
-	public static void setDefault(SeekerProperties defaul) {
+	public static void setDefault(@Nonnull SeekerProperties defaul) {
 		SeekerProperties.defaul = defaul;
 	}
 
@@ -32,11 +33,13 @@ public class SeekerProperties implements Corresponding<Map<String, String>> {
 	 *
 	 * @return The default SeekerProperties instance.
 	 */
+	@Nonnull
 	public static SeekerProperties getDefault() {
 		return SeekerProperties.defaul;
 	}
 
-	private Properties properties = new Properties();
+	@Nonnull
+	private final Properties properties = new Properties();
 
 	/**
 	 * Creates a SeekerProperties object and loads properties from the specified
@@ -45,10 +48,8 @@ public class SeekerProperties implements Corresponding<Map<String, String>> {
 	 * @param pathname The path of the properties file.
 	 */
 	public SeekerProperties(String pathname) {
-		try {
-			properties.load(new FileInputStream(new File(pathname)));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+		try (FileInputStream file = new FileInputStream(new File(pathname))) {
+			properties.load(file);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -72,12 +73,12 @@ public class SeekerProperties implements Corresponding<Map<String, String>> {
 	 */
 	@SuppressWarnings("unchecked")
 	private <T> T getOrDefault(String key, Function<String, T> func, T defaul) {
-		return (T) used.computeIfAbsent(key, (k) -> {
-			return properties.containsKey(key) ? func.apply(properties.getProperty(key)) : defaul;
-		});
+		return (T) used.computeIfAbsent(key,
+				k -> properties.containsKey(key) ? func.apply(properties.getProperty(key)) : defaul);
 	}
 
-	private Map<String, Object> used = new HashMap<>();
+	@Nonnull
+	private final Map<String, Object> used = new HashMap<>();
 
 	public String getProjectPathToExec() {
 		return getOrDefault("project.path-to-exec", k -> k, "run_clients.py");
@@ -259,6 +260,7 @@ public class SeekerProperties implements Corresponding<Map<String, String>> {
 		return getOrDefault("goal.mass", Double::valueOf, 0.5);
 	}
 
+	@Nonnull
 	@Override
 	public Map<String, String> associated() {
 		Map<String, String> build = new HashMap<>();

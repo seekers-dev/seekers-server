@@ -3,6 +3,8 @@ package org.seekers.game;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import org.seekers.grpc.SeekerProperties;
 
 import io.scvis.geometry.Vector2D;
@@ -22,8 +24,10 @@ import javafx.scene.shape.Rectangle;
  * @author karlz
  */
 public class Camp implements Identifiable, WrappedObject, Observable<Camp> {
+	@Nonnull
 	private final Player player;
 
+	@Nonnull
 	public final Vector2D position;
 
 	private double width;
@@ -44,7 +48,7 @@ public class Camp implements Identifiable, WrappedObject, Observable<Camp> {
 	 * @param player   the player that owns the camp
 	 * @param position the position of the camp
 	 */
-	public Camp(Player player, Vector2D position) {
+	public Camp(@Nonnull Player player, @Nonnull Vector2D position) {
 		this.player = player;
 		this.position = position;
 		player.getGame().getCamps().put(getId(), this);

@@ -2,12 +2,15 @@ package org.seekers.grpc;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * The SeekersPythonClient class is a client for running and monitoring the
  * Seekers game client written in Python.
  */
 public class SeekersPythonClient {
+
+	private static final Logger logger = Logger.getLogger(SeekersPythonClient.class.getSimpleName());
 
 	private ProcessBuilder builder;
 
@@ -18,13 +21,14 @@ public class SeekersPythonClient {
 	 */
 	public SeekersPythonClient(String file) {
 		String path = SeekerProperties.getDefault().getProjectPathToAis() + file;
-		builder = new ProcessBuilder("target/seekers-py/venv/Scripts/python", SeekerProperties.getDefault().getProjectPathToExec(), path);
+		builder = new ProcessBuilder("target/seekers-py/venv/Scripts/python",
+				SeekerProperties.getDefault().getProjectPathToExec(), path);
 		builder.redirectErrorStream(true);
 
 		File log = new File(path + ".log");
 		try {
-			if (!log.exists()) {
-				log.createNewFile();
+			if (!log.exists() && !log.createNewFile()) { // create log file
+				logger.warning("Could not create log file: " + log.getAbsolutePath());
 			}
 			builder.redirectOutput(log);
 			start();
@@ -41,14 +45,17 @@ public class SeekersPythonClient {
 	 * @throws IOException if an I/O error occurs during process startup.
 	 */
 	public void start() throws IOException {
-		builder.start();
+		process = builder.start();
 	}
 
 	/**
 	 * Stops the Python client process if it is running.
 	 */
 	public void stop() {
-		if (process != null)
+		if (process != null) {
 			process.destroy();
+		} else {
+			logger.warning("Process is null!");
+		}
 	}
 }
