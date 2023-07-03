@@ -8,9 +8,9 @@ import java.util.logging.Logger;
  * The SeekersPythonClient class is a client for running and monitoring the
  * Seekers game client written in Python.
  */
-public class SeekersPythonClient {
+public class SeekersClient {
 
-	private static final Logger logger = Logger.getLogger(SeekersPythonClient.class.getSimpleName());
+	private static final Logger logger = Logger.getLogger(SeekersClient.class.getSimpleName());
 
 	private ProcessBuilder builder;
 
@@ -19,7 +19,7 @@ public class SeekersPythonClient {
 	 *
 	 * @param file The path to the Python file.
 	 */
-	public SeekersPythonClient(String file) {
+	public SeekersClient(String file) {
 		String path = SeekerProperties.getDefault().getProjectPathToAis() + file;
 		builder = new ProcessBuilder(
 				SeekerProperties.getDefault().getProjectExecCommand().concat(" " + path).split(" "));
@@ -46,6 +46,7 @@ public class SeekersPythonClient {
 	 */
 	public void start() throws IOException {
 		process = builder.start();
+		logger.info("Client stated");
 	}
 
 	/**
@@ -57,5 +58,6 @@ public class SeekersPythonClient {
 		} else {
 			logger.warning("Process is null!");
 		}
+		logger.info("Client stopped");
 	}
 }

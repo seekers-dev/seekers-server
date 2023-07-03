@@ -1,10 +1,11 @@
 package org.seekers.game;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import io.scvis.observable.WrappedObject;
 import io.scvis.proto.Identifiable;
@@ -19,18 +20,20 @@ import javafx.scene.text.Font;
  * @author karlz
  */
 public class Player implements Identifiable, WrappedObject {
-	private final Map<String, Seeker> seekers = new HashMap<>();
+
+	private static final Random rand = new Random();
+
+	@Nonnull
+	private final Map<String, Seeker> seekers = new LinkedHashMap<>();
 	@Nonnull
 	private final Game game;
+	@Nonnull
+	private final Label render = new Label();
 
 	private Camp camp;
 	private Color color;
 	private String name;
 	private int score;
-
-	private static final Random rand = new Random();
-
-	private final Label render = new Label();
 
 	/**
 	 * Constructs a new instance of the Player class.
@@ -56,12 +59,15 @@ public class Player implements Identifiable, WrappedObject {
 	 *
 	 * @return The map of Seekers associated with the Player.
 	 */
+	@Nonnull
 	public Map<String, Seeker> getSeekers() {
 		return seekers;
 	}
 
+	@Nullable
 	private String id;
 
+	@Nonnull
 	@Override
 	public String getId() {
 		if (id == null)
@@ -84,6 +90,7 @@ public class Player implements Identifiable, WrappedObject {
 	 *
 	 * @return The Mirror object associated with the Player.
 	 */
+	@Nonnull
 	@Override
 	public Label get() {
 		return render;
@@ -113,6 +120,7 @@ public class Player implements Identifiable, WrappedObject {
 	 *
 	 * @return The name of the Player.
 	 */
+	@Nonnull
 	public String getName() {
 		return name;
 	}
@@ -122,7 +130,7 @@ public class Player implements Identifiable, WrappedObject {
 	 *
 	 * @param name The name to set.
 	 */
-	public void setName(String name) {
+	public void setName(@Nonnull String name) {
 		this.name = name;
 		render.setText(name + ": " + score);
 	}
@@ -132,6 +140,7 @@ public class Player implements Identifiable, WrappedObject {
 	 *
 	 * @return The color of the Player.
 	 */
+	@Nonnull
 	public Color getColor() {
 		return color;
 	}
@@ -141,7 +150,7 @@ public class Player implements Identifiable, WrappedObject {
 	 *
 	 * @param color The color to set.
 	 */
-	public void setColor(Color color) {
+	public void setColor(@Nonnull Color color) {
 		this.color = color;
 		for (Seeker seeker : seekers.values()) {
 			seeker.setColor(color);

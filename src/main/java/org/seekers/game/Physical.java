@@ -21,12 +21,10 @@ import javafx.scene.shape.Circle;
 public abstract class Physical implements Entity, Kinetic, WrappedObject, Identifiable, ExtendableCorresponding {
 	@Nonnull
 	private final Game game;
-	@Nonnull
-	private Vector2D acceleration = Vector2D.ZERO;
-	@Nonnull
-	private Vector2D velocity = Vector2D.ZERO;
-	@Nonnull
-	private Vector2D position;
+
+	private @Nonnull Vector2D acceleration = Vector2D.ZERO;
+	private @Nonnull Vector2D velocity = Vector2D.ZERO;
+	private @Nonnull Vector2D position;
 
 	private double mass = 1.0;
 	private double range = 1.0;

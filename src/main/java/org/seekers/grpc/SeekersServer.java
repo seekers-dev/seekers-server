@@ -113,8 +113,7 @@ public class SeekersServer {
 		 */
 		@Override
 		public void status(Empty request, StreamObserver<StatusResponse> responseObserver) {
-			SeekersDispatchHelper helper = game.getDispatchHelper();
-			responseObserver.onNext(helper.associated());
+			responseObserver.onNext(game.getStatusResponse());
 			responseObserver.onCompleted();
 		}
 
@@ -143,7 +142,7 @@ public class SeekersServer {
 						}
 					}
 				}
-				responseObserver.onNext(CommandResponse.newBuilder().setStatus(game.getDispatchHelper().associated())
+				responseObserver.onNext(CommandResponse.newBuilder().setStatus(game.getStatusResponse())
 						.setSeekersChanged(changed).build());
 				responseObserver.onCompleted();
 			} else {

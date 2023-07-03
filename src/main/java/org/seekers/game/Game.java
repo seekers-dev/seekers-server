@@ -7,10 +7,11 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import org.seekers.grpc.SeekerProperties;
-import org.seekers.grpc.SeekersDispatchHelper;
+import org.seekers.grpc.net.StatusResponse;
 
 import io.scvis.geometry.Vector2D;
 import io.scvis.observable.WrappedObject;
+import io.scvis.proto.Corresponding;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -36,7 +37,6 @@ import javafx.util.Duration;
  */
 public class Game extends TorusMap {
 
-	private final SeekersDispatchHelper helper = new SeekersDispatchHelper(this);
 	@Nonnull
 	private final List<Physical> physicals = new ArrayList<>();
 
@@ -138,6 +138,21 @@ public class Game extends TorusMap {
 		}
 	}
 
+	public StatusResponse getStatusResponse() {
+		@SuppressWarnings("unchecked")
+		StatusResponse reply = StatusResponse.newBuilder()
+				.addAllPlayers((Collection<org.seekers.grpc.game.Player>) (Collection<?>) Corresponding
+						.transform(getPlayers().values()))
+				.addAllCamps((Collection<org.seekers.grpc.game.Camp>) (Collection<?>) Corresponding
+						.transform(getCamps().values()))
+				.addAllSeekers((Collection<org.seekers.grpc.game.Seeker>) (Collection<?>) Corresponding
+						.transform(getSeekers().values()))
+				.addAllGoals((Collection<org.seekers.grpc.game.Goal>) (Collection<?>) Corresponding
+						.transform(getGoals().values()))
+				.setPassedPlaytime(getPassedPlaytime()).build();
+		return reply;
+	}
+
 	/**
 	 * Returns the rendering component of the game.
 	 *
@@ -146,15 +161,6 @@ public class Game extends TorusMap {
 	@Nonnull
 	public BorderPane getRender() {
 		return render;
-	}
-
-	/**
-	 * Returns dispatch helper associated with the game.
-	 *
-	 * @return the helper
-	 */
-	public SeekersDispatchHelper getDispatchHelper() {
-		return helper;
 	}
 
 	/**
