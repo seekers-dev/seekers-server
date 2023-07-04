@@ -112,13 +112,20 @@ public class Seeker extends Physical {
 	 * Sets the automatic commands for the Seeker.
 	 */
 	public void setAutoCommands() {
-		Goal goal = (Goal) getGame().getNearestPhysicalOf(getPosition(), getGame().getGoals().values());
-		if (getGame().getTorusDistance(getPosition(), goal.getPosition()) > 30) {
-			setTarget(goal.getPosition());
-			setMagnet(0);
-		} else {
-			setTarget(getPlayer().getCamp().getPosition());
-			setMagnet(1);
+		@SuppressWarnings("null")
+		@Nullable
+		final Goal goal = (Goal) getGame().getNearestPhysicalOf(getPosition(), getGame().getGoals().values());
+		if (goal != null) {
+			if (getGame().getTorusDistance(getPosition(), goal.getPosition()) > 30) {
+				setTarget(goal.getPosition());
+				setMagnet(0);
+			} else {
+				final Camp checked = getPlayer().getCamp();
+				if (checked != null) {
+					setTarget(checked.getPosition());
+					setMagnet(1);
+				}
+			}
 		}
 	}
 
@@ -239,8 +246,10 @@ public class Seeker extends Physical {
 		this.target = target;
 	}
 
+	@SuppressWarnings("null")
 	@Nonnull
 	private Color activated = Color.WHITE;
+	@SuppressWarnings("null")
 	@Nonnull
 	private Color disabled = Color.WHITE;
 
@@ -259,6 +268,7 @@ public class Seeker extends Physical {
 	 *
 	 * @param color The color to set.
 	 */
+	@SuppressWarnings("null")
 	public void setColor(final @Nonnull Color color) {
 		this.activated = color;
 		this.disabled = color.darker().darker();

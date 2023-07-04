@@ -58,7 +58,7 @@ public class Camp implements Identifiable, WrappedObject {
 	 * @param p the position to check
 	 * @return true if the position is inside the camp, false otherwise
 	 */
-	public boolean contains(Vector2D p) {
+	public boolean contains(@Nonnull Vector2D p) {
 		Vector2D deltaR = position.subtract(p);
 		return 2 * Math.abs(deltaR.getX()) < width && 2 * Math.abs(deltaR.getY()) < height;
 	}
@@ -87,6 +87,7 @@ public class Camp implements Identifiable, WrappedObject {
 	 *
 	 * @return the position
 	 */
+	@Nonnull
 	public Vector2D getPosition() {
 		return position;
 	}

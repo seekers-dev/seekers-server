@@ -31,8 +31,8 @@ public class Player implements Identifiable, WrappedObject {
 	private final Label render = new Label();
 
 	private Camp camp;
-	private Color color;
-	private String name;
+	private @Nonnull Color color;
+	private @Nonnull String name;
 	private int score;
 
 	/**
@@ -43,7 +43,8 @@ public class Player implements Identifiable, WrappedObject {
 	public Player(@Nonnull Game game) {
 		this.game = game;
 		this.name = "Player " + hashCode();
-		this.color = Color.rgb(rand.nextInt(124) + 124, rand.nextInt(124) + 124, rand.nextInt(124) + 124);
+		this.color = new Color((rand.nextDouble() + 1) / 3, (rand.nextDouble() + 1) / 3, (rand.nextDouble() + 1) / 3,
+				1.0);
 		render.setPadding(new Insets(2.0));
 		render.setFont(Font.font("Ubuntu", 24.0));
 		render.setTextFill(color);
@@ -67,6 +68,7 @@ public class Player implements Identifiable, WrappedObject {
 	@Nullable
 	private String id;
 
+	@SuppressWarnings("null")
 	@Nonnull
 	@Override
 	public String getId() {
@@ -101,7 +103,7 @@ public class Player implements Identifiable, WrappedObject {
 	 *
 	 * @return The Camp associated with the Player.
 	 */
-	@Nonnull
+	@Nullable
 	public Camp getCamp() {
 		return camp;
 	}
@@ -156,7 +158,10 @@ public class Player implements Identifiable, WrappedObject {
 			seeker.setColor(color);
 		}
 		render.setTextFill(color);
-		getCamp().get().setStroke(color);
+
+		final Camp checked = this.camp;
+		if (checked != null)
+			checked.get().setStroke(color);
 	}
 
 	/**

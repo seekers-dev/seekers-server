@@ -159,12 +159,18 @@ public class SeekersServer {
 		 * @param request          The join request.
 		 * @param responseObserver The response observer.
 		 */
+		@SuppressWarnings("null")
 		@Override
 		public synchronized void join(JoinRequest request, StreamObserver<JoinResponse> responseObserver) {
 			if (game.hasOpenSlots()) {
 				Player player = game.addPlayer();
-				player.setName(request.getDetailsMap().getOrDefault("name", "Unnamed Player"));
-				player.setColor(Color.web(request.getDetailsMap().getOrDefault("color", player.getColor().toString())));
+				try {
+					player.setName(request.getDetailsMap().getOrDefault("name", "Unnamed Player"));
+					player.setColor(
+							Color.web(request.getDetailsMap().getOrDefault("color", player.getColor().toString())));
+				} catch (Exception e) {
+					logger.warning("The details map has an issue: " + e.getMessage());
+				}
 				String token = Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
 						.toString();
 				players.put(token, player);

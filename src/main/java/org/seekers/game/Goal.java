@@ -94,7 +94,8 @@ public class Goal extends Physical {
 
 	@Override
 	public org.seekers.grpc.game.Goal associated() {
+		final Camp checked = this.capture;
 		return org.seekers.grpc.game.Goal.newBuilder().setSuper((org.seekers.grpc.game.Physical) super.associated())
-				.setCampId((capture != null) ? capture.getId() : "").setTimeOwned(timeOwned).build();
+				.setCampId((checked != null) ? checked.getId() : "").setTimeOwned(timeOwned).build();
 	}
 }
