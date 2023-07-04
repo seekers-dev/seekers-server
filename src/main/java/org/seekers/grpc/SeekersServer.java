@@ -34,6 +34,7 @@ import io.scvis.geometry.Vector2D;
 import javafx.application.Platform;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 import javafx.util.Pair;
 
 /**
@@ -49,11 +50,14 @@ public class SeekersServer {
 
 	private final Server server;
 
+	private final Stage stage;
+
 	/**
 	 * Constructs a new SeekersServer instance.
 	 */
-	public SeekersServer() {
-		server = ServerBuilder.forPort(7777).addService(new SeekersService()).build();
+	public SeekersServer(Stage stage) {
+		this.server = ServerBuilder.forPort(7777).addService(new SeekersService()).build();
+		this.stage = stage;
 		try {
 			start();
 		} catch (Exception e) {
@@ -68,7 +72,7 @@ public class SeekersServer {
 	 */
 	public void start() throws IOException {
 		server.start();
-		rebase();
+		rotate();
 		logger.info("Server started");
 	}
 
@@ -96,17 +100,45 @@ public class SeekersServer {
 			client1.stop();
 	}
 
-	public void rebase() {
-		logger.info("Rebase server");
-		stopOldClients();
-		logger.info("Reset game and clear players");
-		this.game = new Game(new BorderPane(), SeekerProperties.getDefault().getMapWidth(),
-				SeekerProperties.getDefault().getMapHeight());
-		this.players.clear();
+	private void hostNewClients() {
 		logger.info("Host new clients");
 		final Pair<String, String> match = tournament.next();
 		client0 = new SeekersClient(match.getKey());
 		client1 = new SeekersClient(match.getValue());
+	}
+
+	private void rebaseCached() {
+		logger.info("Reset game and clear players");
+		Platform.runLater(() -> {
+			game = new Game(new BorderPane(), SeekerProperties.getDefault().getMapWidth(),
+					SeekerProperties.getDefault().getMapHeight());
+			game.finishedProperty().addListener(c -> {
+				game.addToTournament(tournament);
+				logger.info("Current top list: " + tournament.getTopPlayers().toString());
+				rotate();
+			});
+			stage.setScene(game);
+		});
+		players.clear();
+	}
+
+	public synchronized void rotate() {
+		logger.info("Rebase server");
+		stopOldClients();
+		if (tournament.hasNext()) {
+			rebaseCached();
+			hostNewClients();
+		} else {
+			logger.info("No matchs left, closing server");
+			try {
+				stop();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				Thread.currentThread().interrupt();
+			}
+			Platform.runLater(stage::close);
+			logger.info("Final results: " + tournament.getTopPlayers().toString());
+		}
 	}
 
 	@Nonnull
