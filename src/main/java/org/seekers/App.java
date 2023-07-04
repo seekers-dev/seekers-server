@@ -6,10 +6,10 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 
 public class App extends Application {
-	private final SeekersServer server = new SeekersServer();
 
 	@Override
 	public void start(Stage stage) throws Exception {
+		final SeekersServer server = new SeekersServer(stage);
 		stage.setOnCloseRequest(c -> {
 			try {
 				server.stop();
@@ -18,7 +18,6 @@ public class App extends Application {
 				Thread.currentThread().interrupt();
 			}
 		});
-		stage.setScene(server.getGame());
 		stage.setAlwaysOnTop(true);
 		stage.setResizable(false);
 		stage.show();

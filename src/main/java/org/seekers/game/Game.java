@@ -3,10 +3,13 @@ package org.seekers.game;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 
 import org.seekers.grpc.SeekerProperties;
+import org.seekers.grpc.SeekerTournament;
+import org.seekers.grpc.SeekerTournament.PlayerCard;
 import org.seekers.grpc.net.StatusResponse;
 
 import io.scvis.geometry.Vector2D;
@@ -16,18 +19,23 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.util.Duration;
+import javafx.util.Pair;
 
 /**
  * The Game class represents a game environment where players, seekers, goals,
@@ -38,8 +46,9 @@ import javafx.util.Duration;
  */
 public class Game extends Scene implements TorusMap {
 
-	@Nonnull
-	private final List<Physical> physicals = new ArrayList<>();
+	private final static Logger logger = Logger.getLogger(Game.class.getSimpleName());
+
+	private final @Nonnull List<Physical> physicals = new ArrayList<>();
 
 	private final ObservableMap<String, Player> players = FXCollections.observableHashMap();
 	private final ObservableMap<String, Seeker> seekers = FXCollections.observableHashMap();
@@ -56,10 +65,18 @@ public class Game extends Scene implements TorusMap {
 	private int goalCount = SeekerProperties.getDefault().getGlobalGoals();
 	private boolean autoPlay = SeekerProperties.getDefault().getGlobalAutoPlay();
 
+	private final BooleanProperty finished = new SimpleBooleanProperty(false);
+
+	private final @Nonnull Label time = new Label();
+
 	@Nonnull
 	private final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10.0), e -> {
-		if (hasOpenSlots() && passed < playtime)
+		if (hasOpenSlots())
 			return;
+		if (passed > playtime) {
+			finished.set(true);
+			return;
+		}
 		for (int i = 0; i < physicals.size(); i++) {
 			Physical physical = physicals.get(i);
 			physical.update(speed);
@@ -68,10 +85,10 @@ public class Game extends Scene implements TorusMap {
 			}
 		}
 		passed += speed;
+		time.setText("[ " + passed + " ]");
 	}));
 
-	@Nonnull
-	private final BorderPane render;
+	private final @Nonnull BorderPane render;
 
 	/**
 	 * Constructs a new Game object. Initializes the game environment, creates the
@@ -84,19 +101,22 @@ public class Game extends Scene implements TorusMap {
 		this.height = height;
 
 		VBox info = new VBox();
+		render.setTop(info);
 
 		Group front = new Group();
 		Group back = new Group();
+		render.getChildren().addAll(back, front);
 
 		camps.addListener(getListener(back.getChildren()));
 		seekers.addListener(getListener(front.getChildren()));
 		goals.addListener(getListener(front.getChildren()));
 		players.addListener(getListener(info.getChildren()));
 
-		render.setBackground(new Background(new BackgroundFill(Color.gray(.1), null, null)));
-		render.getChildren().addAll(back, front);
-		render.setTop(info);
+		time.setFont(Font.font("Ubuntu", 14));
+		time.setTextFill(Color.WHITESMOKE);
+		render.setBottom(time);
 
+		render.setBackground(new Background(new BackgroundFill(Color.gray(.1), null, null)));
 		timeline.setCycleCount(Animation.INDEFINITE);
 		timeline.play();
 
@@ -114,6 +134,34 @@ public class Game extends Scene implements TorusMap {
 	 */
 	public boolean hasOpenSlots() {
 		return players.size() < playerCount;
+	}
+
+	public void addToTournament(SeekerTournament tournament) {
+		List<Pair<String, Integer>> scores = new ArrayList<>();
+		for (Player player : players.values()) {
+			scores.add(new Pair<>(player.getName(), player.getScore()));
+		}
+		scores.sort((a, b) -> b.getValue() - a.getValue());
+		if (scores.size() == 1) {
+			PlayerCard card = tournament.getPlayerCard(scores.get(0).getKey());
+			card.setWins(card.getWins() + 1);
+			logger.info(card + " got a pass");
+		} else if (scores.size() >= 2) {
+			PlayerCard card0 = tournament.getPlayerCard(scores.get(0).getKey());
+			PlayerCard card1 = tournament.getPlayerCard(scores.get(1).getKey());
+			if (scores.get(0).getValue().equals(scores.get(1).getValue())) {
+				card0.setDraws(card0.getDraws() + 1);
+				card1.setDraws(card1.getDraws() + 1);
+				logger.info(card0 + " {" + scores.get(0).getValue() + "} and " + card1 + " {" + scores.get(1).getValue()
+						+ "} ended with a draw");
+			} else {
+				card0.setWins(card0.getWins() + 1);
+				card1.setLosses(card1.getLosses() + 1);
+				logger.info(card0 + " {" + scores.get(0).getValue() + "} won against " + card1 + " {"
+						+ scores.get(1).getValue() + "}");
+
+			}
+		}
 	}
 
 	/**
@@ -157,6 +205,10 @@ public class Game extends Scene implements TorusMap {
 						.transform(getGoals().values()))
 				.setPassedPlaytime(getPassedPlaytime()).build();
 		return reply;
+	}
+
+	public BooleanProperty finishedProperty() {
+		return finished;
 	}
 
 	/**
