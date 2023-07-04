@@ -21,6 +21,7 @@ import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
@@ -35,7 +36,7 @@ import javafx.util.Duration;
  * 
  * @author karlz
  */
-public class Game extends TorusMap {
+public class Game extends Scene implements TorusMap {
 
 	@Nonnull
 	private final List<Physical> physicals = new ArrayList<>();
@@ -70,13 +71,18 @@ public class Game extends TorusMap {
 	}));
 
 	@Nonnull
-	private final BorderPane render = new BorderPane();
+	private final BorderPane render;
 
 	/**
 	 * Constructs a new Game object. Initializes the game environment, creates the
 	 * game rendering components, and starts the game timeline.
 	 */
-	public Game() {
+	public Game(@Nonnull BorderPane parent, double width, double height) {
+		super(parent, width, height);
+		this.render = parent;
+		this.width = width;
+		this.height = height;
+
 		VBox info = new VBox();
 
 		Group front = new Group();

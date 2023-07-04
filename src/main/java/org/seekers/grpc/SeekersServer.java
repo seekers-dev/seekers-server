@@ -32,7 +32,9 @@ import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
 import io.scvis.geometry.Vector2D;
 import javafx.application.Platform;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+import javafx.util.Pair;
 
 /**
  * The SeekersServer class represents the server-side implementation of the
@@ -66,6 +68,7 @@ public class SeekersServer {
 	 */
 	public void start() throws IOException {
 		server.start();
+		rebase();
 		logger.info("Server started");
 	}
 
@@ -75,12 +78,40 @@ public class SeekersServer {
 	 * @throws InterruptedException if the shutdown is interrupted.
 	 */
 	public void stop() throws InterruptedException {
+		stopOldClients();
 		server.shutdown().awaitTermination(5l, TimeUnit.SECONDS);
 		logger.info("Server shutdown");
 	}
 
+	private final SeekerTournament tournament = new SeekerTournament();
+
+	private SeekersClient client0;
+	private SeekersClient client1;
+
+	private void stopOldClients() {
+		logger.info("Stop old clients");
+		if (client0 != null)
+			client0.stop();
+		if (client1 != null)
+			client1.stop();
+	}
+
+	public void rebase() {
+		logger.info("Rebase server");
+		stopOldClients();
+		logger.info("Reset game and clear players");
+		this.game = new Game(new BorderPane(), SeekerProperties.getDefault().getMapWidth(),
+				SeekerProperties.getDefault().getMapHeight());
+		this.players.clear();
+		logger.info("Host new clients");
+		final Pair<String, String> match = tournament.next();
+		client0 = new SeekersClient(match.getKey());
+		client1 = new SeekersClient(match.getValue());
+	}
+
 	@Nonnull
-	private Game game = new Game();
+	private Game game = new Game(new BorderPane(), SeekerProperties.getDefault().getMapWidth(),
+			SeekerProperties.getDefault().getMapHeight());
 	@Nonnull
 	private final Map<String, Player> players = new HashMap<>();
 
