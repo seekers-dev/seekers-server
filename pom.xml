@@ -10,7 +10,7 @@
 		<project.mainClass>org.seekers.Launcher</project.mainClass>
 		<project.javaVersion>11</project.javaVersion>
 		<grpc.version>1.49.2</grpc.version>
-		<javafx.version>19</javafx.version>
+		<javafx.version>20.0.1</javafx.version>
 		<javafx.maven.plugin.version>0.0.6</javafx.maven.plugin.version>
 		<maven.compiler.source>${project.javaVersion}</maven.compiler.source>
 		<maven.compiler.target>${project.javaVersion}</maven.compiler.target>
