@@ -27,6 +27,7 @@ import javafx.collections.ObservableMap;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.SceneAntialiasing;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -95,10 +96,13 @@ public class Game extends Scene implements TorusMap {
 	 * game rendering components, and starts the game timeline.
 	 */
 	public Game(@Nonnull BorderPane parent, double width, double height) {
-		super(parent, width, height);
+		super(parent, width, height, true, SceneAntialiasing.BALANCED);
 		this.render = parent;
 		this.width = width;
 		this.height = height;
+
+		parent.setMinWidth(width);
+		parent.setMinHeight(height);
 
 		VBox info = new VBox();
 		render.setTop(info);
@@ -192,7 +196,7 @@ public class Game extends Scene implements TorusMap {
 		}
 	}
 
-	public StatusResponse getStatusResponse() {
+	public synchronized StatusResponse getStatusResponse() {
 		@SuppressWarnings("unchecked")
 		StatusResponse reply = StatusResponse.newBuilder()
 				.addAllPlayers((Collection<org.seekers.grpc.game.Player>) (Collection<?>) Corresponding
