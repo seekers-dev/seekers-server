@@ -118,6 +118,7 @@ public class SeekersServer {
 				rotate();
 			});
 			stage.setScene(game);
+//			stage.sizeToScene();
 		});
 		players.clear();
 	}
@@ -228,9 +229,11 @@ public class SeekersServer {
 			if (game.hasOpenSlots()) {
 				Player player = game.addPlayer();
 				try {
-					player.setName(request.getDetailsMap().getOrDefault("name", "Unnamed Player"));
-					player.setColor(
-							Color.web(request.getDetailsMap().getOrDefault("color", player.getColor().toString())));
+					Platform.runLater(() -> {
+						player.setName(request.getDetailsMap().getOrDefault("name", "Unnamed Player"));
+						player.setColor(
+								Color.web(request.getDetailsMap().getOrDefault("color", player.getColor().toString())));
+					});
 				} catch (Exception e) {
 					logger.warning("The details map has an issue: " + e.getMessage());
 				}
