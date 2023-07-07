@@ -7,9 +7,9 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 
-import org.seekers.grpc.SeekerProperties;
-import org.seekers.grpc.SeekerTournament;
-import org.seekers.grpc.SeekerTournament.PlayerCard;
+import org.seekers.grpc.SeekersProperties;
+import org.seekers.grpc.SeekersTournament;
+import org.seekers.grpc.SeekersTournament.PlayerCard;
 import org.seekers.grpc.net.StatusResponse;
 
 import io.scvis.geometry.Vector2D;
@@ -56,15 +56,15 @@ public class Game extends Scene implements TorusMap {
 	private final ObservableMap<String, Goal> goals = FXCollections.observableHashMap();
 	private final ObservableMap<String, Camp> camps = FXCollections.observableHashMap();
 
-	private double width = SeekerProperties.getDefault().getMapWidth();
-	private double height = SeekerProperties.getDefault().getMapHeight();
-	private double speed = SeekerProperties.getDefault().getGlobalSpeed();
+	private double width = SeekersProperties.getDefault().getMapWidth();
+	private double height = SeekersProperties.getDefault().getMapHeight();
+	private double speed = SeekersProperties.getDefault().getGlobalSpeed();
 	private double passed = 0.0;
-	private double playtime = SeekerProperties.getDefault().getGlobalPlaytime();
-	private int playerCount = SeekerProperties.getDefault().getGlobalPlayers();
-	private int seekerCount = SeekerProperties.getDefault().getGlobalSeekers();
-	private int goalCount = SeekerProperties.getDefault().getGlobalGoals();
-	private boolean autoPlay = SeekerProperties.getDefault().getGlobalAutoPlay();
+	private double playtime = SeekersProperties.getDefault().getGlobalPlaytime();
+	private int playerCount = SeekersProperties.getDefault().getGlobalPlayers();
+	private int seekerCount = SeekersProperties.getDefault().getGlobalSeekers();
+	private int goalCount = SeekersProperties.getDefault().getGlobalGoals();
+	private boolean autoPlay = SeekersProperties.getDefault().getGlobalAutoPlay();
 
 	private final BooleanProperty finished = new SimpleBooleanProperty(false);
 
@@ -140,7 +140,7 @@ public class Game extends Scene implements TorusMap {
 		return players.size() < playerCount;
 	}
 
-	public void addToTournament(SeekerTournament tournament) {
+	public void addToTournament(SeekersTournament tournament) {
 		List<Pair<String, Integer>> scores = new ArrayList<>();
 		for (Player player : players.values()) {
 			scores.add(new Pair<>(player.getName(), player.getScore()));

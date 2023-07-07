@@ -4,7 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.seekers.grpc.SeekerProperties;
+import org.seekers.grpc.SeekersProperties;
 
 import com.google.protobuf.Message;
 
@@ -28,8 +28,8 @@ public abstract class Physical implements Entity, Kinetic, WrappedObject, Identi
 
 	private double mass = 1.0;
 	private double range = 1.0;
-	private double friction = SeekerProperties.getDefault().getPhysicalFriction();
-	private double thrust = SeekerProperties.getDefault().getPhysicalThrust();
+	private double friction = SeekersProperties.getDefault().getPhysicalFriction();
+	private double thrust = SeekersProperties.getDefault().getPhysicalThrust();
 
 	@Nonnull
 	private final Circle object = new Circle(10, Color.CRIMSON);

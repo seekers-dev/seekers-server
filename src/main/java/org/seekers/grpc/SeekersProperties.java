@@ -15,17 +15,17 @@ import io.scvis.proto.Corresponding;
 /**
  * The SeekerProperties class represents the properties for the Seeker game.
  */
-public class SeekerProperties implements Corresponding<Map<String, String>> {
+public class SeekersProperties implements Corresponding<Map<String, String>> {
 	@Nonnull
-	private static SeekerProperties defaul = new SeekerProperties("server.properties");
+	private static SeekersProperties defaul = new SeekersProperties("server.properties");
 
 	/**
 	 * Sets the default SeekerProperties instance.
 	 *
 	 * @param defaul The default SeekerProperties instance to set.
 	 */
-	public static void setDefault(@Nonnull SeekerProperties defaul) {
-		SeekerProperties.defaul = defaul;
+	public static void setDefault(@Nonnull SeekersProperties defaul) {
+		SeekersProperties.defaul = defaul;
 	}
 
 	/**
@@ -34,8 +34,8 @@ public class SeekerProperties implements Corresponding<Map<String, String>> {
 	 * @return The default SeekerProperties instance.
 	 */
 	@Nonnull
-	public static SeekerProperties getDefault() {
-		return SeekerProperties.defaul;
+	public static SeekersProperties getDefault() {
+		return SeekersProperties.defaul;
 	}
 
 	@Nonnull
@@ -47,7 +47,7 @@ public class SeekerProperties implements Corresponding<Map<String, String>> {
 	 *
 	 * @param pathname The path of the properties file.
 	 */
-	public SeekerProperties(String pathname) {
+	public SeekersProperties(String pathname) {
 		try (FileInputStream file = new FileInputStream(new File(pathname))) {
 			properties.load(file);
 		} catch (IOException e) {

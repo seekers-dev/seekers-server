@@ -2,7 +2,7 @@ package org.seekers.game;
 
 import javax.annotation.Nonnull;
 
-import org.seekers.grpc.SeekerProperties;
+import org.seekers.grpc.SeekersProperties;
 
 import io.scvis.geometry.Vector2D;
 import io.scvis.observable.WrappedObject;
@@ -37,8 +37,8 @@ public class Camp implements Identifiable, WrappedObject {
 	public Camp(@Nonnull Player player, @Nonnull Vector2D position) {
 		this.player = player;
 		this.position = position;
-		this.width = SeekerProperties.getDefault().getCampWidth();
-		this.height = SeekerProperties.getDefault().getCampHeight();
+		this.width = SeekersProperties.getDefault().getCampWidth();
+		this.height = SeekersProperties.getDefault().getCampHeight();
 
 		render.setLayoutX(position.getX() - width / 2);
 		render.setLayoutY(position.getY() - height / 2);
@@ -46,7 +46,7 @@ public class Camp implements Identifiable, WrappedObject {
 		render.setHeight(height);
 		render.setFill(Color.TRANSPARENT);
 		render.setStroke(player.getColor());
-		render.setStrokeWidth(SeekerProperties.getDefault().getGoalRadius());
+		render.setStrokeWidth(SeekersProperties.getDefault().getGoalRadius());
 
 		player.setCamp(this);
 		player.getGame().getCamps().put(getId(), this);

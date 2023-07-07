@@ -20,9 +20,9 @@ public class SeekersClient {
 	 * @param file The path to the Python file.
 	 */
 	public SeekersClient(String file) {
-		String path = SeekerProperties.getDefault().getProjectPathToAis() + file;
+		String path = SeekersProperties.getDefault().getProjectPathToAis() + file;
 		builder = new ProcessBuilder(
-				SeekerProperties.getDefault().getProjectExecCommand().concat(" " + path).split(" "));
+				SeekersProperties.getDefault().getProjectExecCommand().concat(" " + path).split(" "));
 		builder.redirectErrorStream(true);
 
 		File log = new File(path + ".log");

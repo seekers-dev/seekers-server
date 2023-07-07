@@ -6,7 +6,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.seekers.grpc.SeekerProperties;
+import org.seekers.grpc.SeekersProperties;
 
 import io.scvis.geometry.Vector2D;
 import javafx.scene.paint.Color;
@@ -26,8 +26,8 @@ public class Seeker extends Physical {
 	private List<Circle> indicators = new ArrayList<>();
 
 	private double magnet = 0.0;
-	private double magnetSlowdown = SeekerProperties.getDefault().getSeekerMagnetSlowdown();
-	private double disabledTime = SeekerProperties.getDefault().getSeekerDisabledTime();
+	private double magnetSlowdown = SeekersProperties.getDefault().getSeekerMagnetSlowdown();
+	private double disabledTime = SeekersProperties.getDefault().getSeekerDisabledTime();
 	private double disabledCounter = 0.0;
 
 	/**
@@ -39,7 +39,7 @@ public class Seeker extends Physical {
 	public Seeker(@Nonnull Player player, @Nullable Vector2D position) {
 		super(player.getGame(), position);
 		this.player = player;
-		setRange(SeekerProperties.getDefault().getSeekerRadius());
+		setRange(SeekersProperties.getDefault().getSeekerRadius());
 		for (int i = 1; i < 3; i++) {
 			Circle indicator = new Circle(getRange() + i * 0.25 * getAnimationRange());
 			indicator.setFill(Color.TRANSPARENT);
