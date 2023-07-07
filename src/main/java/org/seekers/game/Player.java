@@ -184,7 +184,7 @@ public class Player implements Identifiable, WrappedObject {
 	@Override
 	public org.seekers.grpc.game.Player associated() {
 		return org.seekers.grpc.game.Player.newBuilder().setId(getId()).addAllSeekerIds(seekers.keySet())
-				.setCampId(camp != null ? camp.toString() : "").setName(name).setColor(color.toString()).setScore(score)
+				.setCampId(camp != null ? camp.getId() : "").setName(name).setColor(color.toString()).setScore(score)
 				.build();
 	}
 
