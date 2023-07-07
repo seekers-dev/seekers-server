@@ -1,5 +1,7 @@
 package org.seekers.game;
 
+import java.util.List;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -70,7 +72,9 @@ public abstract class Physical implements Entity, Kinetic, WrappedObject, Identi
 	 * Performs collision checks with other Physical objects.
 	 */
 	private void checks() {
-		for (Physical physical : getGame().getPhysicals()) {
+		final List<Physical> physicals = getGame().getPhysicals();
+		for (int index = 0, size = physicals.size(); index < size; index++) {
+			Physical physical = physicals.get(index);
 			if (physical == this)
 				continue;
 			double min = range + physical.range;
