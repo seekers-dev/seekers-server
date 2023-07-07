@@ -87,7 +87,7 @@ public class SeekersServer {
 		logger.info("Server shutdown");
 	}
 
-	private final SeekerTournament tournament = new SeekerTournament();
+	private final SeekersTournament tournament = new SeekersTournament();
 
 	private SeekersClient client0;
 	private SeekersClient client1;
@@ -110,8 +110,8 @@ public class SeekersServer {
 	private void rebaseCached() {
 		logger.info("Reset game and clear players");
 		Platform.runLater(() -> {
-			game = new Game(new BorderPane(), SeekerProperties.getDefault().getMapWidth(),
-					SeekerProperties.getDefault().getMapHeight());
+			game = new Game(new BorderPane(), SeekersProperties.getDefault().getMapWidth(),
+					SeekersProperties.getDefault().getMapHeight());
 			game.finishedProperty().addListener(c -> {
 				game.addToTournament(tournament);
 				logger.info("Current top list: " + tournament.getTopPlayers().toString());
@@ -143,8 +143,8 @@ public class SeekersServer {
 	}
 
 	@Nonnull
-	private Game game = new Game(new BorderPane(), SeekerProperties.getDefault().getMapWidth(),
-			SeekerProperties.getDefault().getMapHeight());
+	private Game game = new Game(new BorderPane(), SeekersProperties.getDefault().getMapWidth(),
+			SeekersProperties.getDefault().getMapHeight());
 	@Nonnull
 	private final Map<String, Player> players = new HashMap<>();
 
@@ -163,7 +163,7 @@ public class SeekersServer {
 		@Override
 		public void properties(Empty request, StreamObserver<PropertiesResponse> responseObserver) {
 			PropertiesResponse reply = PropertiesResponse.newBuilder()
-					.putAllEntries(SeekerProperties.getDefault().associated()).build();
+					.putAllEntries(SeekersProperties.getDefault().associated()).build();
 			responseObserver.onNext(reply);
 			responseObserver.onCompleted();
 		}

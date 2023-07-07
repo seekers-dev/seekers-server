@@ -1,121 +1,128 @@
 package org.seekers.grpc;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Queue;
 
-/**
- * Checkout <a href="https://strategy.channelfireball.com/mtg/channelmagic-articles/understanding-standings-part-i-tournament-structure-the-basics/" >Magic Tournaments<a/>
- */
-public class SeekersTournament {
-	public static class PlayerStat implements Comparable<PlayerStat> {
-		private final List<PlayerStat> opponents = new ArrayList<>();
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-		private int victories;
-		private int defeats;
+import javafx.util.Pair;
+
+public class SeekersTournament implements Iterator<Pair<String, String>> {
+
+	private final @Nonnull Queue<Pair<String, String>> matches = new LinkedList<>();
+	private final @Nonnull Map<String, PlayerCard> cards = new HashMap<>();
+	private final @Nonnull List<PlayerCard> tops = new ArrayList<>();
+
+	public SeekersTournament() {
+		File folder = new File(SeekersProperties.getDefault().getProjectPathToAis());
+		String[] files = folder.list((File dir, String name) -> name.startsWith("ai") && name.endsWith(".py"));
+		for (int p = 0, size = files.length; p < size; p++) {
+			for (int m = p + 1; m < size; m++) {
+				matches.add(new Pair<>(files[p], files[m]));
+			}
+		}
+	}
+
+	public PlayerCard getPlayerCard(String name) {
+		PlayerCard card;
+		if (!cards.containsKey(name)) {
+			card = new PlayerCard(name);
+			cards.put(name, card);
+			tops.add(card);
+		} else {
+			card = cards.get(name);
+		}
+		return card;
+	}
+
+	public Map<String, PlayerCard> getPlayerCards() {
+		return cards;
+	}
+
+	@Nonnull
+	public List<PlayerCard> getTopPlayers() {
+		tops.sort(null);
+		return tops;
+	}
+
+	@Override
+	public boolean hasNext() {
+		return !matches.isEmpty();
+	}
+
+	@Override
+	public Pair<String, String> next() {
+		if (!hasNext())
+			throw new NoSuchElementException();
+		return matches.poll();
+	}
+
+	public static class PlayerCard implements Comparable<PlayerCard> {
+		private int wins;
 		private int draws;
+		private int losses;
 
-		/**
-		 * Points scored in all matches
-		 */
-		private int scores;
+		private final String name;
 
-		/**
-		 * Points in the tournaments. Every victory gives 3 points and every draw 1
-		 * point.
-		 */
-		private int points;
-
-		/**
-		 * Opponent Match Win Percentage
-		 */
-		private double omw;
-
-		/**
-		 * Game Win Percentage
-		 */
-		private double gw;
-
-		/**
-		 * Average Opponent Score Points4
-		 */
-		private double osp;
-
-		/**
-		 * Calculates the total points based on victories and draws. Points formula: 3
-		 * points for a victory, 1 point for a draw.
-		 */
-		private void calcPoints() {
-			this.points = victories * 3 + draws;
+		public PlayerCard(String name) {
+			this.name = name;
 		}
 
-		/**
-		 * Calculates the opponent match win percentage. Sum up the victories of all
-		 * opponents and divide by the total number of matches.
-		 */
-		private void calcOmw() {
-			double total = 0;
-			for (int index = 0; index < opponents.size(); index++) {
-				total += opponents.get(index).victories;
-			}
-			this.omw = total / opponents.size();
-		}
-
-		/**
-		 * Calculates the game win percentage. Divide the number of victories by the
-		 * total number of matches.
-		 */
-		private void calcGw() {
-			this.gw = victories / opponents.size();
-		}
-
-		/**
-		 * Calculates the average opponent score points. Sum up the scores of all
-		 * opponents and divide by the total number of matches.
-		 */
-		private void calcOsp() {
-			int total = 0;
-			for (int index = 0; index < opponents.size(); index++) {
-				total += opponents.get(index).scores;
-			}
-			this.osp = total / opponents.size();
+		public int compared(double value) {
+			if (value < 0)
+				return -1;
+			if (value > 0)
+				return 1;
+			return 0;
 		}
 
 		@Override
-		public int compareTo(PlayerStat another) {
-			int diffPoints = points - another.points;
-			if (diffPoints != 0) {
-				return Integer.signum(diffPoints);
-			} else {
-				double diffOmw = omw - another.omw;
-				if (diffOmw != 0) {
-					return (int) Math.signum(diffOmw);
-				} else {
-					double diffGw = gw - another.gw;
-					if (diffGw != 0) {
-						return (int) Math.signum(diffGw);
-					} else {
-						double diffOsp = osp - another.osp;
-						return (int) Math.signum(diffOsp);
-					}
-				}
+		public int compareTo(PlayerCard o) {
+			return compared((o.wins + 0.5 * o.draws) - (wins + 0.5 * draws));
+		}
+
+		@Override
+		public boolean equals(@Nullable Object obj) {
+			if (obj == null || obj instanceof PlayerCard) {
+				return false;
 			}
+			PlayerCard card = (PlayerCard) obj;
+			return name.contentEquals(card.name) && wins == card.wins && draws == card.draws && losses == card.losses;
 		}
 
-		/**
-		 * Get the list of opponents played by the player.
-		 * 
-		 * @return List of opponents.
-		 */
-		public List<PlayerStat> getOpponents() {
-			return opponents;
+		@Override
+		public int hashCode() {
+			int hash = 7;
+			hash = 31 * hash + name.hashCode();
+			hash = 31 * hash + wins;
+			hash = 31 * hash + draws;
+			hash = 31 * hash + losses;
+			return hash;
 		}
 
-		public int getVictories() {
-			return victories;
+		@Override
+		public String toString() {
+			return name + " (" + wins + '-' + draws + '-' + losses + ')';
 		}
 
-		public void setVictories(int victories) {
-			this.victories = victories;
+		public String getName() {
+			return name;
+		}
+
+		public int getWins() {
+			return wins;
+		}
+
+		public void setWins(int wins) {
+			this.wins = wins;
 		}
 
 		public int getDraws() {
@@ -126,47 +133,12 @@ public class SeekersTournament {
 			this.draws = draws;
 		}
 
-		public int getDefeats() {
-			return defeats;
+		public int getLosses() {
+			return losses;
 		}
 
-		public void setDefeats(int defeats) {
-			this.defeats = defeats;
+		public void setLosses(int losses) {
+			this.losses = losses;
 		}
-
-		public double getOpponentMatchWinPercentage() {
-			return omw;
-		}
-
-		public double getGameWinPercentage() {
-			return gw;
-		}
-
-		public double getOpponentScorePoints() {
-			return osp;
-		}
-	}
-
-	private final List<PlayerStat> players = new ArrayList<>();
-
-	public SeekersTournament() {
-
-	}
-
-	public void end() {
-		// Split own and opponent scores
-		for (PlayerStat player : players) {
-			player.calcPoints();
-			player.calcGw();
-		}
-		for (PlayerStat player : players) {
-			player.calcOmw();
-			player.calcOsp();
-		}
-		players.sort(null); // Use comparable
-	}
-
-	public List<PlayerStat> getPlayers() {
-		return players;
 	}
 }

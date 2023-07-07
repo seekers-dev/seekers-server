@@ -3,7 +3,7 @@ package org.seekers.game;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.seekers.grpc.SeekerProperties;
+import org.seekers.grpc.SeekersProperties;
 
 import io.scvis.geometry.Vector2D;
 import javafx.scene.paint.Color;
@@ -19,7 +19,7 @@ public class Goal extends Physical {
 	@Nullable
 	private Camp capture;
 
-	private double scoringTime = SeekerProperties.getDefault().getGoalScoringTime();
+	private double scoringTime = SeekersProperties.getDefault().getGoalScoringTime();
 	private double timeOwned = 0;
 
 	/**
@@ -31,8 +31,8 @@ public class Goal extends Physical {
 	public Goal(@Nonnull Game game, @Nullable Vector2D position) {
 		super(game, position);
 		getObject().setFill(Color.WHITESMOKE);
-		setMass(SeekerProperties.getDefault().getGoalMass());
-		setRange(SeekerProperties.getDefault().getGoalRadius());
+		setMass(SeekersProperties.getDefault().getGoalMass());
+		setRange(SeekersProperties.getDefault().getGoalRadius());
 		getGame().getGoals().put(getId(), this);
 	}
 
