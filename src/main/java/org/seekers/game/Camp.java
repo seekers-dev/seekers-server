@@ -49,7 +49,7 @@ public class Camp implements Identifiable, WrappedObject {
 		render.setStrokeWidth(SeekersProperties.getDefault().getGoalRadius());
 
 		player.setCamp(this);
-		player.getGame().getCamps().put(getId(), this);
+		player.getGame().getCamps().add(this);
 	}
 
 	/**

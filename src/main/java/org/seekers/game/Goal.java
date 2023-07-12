@@ -7,6 +7,7 @@ import org.seekers.grpc.SeekersProperties;
 
 import io.scvis.geometry.Vector2D;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 /**
  * A goal is a physical object that can be adopted by a camp and used for
@@ -30,10 +31,10 @@ public class Goal extends Physical {
 	 */
 	public Goal(@Nonnull Game game, @Nullable Vector2D position) {
 		super(game, position);
-		getObject().setFill(Color.WHITESMOKE);
+		getObject().setFill(Color.WHITE);
 		setMass(SeekersProperties.getDefault().getGoalMass());
 		setRange(SeekersProperties.getDefault().getGoalRadius());
-		getGame().getGoals().put(getId(), this);
+		getGame().getGoals().add(this);
 	}
 
 	@Override
@@ -45,7 +46,8 @@ public class Goal extends Physical {
 	@Override
 	public void accelerate(double deltaT) {
 		Vector2D force = Vector2D.ZERO;
-		for (Seeker seeker : getGame().getSeekers().values()) {
+		for (int index = 0, size = getGame().getSeekers().size(); index < size; index++) {
+			Seeker seeker = getGame().getSeekers().get(index);
 			force = force.add(seeker.getMagneticForce(getPosition()));
 		}
 		setAcceleration(force.multiply(deltaT));
@@ -57,20 +59,51 @@ public class Goal extends Physical {
 	 * @param deltaT The time elapsed since the last update.
 	 */
 	private void adopt(double deltaT) {
-		for (Camp camp : getGame().getCamps().values()) {
+		for (Camp camp : getGame().getCamps()) {
 			if (camp.contains(getPosition())) {
 				if (this.capture == camp) {
-					timeOwned += deltaT;
+					setTimeOwned(getTimeOwned() + deltaT);
 					if (timeOwned >= scoringTime) {
 						score(camp.getPlayer());
 						return;
 					}
 				} else {
 					this.capture = camp;
-					timeOwned = 0;
+					setTimeOwned(0);
 				}
 			}
 		}
+	}
+
+	public class GoalAnimation extends Animation {
+
+		private final Circle wave = new Circle(0);
+
+		public GoalAnimation(Game game) {
+			super(game);
+			getChildren().add(wave);
+			setLayoutX(getPosition().getX());
+			setLayoutY(getPosition().getY());
+			final Camp checked = capture;
+			Color color = checked != null ? checked.getPlayer().getColor() : Color.WHITE;
+			wave.setFill(Color.color(color.getRed(), color.getGreen(), color.getBlue(), 0.25));
+			wave.setStroke(color);
+			wave.setStrokeWidth(2);
+		}
+
+		private static final double ANIMATION_RANGE = 50.0;
+
+		@Override
+		protected void animate(double deltaT) {
+			var next = wave.getRadius() + deltaT * 0.75;
+			if (next < ANIMATION_RANGE) {
+				wave.setRadius(next);
+				wave.setStrokeWidth(1 + next / ANIMATION_RANGE);
+			} else {
+				destroy();
+			}
+		}
+
 	}
 
 	/**
@@ -80,6 +113,7 @@ public class Goal extends Physical {
 	 */
 	private void score(Player player) {
 		player.putUp();
+		new GoalAnimation(getGame());
 		reset();
 	}
 
@@ -89,7 +123,26 @@ public class Goal extends Physical {
 	private void reset() {
 		setPosition(getGame().getRandomPosition());
 		capture = null;
-		timeOwned = 0;
+		setTimeOwned(0);
+	}
+
+	public void setTimeOwned(double timeOwned) {
+		this.timeOwned = timeOwned;
+		if (timeOwned == 0) {
+			getObject().setFill(Color.WHITE);
+		} else {
+			final Camp checked = this.capture;
+			if (checked != null) {
+				Color color = checked.getPlayer().getColor();
+				getObject().setFill(Color.color(1 + (color.getRed() - 1) * timeOwned / scoringTime,
+						1 + (color.getGreen() - 1) * timeOwned / scoringTime,
+						1 + (color.getBlue() - 1) * timeOwned / scoringTime));
+			}
+		}
+	}
+
+	public double getTimeOwned() {
+		return timeOwned;
 	}
 
 	@Override

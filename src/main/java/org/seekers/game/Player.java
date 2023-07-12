@@ -49,7 +49,7 @@ public class Player implements Identifiable, WrappedObject {
 		render.setFont(Font.font("Ubuntu", 24.0));
 		render.setTextFill(color);
 
-		game.getPlayers().put(getId(), this);
+		game.getPlayers().add(this);
 	}
 
 	/**

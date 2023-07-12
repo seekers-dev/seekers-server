@@ -47,7 +47,7 @@ public abstract class Physical implements Entity, Kinetic, WrappedObject, Identi
 	protected Physical(@Nonnull Game game, @Nullable Vector2D position) {
 		this.game = game;
 		this.position = position == null ? Vector2D.ZERO : position;
-		getGame().getPhysicals().add(this);
+		getGame().getEntities().add(this);
 	}
 
 	@Override
@@ -72,9 +72,11 @@ public abstract class Physical implements Entity, Kinetic, WrappedObject, Identi
 	 * Performs collision checks with other Physical objects.
 	 */
 	private void checks() {
-		final List<Physical> physicals = getGame().getPhysicals();
-		for (int index = 0, size = physicals.size(); index < size; index++) {
-			Physical physical = physicals.get(index);
+		final List<Entity> entities = getGame().getEntities();
+		for (int index = 0, size = entities.size(); index < size; index++) {
+			if (!(entities.get(index) instanceof Physical))
+				return;
+			Physical physical = (Physical) entities.get(index);
 			if (physical == this)
 				continue;
 			double min = range + physical.range;

@@ -12,18 +12,20 @@ import org.seekers.grpc.SeekersTournament;
 import org.seekers.grpc.SeekersTournament.PlayerCard;
 import org.seekers.grpc.net.StatusResponse;
 
+import io.scvis.entity.Entity;
 import io.scvis.geometry.Vector2D;
 import io.scvis.observable.WrappedObject;
 import io.scvis.proto.Corresponding;
-import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableMap;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
+import javafx.collections.SetChangeListener;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -49,12 +51,14 @@ public class Game extends Scene implements TorusMap {
 
 	private final static Logger logger = Logger.getLogger(Game.class.getSimpleName());
 
-	private final @Nonnull List<Physical> physicals = new ArrayList<>();
+	private final @Nonnull List<Entity> entities = new ArrayList<>();
 
-	private final ObservableMap<String, Player> players = FXCollections.observableHashMap();
-	private final ObservableMap<String, Seeker> seekers = FXCollections.observableHashMap();
-	private final ObservableMap<String, Goal> goals = FXCollections.observableHashMap();
-	private final ObservableMap<String, Camp> camps = FXCollections.observableHashMap();
+	private final ObservableList<Player> players = FXCollections.observableArrayList();
+	private final ObservableList<Seeker> seekers = FXCollections.observableArrayList();
+	private final ObservableList<Goal> goals = FXCollections.observableArrayList();
+	private final ObservableList<Camp> camps = FXCollections.observableArrayList();
+
+	private final ObservableSet<Animation> animations = FXCollections.observableSet();
 
 	private double width = SeekersProperties.getDefault().getMapWidth();
 	private double height = SeekersProperties.getDefault().getMapHeight();
@@ -78,8 +82,8 @@ public class Game extends Scene implements TorusMap {
 			finished.set(true);
 			return;
 		}
-		for (int i = 0; i < physicals.size(); i++) {
-			Physical physical = physicals.get(i);
+		for (int i = 0; i < entities.size(); i++) {
+			Entity physical = entities.get(i);
 			physical.update(speed);
 			if (autoPlay && (physical instanceof Seeker)) {
 				((Seeker) physical).setAutoCommands();
@@ -101,9 +105,6 @@ public class Game extends Scene implements TorusMap {
 		this.width = width;
 		this.height = height;
 
-		parent.setMinWidth(width);
-		parent.setMinHeight(height);
-
 		VBox info = new VBox();
 		render.setTop(info);
 
@@ -115,20 +116,34 @@ public class Game extends Scene implements TorusMap {
 		seekers.addListener(getListener(front.getChildren()));
 		goals.addListener(getListener(front.getChildren()));
 		players.addListener(getListener(info.getChildren()));
+		animations.addListener((SetChangeListener.Change<? extends Node> change) -> {
+			if (change.wasAdded()) {
+				back.getChildren().add(change.getElementAdded());
+			} else if (change.wasRemoved()) {
+				back.getChildren().remove(change.getElementRemoved());
+			}
+		});
 
 		time.setFont(Font.font("Ubuntu", 14));
 		time.setTextFill(Color.WHITESMOKE);
 		render.setBottom(time);
 
 		render.setBackground(new Background(new BackgroundFill(Color.gray(.1), null, null)));
-		timeline.setCycleCount(Animation.INDEFINITE);
+		timeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
 		timeline.play();
 
 		addGoals();
 	}
 
-	private static <T extends WrappedObject> MapChangeListener<String, T> getListener(Collection<Node> coll) {
-		return e -> Platform.runLater(() -> coll.add((Node) e.getValueAdded().get()));
+	private static <T extends WrappedObject> ListChangeListener<T> getListener(Collection<Node> coll) {
+		return e -> Platform.runLater(() -> {
+			e.next();
+			if (e.wasAdded()) {
+				for (int index = 0; index < e.getAddedSize(); index++) {
+					coll.add((Node) e.getAddedSubList().get(index).get());
+				}
+			}
+		});
 	}
 
 	/**
@@ -142,7 +157,7 @@ public class Game extends Scene implements TorusMap {
 
 	public void addToTournament(SeekersTournament tournament) {
 		List<Pair<String, Integer>> scores = new ArrayList<>();
-		for (Player player : players.values()) {
+		for (Player player : players) {
 			scores.add(new Pair<>(player.getName(), player.getScore()));
 		}
 		scores.sort((a, b) -> b.getValue() - a.getValue());
@@ -198,15 +213,14 @@ public class Game extends Scene implements TorusMap {
 
 	public synchronized StatusResponse getStatusResponse() {
 		@SuppressWarnings("unchecked")
-		StatusResponse reply = StatusResponse.newBuilder()
-				.addAllPlayers((Collection<org.seekers.grpc.game.Player>) (Collection<?>) Corresponding
-						.transform(getPlayers().values()))
-				.addAllCamps((Collection<org.seekers.grpc.game.Camp>) (Collection<?>) Corresponding
-						.transform(getCamps().values()))
+		StatusResponse reply = StatusResponse.newBuilder().addAllPlayers(
+				(Collection<org.seekers.grpc.game.Player>) (Collection<?>) Corresponding.transform(getPlayers()))
+				.addAllCamps(
+						(Collection<org.seekers.grpc.game.Camp>) (Collection<?>) Corresponding.transform(getCamps()))
 				.addAllSeekers((Collection<org.seekers.grpc.game.Seeker>) (Collection<?>) Corresponding
-						.transform(getSeekers().values()))
-				.addAllGoals((Collection<org.seekers.grpc.game.Goal>) (Collection<?>) Corresponding
-						.transform(getGoals().values()))
+						.transform(getSeekers()))
+				.addAllGoals(
+						(Collection<org.seekers.grpc.game.Goal>) (Collection<?>) Corresponding.transform(getGoals()))
 				.setPassedPlaytime(getPassedPlaytime()).build();
 		return reply;
 	}
@@ -231,8 +245,8 @@ public class Game extends Scene implements TorusMap {
 	 * @return the list of physical entities
 	 */
 	@Nonnull
-	public List<Physical> getPhysicals() {
-		return physicals;
+	public List<Entity> getEntities() {
+		return entities;
 	}
 
 	/**
@@ -240,7 +254,7 @@ public class Game extends Scene implements TorusMap {
 	 *
 	 * @return the map of seekers
 	 */
-	public ObservableMap<String, Seeker> getSeekers() {
+	public ObservableList<Seeker> getSeekers() {
 		return seekers;
 	}
 
@@ -249,7 +263,7 @@ public class Game extends Scene implements TorusMap {
 	 *
 	 * @return the map of players
 	 */
-	public ObservableMap<String, Player> getPlayers() {
+	public ObservableList<Player> getPlayers() {
 		return players;
 	}
 
@@ -258,7 +272,7 @@ public class Game extends Scene implements TorusMap {
 	 *
 	 * @return the map of goals
 	 */
-	public ObservableMap<String, Goal> getGoals() {
+	public ObservableList<Goal> getGoals() {
 		return goals;
 	}
 
@@ -267,8 +281,12 @@ public class Game extends Scene implements TorusMap {
 	 *
 	 * @return the map of camps
 	 */
-	public ObservableMap<String, Camp> getCamps() {
+	public ObservableList<Camp> getCamps() {
 		return camps;
+	}
+
+	public ObservableSet<Animation> getAnimations() {
+		return animations;
 	}
 
 	/**

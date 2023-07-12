@@ -50,7 +50,7 @@ public class Seeker extends Physical {
 		setColor(player.getColor());
 
 		player.getSeekers().put(getId(), this);
-		getGame().getSeekers().put(getId(), this);
+		getGame().getSeekers().add(this);
 	}
 
 	@Override
@@ -114,7 +114,7 @@ public class Seeker extends Physical {
 	public void setAutoCommands() {
 		@SuppressWarnings("null")
 		@Nullable
-		final Goal goal = (Goal) getGame().getNearestPhysicalOf(getPosition(), getGame().getGoals().values());
+		final Goal goal = (Goal) getGame().getNearestPhysicalOf(getPosition(), getGame().getGoals());
 		if (goal != null) {
 			if (getGame().getTorusDistance(getPosition(), goal.getPosition()) > 30) {
 				setTarget(goal.getPosition());
