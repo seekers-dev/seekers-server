@@ -140,7 +140,7 @@ public class SeekersProperties implements Corresponding<Map<String, String>> {
 	 * @return The value of the "global.goals" property.
 	 */
 	public int getGlobalGoals() {
-		return getOrDefault("global.goals", Integer::valueOf, 6);
+		return getOrDefault("global.goals", Integer::valueOf, 5);
 	}
 
 	/**
@@ -185,16 +185,7 @@ public class SeekersProperties implements Corresponding<Map<String, String>> {
 	 * @return The value of the "physical.friction" property.
 	 */
 	public double getPhysicalFriction() {
-		return getOrDefault("physical.friction", Double::valueOf, 0.02);
-	}
-
-	/**
-	 * Retrieves the value of the "physical.thrust" property.
-	 *
-	 * @return The value of the "physical.thrust" property.
-	 */
-	public double getPhysicalThrust() {
-		return getOrDefault("physical.thrust", Double::valueOf, 0.1);
+		return getOrDefault("physical.friction", Double::valueOf, 0.1);
 	}
 
 	/**
@@ -212,7 +203,7 @@ public class SeekersProperties implements Corresponding<Map<String, String>> {
 	 * @return The value of the "seeker.disabled-time" property.
 	 */
 	public double getSeekerDisabledTime() {
-		return getOrDefault("seeker.disbaled-time", Double::valueOf, 75.0);
+		return getOrDefault("seeker.disbaled-time", Double::valueOf, 250.0);
 	}
 
 	/**
@@ -231,6 +222,15 @@ public class SeekersProperties implements Corresponding<Map<String, String>> {
 	 */
 	public double getSeekerMass() {
 		return getOrDefault("seeker.mass", Double::valueOf, 1.0);
+	}
+
+	/**
+	 * Retrieves the value of the "seeker.thrust" property.
+	 *
+	 * @return The value of the "seeker.thrust" property.
+	 */
+	public double getSeekerThrust() {
+		return getOrDefault("seeker.thrust", Double::valueOf, 0.1);
 	}
 
 	/**
@@ -258,6 +258,15 @@ public class SeekersProperties implements Corresponding<Map<String, String>> {
 	 */
 	public double getGoalMass() {
 		return getOrDefault("goal.mass", Double::valueOf, 0.5);
+	}
+
+	/**
+	 * Retrieves the value of the "goal.thrust" property.
+	 *
+	 * @return The value of the "goal.thrust" property.
+	 */
+	public double getGoalThrust() {
+		return getOrDefault("goal.thrust", Double::valueOf, 0.1);
 	}
 
 	@Nonnull

@@ -31,7 +31,7 @@ public abstract class Physical implements Entity, Kinetic, WrappedObject, Identi
 	private double mass = 1.0;
 	private double range = 1.0;
 	private double friction = SeekersProperties.getDefault().getPhysicalFriction();
-	private double thrust = SeekersProperties.getDefault().getPhysicalThrust();
+	private double thrust;
 
 	@Nonnull
 	private final Circle object = new Circle(10, Color.CRIMSON);
@@ -121,15 +121,6 @@ public abstract class Physical implements Entity, Kinetic, WrappedObject, Identi
 	 */
 	public Circle getObject() {
 		return object;
-	}
-
-	/**
-	 * Retrieves the thrust applied to the Physical object.
-	 *
-	 * @return The thrust value.
-	 */
-	public double getThrust() {
-		return thrust;
 	}
 
 	/**
@@ -227,6 +218,27 @@ public abstract class Physical implements Entity, Kinetic, WrappedObject, Identi
 	 */
 	public double getMass() {
 		return mass;
+	}
+
+	/**
+	 * Retrieves the thrust applied to the Physical object.
+	 *
+	 * @return The thrust value.
+	 */
+	public double getThrust() {
+		return thrust;
+	}
+
+	public void setThrust(double thrust) {
+		this.thrust = thrust;
+	}
+
+	public double getFriction() {
+		return friction;
+	}
+
+	public void setFriction(double friction) {
+		this.friction = friction;
 	}
 
 	/**

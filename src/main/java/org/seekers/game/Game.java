@@ -116,13 +116,13 @@ public class Game extends Scene implements TorusMap {
 		seekers.addListener(getListener(front.getChildren()));
 		goals.addListener(getListener(front.getChildren()));
 		players.addListener(getListener(info.getChildren()));
-		animations.addListener((SetChangeListener.Change<? extends Node> change) -> {
+		animations.addListener((SetChangeListener.Change<? extends Node> change) -> Platform.runLater(() -> {
 			if (change.wasAdded()) {
 				back.getChildren().add(change.getElementAdded());
 			} else if (change.wasRemoved()) {
 				back.getChildren().remove(change.getElementRemoved());
 			}
-		});
+		}));
 
 		time.setFont(Font.font("Ubuntu", 14));
 		time.setTextFill(Color.WHITESMOKE);

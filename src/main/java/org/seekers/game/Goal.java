@@ -33,6 +33,7 @@ public class Goal extends Physical {
 		super(game, position);
 		getObject().setFill(Color.WHITE);
 		setMass(SeekersProperties.getDefault().getGoalMass());
+		setThrust(SeekersProperties.getDefault().getGoalThrust());
 		setRange(SeekersProperties.getDefault().getGoalRadius());
 		getGame().getGoals().add(this);
 	}
