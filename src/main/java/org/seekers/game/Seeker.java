@@ -18,12 +18,13 @@ import javafx.scene.shape.Circle;
  * @author karlz
  */
 public class Seeker extends Physical {
-	@Nonnull
-	private final Player player;
+
+	private final @Nonnull Player player;
+
+	private @Nonnull List<Circle> indicators = new ArrayList<>();
+
 	@Nonnull
 	private Vector2D target = getPosition();
-	@Nonnull
-	private List<Circle> indicators = new ArrayList<>();
 
 	private double magnet = 0.0;
 	private double magnetSlowdown = SeekersProperties.getDefault().getSeekerMagnetSlowdown();
@@ -39,7 +40,10 @@ public class Seeker extends Physical {
 	public Seeker(@Nonnull Player player, @Nullable Vector2D position) {
 		super(player.getGame(), position);
 		this.player = player;
+		setThrust(SeekersProperties.getDefault().getSeekerThrust());
 		setRange(SeekersProperties.getDefault().getSeekerRadius());
+		setColor(player.getColor());
+
 		for (int i = 1; i < 3; i++) {
 			Circle indicator = new Circle(getRange() + i * 0.25 * getAnimationRange());
 			indicator.setFill(Color.TRANSPARENT);
@@ -47,7 +51,6 @@ public class Seeker extends Physical {
 			getIndicators().add(indicator);
 		}
 		get().getChildren().addAll(getIndicators());
-		setColor(player.getColor());
 
 		player.getSeekers().put(getId(), this);
 		getGame().getSeekers().add(this);
@@ -56,7 +59,6 @@ public class Seeker extends Physical {
 	@Override
 	public void update(double deltaT) {
 		super.update(deltaT);
-		animate(deltaT);
 		if (isDisabled()) {
 			disabledCounter = Math.max(disabledCounter - deltaT, 0);
 			if (disabledCounter == 0) {
@@ -77,11 +79,27 @@ public class Seeker extends Physical {
 		}
 	}
 
+	/**
+	 * Animates the Seeker based on the time passed.
+	 *
+	 * @param deltaT The time passed since the last animation.
+	 */
+	protected void animate(double deltaT) {
+		for (Circle indicator : getIndicators()) {
+			var value = getRange()
+					+ (indicator.getRadius() - Math.signum(magnet) * (getRange() - deltaT)) % getAnimationRange();
+			indicator.setRadius(value);
+			indicator.setStrokeWidth(value / 10);
+		}
+	}
+
 	@Override
 	public void collision(Physical another, double minDistance) {
 		if (another instanceof Seeker) {
 			Seeker collision = (Seeker) another;
-			if (magnet != 0) {
+			if (collision.isDisabled()) {
+				disable();
+			} else if (magnet != 0) {
 				disable();
 				if (collision.magnet != 0)
 					collision.disable();
@@ -96,21 +114,6 @@ public class Seeker extends Physical {
 		super.collision(another, minDistance);
 	}
 
-	/**
-	 * Animates the Seeker based on the time passed.
-	 *
-	 * @param deltaT The time passed since the last animation.
-	 */
-	public void animate(double deltaT) {
-		for (Circle indicator : getIndicators()) {
-			indicator.setRadius(getRange()
-					+ (indicator.getRadius() - Math.signum(magnet) * (getRange() - deltaT)) % getAnimationRange());
-		}
-	}
-
-	/**
-	 * Sets the automatic commands for the Seeker.
-	 */
 	public void setAutoCommands() {
 		@SuppressWarnings("null")
 		@Nullable
@@ -154,11 +157,6 @@ public class Seeker extends Physical {
 		return (isDisabled()) ? Vector2D.ZERO : d.multiply(-getMagnet() * s);
 	}
 
-	@Nonnull
-	public List<Circle> getIndicators() {
-		return indicators;
-	}
-
 	/**
 	 * Returns the thrust of the Seeker, taking into account the magnet's effect.
 	 *
@@ -177,6 +175,11 @@ public class Seeker extends Physical {
 	@Nonnull
 	public Player getPlayer() {
 		return player;
+	}
+
+	@Override
+	public void setPosition(@Nonnull Vector2D position) {
+		super.setPosition(position);
 	}
 
 	/**
@@ -283,5 +286,10 @@ public class Seeker extends Physical {
 		return org.seekers.grpc.game.Seeker.newBuilder().setSuper((org.seekers.grpc.game.Physical) super.associated())
 				.setPlayerId(player.getId()).setMagnet(magnet).setTarget(TorusMap.toMessage(target))
 				.setDisableCounter(disabledCounter).build();
+	}
+
+	@Nonnull
+	public List<Circle> getIndicators() {
+		return indicators;
 	}
 }
