@@ -60,6 +60,11 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.ini4j</groupId>
+			<artifactId>ini4j</artifactId>
+			<version>0.5.4</version>
+		</dependency>
+		<dependency>
 			<groupId>com.github.karl-zschiebsch</groupId>
 			<artifactId>scvis</artifactId>
 			<version>00dce9b</version>
