@@ -7,7 +7,6 @@ import javax.annotation.Nonnull;
 
 import org.seekers.grpc.SeekersProperties;
 import org.seekers.grpc.SeekersTournament;
-import org.seekers.grpc.SeekersTournament.PlayerCard;
 import org.seekers.grpc.net.StatusResponse;
 
 import io.scvis.entity.Entity;
@@ -158,14 +157,16 @@ public class Game extends Scene implements TorusMap {
 		List<Pair<String, Integer>> scores = new ArrayList<>();
 		for (Player player : players) {
 			scores.add(new Pair<>(player.getName(), player.getScore()));
+			tournament.getCurrentMatch().getMembers().put(player.getName() + ".py", player.getScore());
 		}
+		tournament.getCurrentMatch().markAsOver();
 		scores.sort((a, b) -> b.getValue() - a.getValue());
 		if (scores.size() == 1) {
-			PlayerCard card = tournament.getPlayerCard(scores.get(0).getKey());
+			SeekersTournament.Participant card = tournament.getPlayerCard(scores.get(0).getKey());
 			card.setWins(card.getWins() + 1);
 		} else if (scores.size() >= 2) {
-			PlayerCard card0 = tournament.getPlayerCard(scores.get(0).getKey());
-			PlayerCard card1 = tournament.getPlayerCard(scores.get(1).getKey());
+			SeekersTournament.Participant card0 = tournament.getPlayerCard(scores.get(0).getKey());
+			SeekersTournament.Participant card1 = tournament.getPlayerCard(scores.get(1).getKey());
 			if (scores.get(0).getValue().equals(scores.get(1).getValue())) {
 				card0.setDraws(card0.getDraws() + 1);
 				card1.setDraws(card1.getDraws() + 1);

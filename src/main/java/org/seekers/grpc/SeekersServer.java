@@ -3,6 +3,7 @@ package org.seekers.grpc;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -35,7 +36,6 @@ import javafx.application.Platform;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 
 /**
  * The SeekersServer class represents the server-side implementation of the
@@ -61,7 +61,7 @@ public class SeekersServer {
 		try {
 			start();
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new SeekersException(e);
 		}
 	}
 
@@ -83,7 +83,7 @@ public class SeekersServer {
 	 */
 	public void stop() throws InterruptedException {
 		stopOldClients();
-		server.shutdown().awaitTermination(5l, TimeUnit.SECONDS);
+		server.shutdown().awaitTermination(5L, TimeUnit.SECONDS);
 		logger.info("Server shutdown");
 	}
 
@@ -102,9 +102,10 @@ public class SeekersServer {
 
 	private void hostNewClients() {
 		logger.info("Host new clients");
-		final Pair<String, String> match = tournament.next();
-		client0 = new SeekersClient(match.getKey());
-		client1 = new SeekersClient(match.getValue());
+		SeekersTournament.Match match = tournament.next();
+		Iterator<String> iterator = match.getMembers().keySet().iterator();
+		client0 = new SeekersClient(iterator.next());
+		client1 = new SeekersClient(iterator.next());
 	}
 
 	private void rebaseCached() {
@@ -114,11 +115,11 @@ public class SeekersServer {
 					SeekersProperties.getDefault().getMapHeight());
 			game.finishedProperty().addListener(c -> {
 				game.addToTournament(tournament);
-				logger.info("Current top list: " + tournament.getTopPlayers().toString());
+				tournament.save();
+				logger.info("Current top list: " + tournament.getTopPlayers());
 				rotate();
 			});
 			stage.setScene(game);
-//			stage.sizeToScene();
 		});
 		players.clear();
 	}
@@ -130,15 +131,13 @@ public class SeekersServer {
 			rebaseCached();
 			hostNewClients();
 		} else {
-			logger.info("No matchs left, closing server");
+			logger.info("No matches left, closing server");
 			try {
 				stop();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
 				Thread.currentThread().interrupt();
 			}
 			Platform.runLater(stage::close);
-			logger.info("Final results: " + tournament.getTopPlayers().toString());
 		}
 	}
 

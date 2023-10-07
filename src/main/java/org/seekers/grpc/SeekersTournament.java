@@ -1,21 +1,25 @@
 package org.seekers.grpc;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import javafx.util.Pair;
+import com.google.gson.Gson;
 
 /**
  * Represents a Seekers Tournament.
  */
-public class SeekersTournament implements Iterator<Pair<String, String>> {
+public class SeekersTournament implements Serializable, Iterator<SeekersTournament.Match> {
 
-	private final @Nonnull Queue<Pair<String, String>> matches = new LinkedList<>();
-	private final @Nonnull Map<String, PlayerCard> cards = new HashMap<>();
-	private final @Nonnull List<PlayerCard> tops = new ArrayList<>();
+	private static final Gson gson = new Gson();
+
+	private final @Nonnull List<Match> matches = new LinkedList<>();
+	private final @Nonnull Map<String, Participant> participants = new HashMap<>();
 
 	/**
 	 * Constructs a SeekersTournament object and initializes the matches queue.
@@ -26,26 +30,33 @@ public class SeekersTournament implements Iterator<Pair<String, String>> {
 		Objects.requireNonNull(files);
 		for (int p = 0, size = files.length; p < size; p++) {
 			for (int m = p + 1; m < size; m++) {
-				matches.add(new Pair<>(files[p], files[m]));
+				matches.add(new Match(List.of(folder + "/" + files[p], folder + "/" + files[m])));
 			}
 		}
 	}
 
+	public void save() {
+		try (FileOutputStream stream = new FileOutputStream(hashCode() + ".json")) {
+			stream.write(gson.toJson(this).getBytes());
+		} catch (IOException e) {
+            throw new SeekersException(e);
+        }
+    }
+
 	/**
-	 * Gets the PlayerCard object for the given name. If no PlayerCard is present, a
+	 * Gets the Participant object for the given name. If no Participant is present, a
 	 * new will be created.
 	 *
 	 * @param name the name of the player
-	 * @return the PlayerCard object
+	 * @return the Participant object
 	 */
-	public PlayerCard getPlayerCard(String name) {
-		PlayerCard card;
-		if (!cards.containsKey(name)) {
-			card = new PlayerCard(name);
-			cards.put(name, card);
-			tops.add(card);
+	public Participant getPlayerCard(String name) {
+		Participant card;
+		if (!participants.containsKey(name)) {
+			card = new Participant(name);
+			participants.put(name, card);
 		} else {
-			card = cards.get(name);
+			card = participants.get(name);
 		}
 		return card;
 	}
@@ -56,9 +67,16 @@ public class SeekersTournament implements Iterator<Pair<String, String>> {
 	 * @return the list of top players
 	 */
 	@Nonnull
-	public List<PlayerCard> getTopPlayers() {
+	public List<Participant> getTopPlayers() {
+        List<Participant> tops = new ArrayList<>(participants.values());
 		tops.sort(null);
 		return tops;
+	}
+
+	public Match getCurrentMatch() {
+		if (index == 0)
+			throw new NoSuchElementException();
+		return matches.get(index - 1);
 	}
 
 	/**
@@ -68,8 +86,10 @@ public class SeekersTournament implements Iterator<Pair<String, String>> {
 	 */
 	@Override
 	public boolean hasNext() {
-		return !matches.isEmpty();
+		return index < matches.size();
 	}
+
+	private transient int index = 0;
 
 	/**
 	 * Gets the next match.
@@ -78,16 +98,42 @@ public class SeekersTournament implements Iterator<Pair<String, String>> {
 	 * @throws NoSuchElementException if there are no more matches left
 	 */
 	@Override
-	public Pair<String, String> next() {
-		if (!hasNext())
+	public Match next() {
+		if (!hasNext()) {
 			throw new NoSuchElementException();
-		return matches.poll();
+		}
+		return matches.get(index++);
+	}
+
+	public static class Match implements Serializable {
+		private final Map<String, Integer> members = new LinkedHashMap<>();
+
+		@SuppressWarnings("unused")
+		private boolean isOver;
+
+		public Match(Iterable<String> participants) {
+			for (String participant : participants) {
+				members.put(participant, 0);
+			}
+		}
+
+		public void markAsOver() {
+			this.isOver = true;
+		}
+
+		public boolean isOver() {
+			return isOver;
+		}
+
+		public Map<String, Integer> getMembers() {
+			return members;
+		}
 	}
 
 	/**
 	 * Represents a player card with win, draw, and loss statistics.
 	 */
-	public static class PlayerCard implements Comparable<PlayerCard> {
+	public static class Participant implements Comparable<Participant> {
 		private int wins;
 		private int draws;
 		private int losses;
@@ -95,11 +141,11 @@ public class SeekersTournament implements Iterator<Pair<String, String>> {
 		private final String name;
 
 		/**
-		 * Constructs a PlayerCard object with the given name.
+		 * Constructs a Participant object with the given name.
 		 *
 		 * @param name the name of the player
 		 */
-		public PlayerCard(String name) {
+		public Participant(String name) {
 			this.name = name;
 		}
 
@@ -131,16 +177,16 @@ public class SeekersTournament implements Iterator<Pair<String, String>> {
 		 *         scores, 1 if the other player card has a lower score
 		 */
 		@Override
-		public int compareTo(PlayerCard o) {
+		public int compareTo(Participant o) {
 			return compared((o.wins + 0.5 * o.draws) - (wins + 0.5 * draws));
 		}
 
 		@Override
 		public boolean equals(@Nullable Object obj) {
-			if (!(obj instanceof PlayerCard)) {
+			if (!(obj instanceof Participant)) {
 				return false;
 			}
-			PlayerCard card = (PlayerCard) obj;
+			Participant card = (Participant) obj;
 			return name.contentEquals(card.name) && wins == card.wins && draws == card.draws && losses == card.losses;
 		}
 

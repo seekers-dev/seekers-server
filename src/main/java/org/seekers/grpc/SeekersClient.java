@@ -17,10 +17,9 @@ public class SeekersClient {
 	/**
 	 * Initializes the SeekersPythonClient with the specified Python file.
 	 *
-	 * @param file The path to the Python file.
+	 * @param path The path to the Python file.
 	 */
-	public SeekersClient(String file) {
-		String path = SeekersProperties.getDefault().getProjectPathToAis() + file;
+	public SeekersClient(String path) {
 		builder = new ProcessBuilder(
 				SeekersProperties.getDefault().getProjectExecCommand().concat(" " + path).split(" "));
 		builder.redirectErrorStream(true);
