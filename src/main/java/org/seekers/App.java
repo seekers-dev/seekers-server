@@ -15,7 +15,6 @@ public class App extends Application {
 			try {
 				server.stop();
 			} catch (InterruptedException ex) {
-				ex.printStackTrace();
 				Thread.currentThread().interrupt();
 			}
 		});

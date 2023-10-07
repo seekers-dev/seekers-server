@@ -20,7 +20,7 @@ public class Goal extends Physical {
 	@Nullable
 	private Camp capture;
 
-	private double scoringTime = SeekersProperties.getDefault().getGoalScoringTime();
+	private final double scoringTime = SeekersProperties.getDefault().getGoalScoringTime();
 	private double timeOwned = 0;
 
 	/**

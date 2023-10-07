@@ -22,8 +22,8 @@ public class Camp implements Identifiable, WrappedObject {
 	@Nonnull
 	private final Vector2D position;
 
-	private double width;
-	private double height;
+	private final double width;
+	private final double height;
 
 	private final Rectangle render = new Rectangle();
 
@@ -68,6 +68,7 @@ public class Camp implements Identifiable, WrappedObject {
 	 *
 	 * @return the player
 	 */
+	@Nonnull
 	public Player getPlayer() {
 		return player;
 	}
@@ -77,6 +78,7 @@ public class Camp implements Identifiable, WrappedObject {
 	 *
 	 * @return the mirror object
 	 */
+	@Nonnull
 	@Override
 	public Rectangle get() {
 		return render;

@@ -53,9 +53,6 @@ public class Player implements Identifiable, WrappedObject {
 	}
 
 	/**
-	 * Increases the score of the Player by 1.
-	 */
-	/**
 	 * Gets the map of Seekers associated with the Player.
 	 *
 	 * @return The map of Seekers associated with the Player.
@@ -159,9 +156,9 @@ public class Player implements Identifiable, WrappedObject {
 		}
 		render.setTextFill(color);
 
-		final Camp checked = this.camp;
-		if (checked != null)
-			checked.get().setStroke(color);
+		if (camp != null) {
+			camp.get().setStroke(color);
+		}
 	}
 
 	/**

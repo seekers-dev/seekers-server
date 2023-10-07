@@ -13,7 +13,7 @@ import io.scvis.geometry.Vector2D;
  */
 public interface TorusMap {
 
-	public static org.seekers.grpc.game.Vector2D toMessage(Vector2D vec) {
+	static org.seekers.grpc.game.Vector2D toMessage(Vector2D vec) {
 		return org.seekers.grpc.game.Vector2D.newBuilder().setX(vec.getX()).setY(vec.getY()).build();
 	}
 
@@ -23,7 +23,7 @@ public interface TorusMap {
 	 * 
 	 * @param physical The Physical object to adjust the position for.
 	 */
-	public default void putNormalizedPosition(@Nonnull Physical physical) {
+	default void putNormalizedPosition(@Nonnull Physical physical) {
 		Vector2D p = physical.getPosition();
 
 		physical.setPosition(physical.getPosition().subtract(Math.floor(p.getX() / getWidth()) * getWidth(),
@@ -38,7 +38,7 @@ public interface TorusMap {
 	 * @return The nearest Physical object.
 	 */
 	@Nullable
-	public default Physical getNearestPhysicalOf(@Nonnull Vector2D p, @Nonnull Iterable<? extends Physical> physicals) {
+	default Physical getNearestPhysicalOf(@Nonnull Vector2D p, @Nonnull Iterable<? extends Physical> physicals) {
 		double distance = getWidth() * getHeight();
 		Physical nearest = null;
 
@@ -64,7 +64,7 @@ public interface TorusMap {
 	 * @param p1 The second position.
 	 * @return The torus distance between the two positions.
 	 */
-	public default double getTorusDistance(@Nonnull Vector2D p0, @Nonnull Vector2D p1) {
+	default double getTorusDistance(@Nonnull Vector2D p0, @Nonnull Vector2D p1) {
 		return new Vector2D(distance(p0.getX(), p1.getX(), getWidth()), distance(p0.getY(), p1.getY(), getHeight()))
 				.magnitude();
 	}
@@ -82,7 +82,7 @@ public interface TorusMap {
 	 * @return The torus difference between the two positions.
 	 */
 	@Nonnull
-	public default Vector2D getTorusDifference(@Nonnull Vector2D p0, @Nonnull Vector2D p1) {
+	default Vector2D getTorusDifference(@Nonnull Vector2D p0, @Nonnull Vector2D p1) {
 		return new Vector2D(difference(p0.getX(), p1.getX(), getWidth()),
 				difference(p0.getY(), p1.getY(), getHeight()));
 	}
@@ -97,7 +97,7 @@ public interface TorusMap {
 	 *         position.
 	 */
 	@Nonnull
-	public default Vector2D getTorusDirection(@Nonnull Vector2D p0, @Nonnull Vector2D p1) {
+	default Vector2D getTorusDirection(@Nonnull Vector2D p0, @Nonnull Vector2D p1) {
 		return getTorusDifference(p0, p1).normalize();
 	}
 
@@ -107,7 +107,7 @@ public interface TorusMap {
 	 * @return A random position on the torus map.
 	 */
 	@Nonnull
-	public default Vector2D getRandomPosition() {
+	default Vector2D getRandomPosition() {
 		return new Vector2D(Math.random() * getWidth(), Math.random() * getHeight());
 	}
 
@@ -116,7 +116,7 @@ public interface TorusMap {
 	 * 
 	 * @return The diameter of the torus map.
 	 */
-	public default double getDiameter() {
+	default double getDiameter() {
 		return Math.hypot(getWidth(), getHeight());
 	}
 
@@ -126,7 +126,7 @@ public interface TorusMap {
 	 * @return The diameter of the torus map.
 	 */
 	@Nonnull
-	public default Vector2D getCenter() {
+	default Vector2D getCenter() {
 		return new Vector2D(getWidth() / 2, getHeight() / 2);
 	}
 
@@ -135,13 +135,13 @@ public interface TorusMap {
 	 * 
 	 * @return The width of the torus map.
 	 */
-	public double getWidth();
+	double getWidth();
 
 	/**
 	 * Returns the height of the torus map.
 	 * 
 	 * @return The height of the torus map.
 	 */
-	public double getHeight();
+	double getHeight();
 
 }

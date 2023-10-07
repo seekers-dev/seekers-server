@@ -30,7 +30,7 @@ public abstract class Physical implements Entity, Kinetic, WrappedObject, Identi
 
 	private double mass = 1.0;
 	private double range = 1.0;
-	private double friction = SeekersProperties.getDefault().getPhysicalFriction();
+	private final double friction = SeekersProperties.getDefault().getPhysicalFriction();
 	private double thrust;
 
 	@Nonnull
@@ -73,18 +73,18 @@ public abstract class Physical implements Entity, Kinetic, WrappedObject, Identi
 	 */
 	private void checks() {
 		final List<Entity> entities = getGame().getEntities();
-		for (int index = 0, size = entities.size(); index < size; index++) {
-			if (!(entities.get(index) instanceof Physical))
-				return;
-			Physical physical = (Physical) entities.get(index);
-			if (physical == this)
-				continue;
-			double min = range + physical.range;
-			double dist = getGame().getTorusDistance(position, physical.position);
-			if (min > dist) {
-				collision(physical, min);
-			}
-		}
+        for (Entity entity : entities) {
+            if (!(entity instanceof Physical))
+                return;
+            Physical physical = (Physical) entity;
+            if (physical == this)
+                continue;
+            double min = range + physical.range;
+            double dist = getGame().getTorusDistance(position, physical.position);
+            if (min > dist) {
+                collision(physical, min);
+            }
+        }
 	}
 
 	/**
@@ -119,6 +119,7 @@ public abstract class Physical implements Entity, Kinetic, WrappedObject, Identi
 	 *
 	 * @return The Circle object.
 	 */
+	@Nonnull
 	public Circle getObject() {
 		return object;
 	}
@@ -138,6 +139,7 @@ public abstract class Physical implements Entity, Kinetic, WrappedObject, Identi
 	 *
 	 * @return The Mirror object.
 	 */
+	@Nonnull
 	@Override
 	public Pane get() {
 		return render;
@@ -231,14 +233,6 @@ public abstract class Physical implements Entity, Kinetic, WrappedObject, Identi
 
 	public void setThrust(double thrust) {
 		this.thrust = thrust;
-	}
-
-	public double getFriction() {
-		return friction;
-	}
-
-	public void setFriction(double friction) {
-		this.friction = friction;
 	}
 
 	/**

@@ -1,14 +1,7 @@
 package org.seekers.grpc;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Queue;
+import java.util.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -30,6 +23,7 @@ public class SeekersTournament implements Iterator<Pair<String, String>> {
 	public SeekersTournament() {
 		File folder = new File(SeekersProperties.getDefault().getProjectPathToAis());
 		String[] files = folder.list((File dir, String name) -> name.startsWith("ai") && name.endsWith(".py"));
+		Objects.requireNonNull(files);
 		for (int p = 0, size = files.length; p < size; p++) {
 			for (int m = p + 1; m < size; m++) {
 				matches.add(new Pair<>(files[p], files[m]));
@@ -38,7 +32,7 @@ public class SeekersTournament implements Iterator<Pair<String, String>> {
 	}
 
 	/**
-	 * Gets the PlayerCard object for the given name. If no PlayeCard is present, a
+	 * Gets the PlayerCard object for the given name. If no PlayerCard is present, a
 	 * new will be created.
 	 *
 	 * @param name the name of the player
@@ -54,16 +48,6 @@ public class SeekersTournament implements Iterator<Pair<String, String>> {
 			card = cards.get(name);
 		}
 		return card;
-	}
-
-	/**
-	 * Gets the map of player cards.
-	 *
-	 * @return the map of player cards
-	 */
-	@Nonnull
-	public Map<String, PlayerCard> getPlayerCards() {
-		return cards;
 	}
 
 	/**
@@ -153,7 +137,7 @@ public class SeekersTournament implements Iterator<Pair<String, String>> {
 
 		@Override
 		public boolean equals(@Nullable Object obj) {
-			if (obj == null || obj instanceof PlayerCard) {
+			if (!(obj instanceof PlayerCard)) {
 				return false;
 			}
 			PlayerCard card = (PlayerCard) obj;

@@ -8,7 +8,7 @@ public abstract class Animation extends Pane implements Entity, Destroyable {
 
 	private final Game game;
 
-	public Animation(Game game) {
+	protected Animation(Game game) {
 		this.game = game;
 		game.getAnimations().add(this);
 		game.getEntities().add(this);

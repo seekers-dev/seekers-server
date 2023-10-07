@@ -12,7 +12,7 @@ public class SeekersClient {
 
 	private static final Logger logger = Logger.getLogger(SeekersClient.class.getSimpleName());
 
-	private ProcessBuilder builder;
+	private final ProcessBuilder builder;
 
 	/**
 	 * Initializes the SeekersPythonClient with the specified Python file.
@@ -33,7 +33,7 @@ public class SeekersClient {
 			builder.redirectOutput(log);
 			start();
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw  new SeekersException(e);
 		}
 	}
 

@@ -1,6 +1,5 @@
 package org.seekers.grpc;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -17,15 +16,15 @@ import io.scvis.proto.Corresponding;
  */
 public class SeekersProperties implements Corresponding<Map<String, String>> {
 	@Nonnull
-	private static SeekersProperties defaul = new SeekersProperties("server.properties");
+	private static SeekersProperties defaultProperties = new SeekersProperties("server.properties");
 
 	/**
 	 * Sets the default SeekerProperties instance.
 	 *
-	 * @param defaul The default SeekerProperties instance to set.
+	 * @param defaultProperties the default SeekerProperties instance to set.
 	 */
-	public static void setDefault(@Nonnull SeekersProperties defaul) {
-		SeekersProperties.defaul = defaul;
+	public static void setDefault(@Nonnull SeekersProperties defaultProperties) {
+		SeekersProperties.defaultProperties = defaultProperties;
 	}
 
 	/**
@@ -35,7 +34,7 @@ public class SeekersProperties implements Corresponding<Map<String, String>> {
 	 */
 	@Nonnull
 	public static SeekersProperties getDefault() {
-		return SeekersProperties.defaul;
+		return SeekersProperties.defaultProperties;
 	}
 
 	@Nonnull
@@ -48,10 +47,10 @@ public class SeekersProperties implements Corresponding<Map<String, String>> {
 	 * @param pathname The path of the properties file.
 	 */
 	public SeekersProperties(String pathname) {
-		try (FileInputStream file = new FileInputStream(new File(pathname))) {
+		try (FileInputStream file = new FileInputStream(pathname)) {
 			properties.load(file);
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new SeekersException(e);
 		}
 	}
 
@@ -62,19 +61,19 @@ public class SeekersProperties implements Corresponding<Map<String, String>> {
 	 * applies the conversion function to the corresponding value. If the key is not
 	 * found in the properties, it returns the default value.
 	 * 
-	 * @param <T>    The type of the value to be returned.
-	 * @param key    The key whose associated value is to be retrieved.
-	 * @param func   The conversion function to convert the property value to the
-	 *               desired type.
-	 * @param defaul The default value to be returned if the key is not found in the
-	 *               properties.
+	 * @param <T>   The type of the value to be returned.
+	 * @param key   The key whose associated value is to be retrieved.
+	 * @param func  The conversion function to convert the property value to the
+	 *              desired type.
+	 * @param value The default value to be returned if the key is not found in the
+	 *              properties.
 	 * @return The value associated with the key, or the default value if the key is
 	 *         not found.
 	 */
 	@SuppressWarnings("unchecked")
-	private <T> T getOrDefault(String key, Function<String, T> func, T defaul) {
+	private <T> T getOrDefault(String key, Function<String, T> func, T value) {
 		return (T) used.computeIfAbsent(key,
-				k -> properties.containsKey(key) ? func.apply(properties.getProperty(key)) : defaul);
+				k -> properties.containsKey(key) ? func.apply(properties.getProperty(key)) : value);
 	}
 
 	@Nonnull
@@ -89,181 +88,180 @@ public class SeekersProperties implements Corresponding<Map<String, String>> {
 	}
 
 	/**
-	 * Retrieves the value of the "global.auto-play" property.
+	 * Retrieves the value of the <code>"global.auto-play"</code> property.
 	 *
-	 * @return The value of the "global.auto-play" property.
+	 * @return The value of the <code>"global.auto-play"</code> property.
 	 */
 	public boolean getGlobalAutoPlay() {
 		return getOrDefault("global.auto-play", Boolean::valueOf, false);
 	}
 
 	/**
-	 * Retrieves the value of the "global.playtime" property.
+	 * Retrieves the value of the <code>"global.playtime"</code> property.
 	 *
-	 * @return The value of the "global.playtime" property.
+	 * @return The value of the <code>"global.playtime"</code> property.
 	 */
 	public long getGlobalPlaytime() {
-		return getOrDefault("global.playtime", Long::valueOf, 50_000l);
+		return getOrDefault("global.playtime", Long::valueOf, 50_000L);
 	}
 
 	/**
-	 * RetriThe getOrDefault() method is a generic private method thateves the value
-	 * of the "global.speed" property.
+	 * Retrieves the value of the <code>"global.speed"</code> property.
 	 *
-	 * @return The value of the "global.speed" property.
+	 * @return The value of the <code>"global.speed"</code> property.
 	 */
 	public double getGlobalSpeed() {
 		return getOrDefault("global.speed", Double::valueOf, 1.0);
 	}
 
 	/**
-	 * Retrieves the value of the "global.players" property.
+	 * Retrieves the value of the <code>"global.players"</code> property.
 	 *
-	 * @return The value of the "global.players" property.
+	 * @return The value of the <code>"global.players"</code> property.
 	 */
 	public int getGlobalPlayers() {
 		return getOrDefault("global.players", Integer::valueOf, 2);
 	}
 
 	/**
-	 * Retrieves the value of the "global.seekers" property.
+	 * Retrieves the value of the <code>"global.seekers"</code> property.
 	 *
-	 * @return The value of the "global.seekers" property.
+	 * @return The value of the <code>"global.seekers"</code> property.
 	 */
 	public int getGlobalSeekers() {
 		return getOrDefault("global.seekers", Integer::valueOf, 5);
 	}
 
 	/**
-	 * Retrieves the value of the "global.goals" property.
+	 * Retrieves the value of the <code>"global.goals"</code> property.
 	 *
-	 * @return The value of the "global.goals" property.
+	 * @return The value of the <code>"global.goals"</code> property.
 	 */
 	public int getGlobalGoals() {
 		return getOrDefault("global.goals", Integer::valueOf, 5);
 	}
 
 	/**
-	 * Retrieves the value of the "map.width" property.
+	 * Retrieves the value of the <code>"map.width"</code> property.
 	 *
-	 * @return The value of the "map.width" property.
+	 * @return The value of the <code>"map.width"</code> property.
 	 */
 	public int getMapWidth() {
 		return getOrDefault("map.width", Integer::valueOf, 768);
 	}
 
 	/**
-	 * Retrieves the value of the "map.height" property.
+	 * Retrieves the value of the <code>"map.height"</code> property.
 	 *
-	 * @return The value of the "map.height" property.
+	 * @return The value of the <code>"map.height"</code> property.
 	 */
 	public int getMapHeight() {
 		return getOrDefault("map.height", Integer::valueOf, 768);
 	}
 
 	/**
-	 * Retrieves the value of the "camp.width" property.
+	 * Retrieves the value of the <code>"camp.width"</code> property.
 	 *
-	 * @return The value of the "camp.width" property.
+	 * @return The value of the <code>"camp.width"</code> property.
 	 */
 	public double getCampWidth() {
 		return getOrDefault("camp.width", Double::valueOf, 55.0);
 	}
 
 	/**
-	 * Retrieves the value of the "camp.height" property.
+	 * Retrieves the value of the <code>"camp.height"</code> property.
 	 *
-	 * @return The value of the "camp.height" property.
+	 * @return The value of the <code>"camp.height"</code> property.
 	 */
 	public double getCampHeight() {
 		return getOrDefault("camp.height", Double::valueOf, 55.0);
 	}
 
 	/**
-	 * Retrieves the value of the "physical.friction" property.
+	 * Retrieves the value of the <code>"physical.friction"</code> property.
 	 *
-	 * @return The value of the "physical.friction" property.
+	 * @return The value of the <code>"physical.friction"</code> property.
 	 */
 	public double getPhysicalFriction() {
 		return getOrDefault("physical.friction", Double::valueOf, 0.1);
 	}
 
 	/**
-	 * Retrieves the value of the "seeker.magnet-slowdown" property.
+	 * Retrieves the value of the <code>"seeker.magnet-slowdown"</code> property.
 	 *
-	 * @return The value of the "seeker.magnet-slowdown" property.
+	 * @return The value of the <code>"seeker.magnet-slowdown"</code> property.
 	 */
 	public double getSeekerMagnetSlowdown() {
 		return getOrDefault("seeker.magnet-slowdown", Double::valueOf, 0.2);
 	}
 
 	/**
-	 * Retrieves the value of the "seeker.disabled-time" property.
+	 * Retrieves the value of the <code>"seeker.disabled-time"</code> property.
 	 *
-	 * @return The value of the "seeker.disabled-time" property.
+	 * @return The value of the <code>"seeker.disabled-time"</code> property.
 	 */
 	public double getSeekerDisabledTime() {
-		return getOrDefault("seeker.disbaled-time", Double::valueOf, 250.0);
+		return getOrDefault("seeker.disabled-time", Double::valueOf, 250.0);
 	}
 
 	/**
-	 * Retrieves the value of the "seeker.radius" property.
+	 * Retrieves the value of the <code>"seeker.radius"</code> property.
 	 *
-	 * @return The value of the "seeker.radius" property.
+	 * @return The value of the <code>"seeker.radius"</code> property.
 	 */
 	public double getSeekerRadius() {
 		return getOrDefault("seeker.radius", Double::valueOf, 10.0);
 	}
 
 	/**
-	 * Retrieves the value of the "seeker.mass" property.
+	 * Retrieves the value of the <code>"seeker.mass"</code> property.
 	 *
-	 * @return The value of the "seeker.mass" property.
+	 * @return The value of the <code>"seeker.mass"</code> property.
 	 */
 	public double getSeekerMass() {
 		return getOrDefault("seeker.mass", Double::valueOf, 1.0);
 	}
 
 	/**
-	 * Retrieves the value of the "seeker.thrust" property.
+	 * Retrieves the value of the <code>"seeker.thrust"</code> property.
 	 *
-	 * @return The value of the "seeker.thrust" property.
+	 * @return The value of the <code>"seeker.thrust"</code> property.
 	 */
 	public double getSeekerThrust() {
 		return getOrDefault("seeker.thrust", Double::valueOf, 0.1);
 	}
 
 	/**
-	 * Retrieves the value of the "goal.scoring-time" property.
+	 * Retrieves the value of the <code>"goal.scoring-time"</code> property.
 	 *
-	 * @return The value of the "goal.scoring-time" property.
+	 * @return The value of the <code>"goal.scoring-time"</code> property.
 	 */
 	public double getGoalScoringTime() {
 		return getOrDefault("goal.scoring-time", Double::valueOf, 100.0);
 	}
 
 	/**
-	 * Retrieves the value of the "goal.radius" property.
+	 * Retrieves the value of the <code>"goal.radius"</code> property.
 	 *
-	 * @return The value of the "goal.radius" property.
+	 * @return The value of the <code>"goal.radius"</code> property.
 	 */
 	public double getGoalRadius() {
 		return getOrDefault("goal.radius", Double::valueOf, 6.0);
 	}
 
 	/**
-	 * Retrieves the value of the "goal.mass" property.
+	 * Retrieves the value of the <code>"goal.mass"</code> property.
 	 *
-	 * @return The value of the "goal.mass" property.
+	 * @return The value of the <code>"goal.mass"</code> property.
 	 */
 	public double getGoalMass() {
 		return getOrDefault("goal.mass", Double::valueOf, 0.5);
 	}
 
 	/**
-	 * Retrieves the value of the "goal.thrust" property.
+	 * Retrieves the value of the <code>"goal.thrust"</code> property.
 	 *
-	 * @return The value of the "goal.thrust" property.
+	 * @return The value of the <code>"goal.thrust"</code> property.
 	 */
 	public double getGoalThrust() {
 		return getOrDefault("goal.thrust", Double::valueOf, 0.1);

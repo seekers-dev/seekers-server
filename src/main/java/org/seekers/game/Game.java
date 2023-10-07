@@ -3,8 +3,6 @@ package org.seekers.game;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
-
 import javax.annotation.Nonnull;
 
 import org.seekers.grpc.SeekersProperties;
@@ -49,8 +47,6 @@ import javafx.util.Pair;
  */
 public class Game extends Scene implements TorusMap {
 
-	private final static Logger logger = Logger.getLogger(Game.class.getSimpleName());
-
 	private final @Nonnull List<Entity> entities = new ArrayList<>();
 
 	private final ObservableList<Player> players = FXCollections.observableArrayList();
@@ -60,38 +56,19 @@ public class Game extends Scene implements TorusMap {
 
 	private final ObservableSet<Animation> animations = FXCollections.observableSet();
 
-	private double width = SeekersProperties.getDefault().getMapWidth();
-	private double height = SeekersProperties.getDefault().getMapHeight();
-	private double speed = SeekersProperties.getDefault().getGlobalSpeed();
+	private final double width;
+	private final double height;
+	private final double speed = SeekersProperties.getDefault().getGlobalSpeed();
 	private double passed = 0.0;
-	private double playtime = SeekersProperties.getDefault().getGlobalPlaytime();
-	private int playerCount = SeekersProperties.getDefault().getGlobalPlayers();
-	private int seekerCount = SeekersProperties.getDefault().getGlobalSeekers();
-	private int goalCount = SeekersProperties.getDefault().getGlobalGoals();
-	private boolean autoPlay = SeekersProperties.getDefault().getGlobalAutoPlay();
+	private final double playtime = SeekersProperties.getDefault().getGlobalPlaytime();
+	private final int playerCount = SeekersProperties.getDefault().getGlobalPlayers();
+	private final int seekerCount = SeekersProperties.getDefault().getGlobalSeekers();
+	private final int goalCount = SeekersProperties.getDefault().getGlobalGoals();
+	private final boolean autoPlay = SeekersProperties.getDefault().getGlobalAutoPlay();
 
 	private final BooleanProperty finished = new SimpleBooleanProperty(false);
 
 	private final @Nonnull Label time = new Label();
-
-	@Nonnull
-	private final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10.0), e -> {
-		if (hasOpenSlots())
-			return;
-		if (passed > playtime) {
-			finished.set(true);
-			return;
-		}
-		for (int i = 0; i < entities.size(); i++) {
-			Entity physical = entities.get(i);
-			physical.update(speed);
-			if (autoPlay && (physical instanceof Seeker)) {
-				((Seeker) physical).setAutoCommands();
-			}
-		}
-		passed += speed;
-		time.setText("[ " + passed + " ]");
-	}));
 
 	private final @Nonnull BorderPane render;
 
@@ -129,10 +106,32 @@ public class Game extends Scene implements TorusMap {
 		render.setBottom(time);
 
 		render.setBackground(new Background(new BackgroundFill(Color.gray(.1), null, null)));
-		timeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+		Timeline timeline = getTimeline();
 		timeline.play();
 
 		addGoals();
+	}
+
+	private Timeline getTimeline() {
+		Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10.0), e -> {
+			if (hasOpenSlots())
+				return;
+			if (passed > playtime) {
+				finished.set(true);
+				return;
+			}
+			for (int i = 0; i < entities.size(); i++) {
+				Entity physical = entities.get(i);
+				physical.update(speed);
+				if (autoPlay && (physical instanceof Seeker)) {
+					((Seeker) physical).setAutoCommands();
+				}
+			}
+			passed += speed;
+			time.setText("[ " + passed + " ]");
+		}));
+		timeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+		return timeline;
 	}
 
 	private static <T extends WrappedObject> ListChangeListener<T> getListener(Collection<Node> coll) {
@@ -164,21 +163,15 @@ public class Game extends Scene implements TorusMap {
 		if (scores.size() == 1) {
 			PlayerCard card = tournament.getPlayerCard(scores.get(0).getKey());
 			card.setWins(card.getWins() + 1);
-			logger.info(card + " got a pass");
 		} else if (scores.size() >= 2) {
 			PlayerCard card0 = tournament.getPlayerCard(scores.get(0).getKey());
 			PlayerCard card1 = tournament.getPlayerCard(scores.get(1).getKey());
 			if (scores.get(0).getValue().equals(scores.get(1).getValue())) {
 				card0.setDraws(card0.getDraws() + 1);
 				card1.setDraws(card1.getDraws() + 1);
-				logger.info(card0 + " {" + scores.get(0).getValue() + "} and " + card1 + " {" + scores.get(1).getValue()
-						+ "} ended with a draw");
 			} else {
 				card0.setWins(card0.getWins() + 1);
 				card1.setLosses(card1.getLosses() + 1);
-				logger.info(card0 + " {" + scores.get(0).getValue() + "} won against " + card1 + " {"
-						+ scores.get(1).getValue() + "}");
-
 			}
 		}
 	}
@@ -191,10 +184,8 @@ public class Game extends Scene implements TorusMap {
 	 */
 	public Player addPlayer() {
 		int cur = players.size();
-		int max = playerCount;
-
-		Player player = new Player(this);
-		new Camp(player, new Vector2D(width / max * (cur + 0.5), height * 0.5));
+        Player player = new Player(this);
+		new Camp(player, new Vector2D(width / playerCount * (cur + 0.5), height * 0.5));
 		for (int s = 0; s < seekerCount; s++) {
 			new Seeker(player, getRandomPosition());
 		}
@@ -214,13 +205,13 @@ public class Game extends Scene implements TorusMap {
 	public synchronized StatusResponse getStatusResponse() {
 		@SuppressWarnings("unchecked")
 		StatusResponse reply = StatusResponse.newBuilder().addAllPlayers(
-				(Collection<org.seekers.grpc.game.Player>) (Collection<?>) Corresponding.transform(getPlayers()))
+				(Collection<org.seekers.grpc.game.Player>) Corresponding.transform(getPlayers()))
 				.addAllCamps(
-						(Collection<org.seekers.grpc.game.Camp>) (Collection<?>) Corresponding.transform(getCamps()))
-				.addAllSeekers((Collection<org.seekers.grpc.game.Seeker>) (Collection<?>) Corresponding
+						(Collection<org.seekers.grpc.game.Camp>) Corresponding.transform(getCamps()))
+				.addAllSeekers((Collection<org.seekers.grpc.game.Seeker>) Corresponding
 						.transform(getSeekers()))
 				.addAllGoals(
-						(Collection<org.seekers.grpc.game.Goal>) (Collection<?>) Corresponding.transform(getGoals()))
+						(Collection<org.seekers.grpc.game.Goal>) Corresponding.transform(getGoals()))
 				.setPassedPlaytime(getPassedPlaytime()).build();
 		return reply;
 	}
@@ -250,36 +241,36 @@ public class Game extends Scene implements TorusMap {
 	}
 
 	/**
-	 * Returns the map of seekers in the game.
+	 * Returns the list of seekers in the game.
 	 *
-	 * @return the map of seekers
+	 * @return the list of seekers
 	 */
 	public ObservableList<Seeker> getSeekers() {
 		return seekers;
 	}
 
 	/**
-	 * Returns the map of players in the game.
+	 * Returns the list of players in the game.
 	 *
-	 * @return the map of players
+	 * @return the list of players
 	 */
 	public ObservableList<Player> getPlayers() {
 		return players;
 	}
 
 	/**
-	 * Returns the map of goals in the game.
+	 * Returns the list of goals in the game.
 	 *
-	 * @return the map of goals
+	 * @return the list of goals
 	 */
 	public ObservableList<Goal> getGoals() {
 		return goals;
 	}
 
 	/**
-	 * Returns the map of camps in the game.
+	 * Returns the list of camps in the game.
 	 *
-	 * @return the map of camps
+	 * @return the list of camps
 	 */
 	public ObservableList<Camp> getCamps() {
 		return camps;
@@ -287,15 +278,6 @@ public class Game extends Scene implements TorusMap {
 
 	public ObservableSet<Animation> getAnimations() {
 		return animations;
-	}
-
-	/**
-	 * Returns the maximum playtime allowed for the game.
-	 *
-	 * @return the maximum playtime
-	 */
-	public double getMaxPlaytime() {
-		return playtime;
 	}
 
 	/**
