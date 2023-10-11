@@ -2,6 +2,7 @@
 seekers-grpc.zip
 seekers-py.zip
 seekers-py/
+results/
 
 # reduced pom
 dependency-reduced-pom.xml

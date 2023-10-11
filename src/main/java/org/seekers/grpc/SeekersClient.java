@@ -45,7 +45,7 @@ public class SeekersClient {
 	 */
 	public void start() throws IOException {
 		process = builder.start();
-		logger.info("Client stated");
+		logger.info("Client started");
 	}
 
 	/**

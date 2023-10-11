@@ -7,12 +7,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents a Seekers Tournament.
  */
 public class SeekersTournament implements Serializable, Iterator<SeekersTournament.Match> {
 
+	private static final Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 	private static final Gson gson = new Gson();
 
 	private final @Nonnull List<Match> matches = new LinkedList<>();
@@ -33,7 +36,11 @@ public class SeekersTournament implements Serializable, Iterator<SeekersTourname
 	}
 
 	public void save() throws IOException {
-		try (FileOutputStream stream = new FileOutputStream(hashCode() + ".json")) {
+		File results = new File("results");
+		if (!results.exists() && !results.mkdir()) {
+			logger.error("Failed to create results folder");
+		}
+		try (FileOutputStream stream = new FileOutputStream("results/" + hashCode() + ".json")) {
 			stream.write(gson.toJson(this).getBytes());
 		}
     }
