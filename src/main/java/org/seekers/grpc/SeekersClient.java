@@ -1,8 +1,12 @@
 package org.seekers.grpc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 /**
  * The SeekersPythonClient class is a client for running and monitoring the
@@ -10,33 +14,29 @@ import java.util.logging.Logger;
  */
 public class SeekersClient {
 
-	private static final Logger logger = Logger.getLogger(SeekersClient.class.getSimpleName());
+	private static final @Nonnull Logger logger = LoggerFactory.getLogger(SeekersClient.class);
 
-	private final ProcessBuilder builder;
+	private final @Nonnull ProcessBuilder builder;
 
 	/**
 	 * Initializes the SeekersPythonClient with the specified Python file.
 	 *
 	 * @param path The path to the Python file.
 	 */
-	public SeekersClient(String path) {
+	public SeekersClient(String path) throws IOException {
 		builder = new ProcessBuilder(
-				SeekersProperties.getDefault().getProjectExecCommand().concat(" " + path).split(" "));
+				SeekersConfig.getConfig().getProjectExecCommand().concat(" " + path).split(" "));
 		builder.redirectErrorStream(true);
 
 		File log = new File(path + ".log");
-		try {
-			if (!log.exists() && !log.createNewFile()) { // create log file
-				logger.warning("Could not create log file: " + log.getAbsolutePath());
-			}
-			builder.redirectOutput(log);
-			start();
-		} catch (IOException e) {
-			throw  new SeekersException(e);
+		if (!log.exists() && !log.createNewFile()) { // create log file
+			logger.error("Could not create log file {}", log.getAbsolutePath());
 		}
+		builder.redirectOutput(log);
+		start();
 	}
 
-	private Process process;
+	private @Nullable Process process;
 
 	/**
 	 * Starts the Python client process.
@@ -55,7 +55,7 @@ public class SeekersClient {
 		if (process != null) {
 			process.destroy();
 		} else {
-			logger.warning("Process is null!");
+			logger.error("Process is null!");
 		}
 		logger.info("Client stopped");
 	}

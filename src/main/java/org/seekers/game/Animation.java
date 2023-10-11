@@ -1,7 +1,5 @@
 package org.seekers.game;
 
-import io.scvis.entity.Destroyable;
-import io.scvis.entity.Entity;
 import javafx.scene.layout.Pane;
 
 public abstract class Animation extends Pane implements Entity, Destroyable {
@@ -14,11 +12,11 @@ public abstract class Animation extends Pane implements Entity, Destroyable {
 		game.getEntities().add(this);
 	}
 
-	protected abstract void animate(double deltaT);
+	protected abstract void animate();
 
 	@Override
-	public void update(double deltaT) {
-		animate(deltaT);
+	public void update() {
+		animate();
 	}
 
 	@Override

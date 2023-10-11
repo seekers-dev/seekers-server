@@ -1,6 +1,6 @@
 package org.seekers;
 
-import org.seekers.grpc.SeekersProperties;
+import org.seekers.grpc.SeekersConfig;
 import org.seekers.grpc.SeekersServer;
 
 import javafx.application.Application;
@@ -18,8 +18,8 @@ public class App extends Application {
 				Thread.currentThread().interrupt();
 			}
 		});
-		stage.setWidth(SeekersProperties.getDefault().getMapWidth());
-		stage.setHeight(SeekersProperties.getDefault().getMapHeight());
+		stage.setWidth(SeekersConfig.getConfig().getMapWidth());
+		stage.setHeight(SeekersConfig.getConfig().getMapHeight());
 		stage.setTitle("Seekers");
 		stage.setAlwaysOnTop(true);
 		stage.setResizable(false);

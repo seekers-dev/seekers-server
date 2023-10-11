@@ -1,6 +1,9 @@
 package org.seekers;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.zip.ZipEntry;
@@ -28,7 +31,7 @@ public class Startup {
         if (!new File(OUTPUT_FOLDER + "/seekers/grpc/stubs").exists()) {
             download(RELEASE_SIDE + STUBS_FILE_NAME,
                     STUBS_FILE_NAME);
-            unzip(STUBS_FILE_NAME,  OUTPUT_FOLDER + "/seekers/grpc/stubs");
+            unzip(STUBS_FILE_NAME, OUTPUT_FOLDER + "/seekers/grpc/stubs");
         }
         if (!new File(OUTPUT_FOLDER + "/venv").exists()) {
             Runtime runtime = Runtime.getRuntime();
@@ -82,7 +85,7 @@ public class Startup {
         String destFilePath = destFile.getCanonicalPath();
 
         if (!destFilePath.startsWith(destDirPath + File.separator)) {
-            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+            throw new IOException("Entry is outside of the target directory " + zipEntry.getName());
         }
 
         return destFile;

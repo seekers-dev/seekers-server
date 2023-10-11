@@ -7,30 +7,26 @@ import java.util.Random;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import io.scvis.observable.WrappedObject;
-import io.scvis.proto.Identifiable;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import org.seekers.grpc.Corresponding;
+import org.seekers.grpc.Identifiable;
 
 /**
  * The Player class represents a player in the game.
  * 
  * @author karlz
  */
-public class Player implements Identifiable, WrappedObject {
+public class Player extends Label implements Corresponding<org.seekers.grpc.game.Player>, Identifiable {
 
-	private static final Random rand = new Random();
+	private static final @Nonnull Random rand = new Random();
 
-	@Nonnull
-	private final Map<String, Seeker> seekers = new LinkedHashMap<>();
-	@Nonnull
-	private final Game game;
-	@Nonnull
-	private final Label render = new Label();
+	private final @Nonnull Game game;
+	private final @Nonnull Map<String, Seeker> seekers = new LinkedHashMap<>();
 
-	private Camp camp;
+	private @Nullable Camp camp;
 	private @Nonnull Color color;
 	private @Nonnull String name;
 	private int score;
@@ -45,9 +41,9 @@ public class Player implements Identifiable, WrappedObject {
 		this.name = "Player " + hashCode();
 		this.color = new Color((rand.nextDouble() + 1) / 3, (rand.nextDouble() + 1) / 3, (rand.nextDouble() + 1) / 3,
 				1.0);
-		render.setPadding(new Insets(2.0));
-		render.setFont(Font.font("Ubuntu", 24.0));
-		render.setTextFill(color);
+		setPadding(new Insets(2.0));
+		setFont(Font.font("Ubuntu", 24.0));
+		setTextFill(color);
 
 		game.getPlayers().add(this);
 	}
@@ -65,10 +61,9 @@ public class Player implements Identifiable, WrappedObject {
 	@Nullable
 	private String id;
 
-	@SuppressWarnings("null")
 	@Nonnull
 	@Override
-	public String getId() {
+	public String getIdentifier() {
 		if (id == null)
 			id = Integer.toHexString(hashCode());
 		return id;
@@ -82,17 +77,6 @@ public class Player implements Identifiable, WrappedObject {
 	@Nonnull
 	public Game getGame() {
 		return game;
-	}
-
-	/**
-	 * Gets the Mirror object associated with the Player.
-	 *
-	 * @return The Mirror object associated with the Player.
-	 */
-	@Nonnull
-	@Override
-	public Label get() {
-		return render;
 	}
 
 	/**
@@ -131,7 +115,7 @@ public class Player implements Identifiable, WrappedObject {
 	 */
 	public void setName(@Nonnull String name) {
 		this.name = name;
-		render.setText(name + ": " + score);
+		setText(name + ": " + score);
 	}
 
 	/**
@@ -154,10 +138,10 @@ public class Player implements Identifiable, WrappedObject {
 		for (Seeker seeker : seekers.values()) {
 			seeker.setColor(color);
 		}
-		render.setTextFill(color);
+		setTextFill(color);
 
 		if (camp != null) {
-			camp.get().setStroke(color);
+			camp.setStroke(color);
 		}
 	}
 
@@ -175,14 +159,14 @@ public class Player implements Identifiable, WrappedObject {
 	 */
 	public void putUp() {
 		score++;
-		render.setText(name + ": " + score);
+		setText(name + ": " + score);
 	}
 
 	@Override
 	public org.seekers.grpc.game.Player associated() {
-		return org.seekers.grpc.game.Player.newBuilder().setId(getId()).addAllSeekerIds(seekers.keySet())
-				.setCampId(camp != null ? camp.getId() : "").setName(name).setColor(color.toString()).setScore(score)
-				.build();
+		return org.seekers.grpc.game.Player.newBuilder().setId(getIdentifier()).addAllSeekerIds(seekers.keySet())
+				.setCampId(camp != null ? camp.getIdentifier() : "").setName(name).setColor(color.toString())
+				.setScore(score).build();
 	}
 
 }

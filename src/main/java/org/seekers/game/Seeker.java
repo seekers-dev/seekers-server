@@ -1,14 +1,16 @@
 package org.seekers.game;
 
-import io.scvis.geometry.Vector2D;
+import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import org.seekers.grpc.SeekersProperties;
+import org.seekers.grpc.SeekersConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The Seeker class represents a seeker in the game.
@@ -17,18 +19,23 @@ import java.util.List;
  */
 public class Seeker extends Physical {
 
-    private static final double MAGNET_SLOWDOWN = SeekersProperties.getDefault().getSeekerMagnetSlowdown();
-    private static final double DISABLED_TIME = SeekersProperties.getDefault().getSeekerDisabledTime();
+    public static Iterable<org.seekers.grpc.game.Seeker> transform(Collection<? extends Seeker> seekers) {
+        return seekers.stream().map(Seeker::associated).collect(Collectors.toList());
+    }
+
+    private static final double MAGNET_SLOWDOWN = SeekersConfig.getConfig().getSeekerMagnetSlowdown();
+    private static final double DISABLED_TIME = SeekersConfig.getConfig().getSeekerDisabledTime();
     private static final double ANIMATION_RANGE = 18.0;
 
     private final @Nonnull Player player;
     private final @Nonnull List<Circle> indicators = new ArrayList<>();
-    private @Nonnull Vector2D target = getPosition();
-    private double magnet = 0.0;
-    private double disabledCounter = 0.0;
 
+    private @Nonnull Point2D target = getPosition();
     private @Nonnull Color activated = Color.WHITE;
     private @Nonnull Color disabled = Color.WHITE;
+
+    private double magnet = 0.0;
+    private double disabledCounter = 0.0;
 
     /**
      * Constructs a new instance of the Seeker class.
@@ -36,12 +43,12 @@ public class Seeker extends Physical {
      * @param player   The Player object associated with the Seeker.
      * @param position The position of the Seeker.
      */
-    public Seeker(@Nonnull Player player, @Nullable Vector2D position) {
+    public Seeker(@Nonnull Player player, @Nullable Point2D position) {
         super(player.getGame(), position);
         this.player = player;
-        setThrust(SeekersProperties.getDefault().getSeekerThrust());
-        setRange(SeekersProperties.getDefault().getSeekerRadius());
-        setMass(SeekersProperties.getDefault().getSeekerMass());
+        setThrust(SeekersConfig.getConfig().getSeekerThrust());
+        setRange(SeekersConfig.getConfig().getSeekerRadius());
+        setMass(SeekersConfig.getConfig().getSeekerMass());
         setColor(player.getColor());
 
         for (int i = 1; i < 3; i++) {
@@ -50,17 +57,17 @@ public class Seeker extends Physical {
             indicator.setStrokeWidth(2);
             getIndicators().add(indicator);
         }
-        get().getChildren().addAll(getIndicators());
+        getChildren().addAll(getIndicators());
 
-        player.getSeekers().put(getId(), this);
+        player.getSeekers().put(getIdentifier(), this);
         getGame().getSeekers().add(this);
     }
 
     @Override
-    public void update(double deltaT) {
-        super.update(deltaT);
-        if (isDisabled()) {
-            disabledCounter = Math.max(disabledCounter - deltaT, 0);
+    public void update() {
+        super.update();
+        if (isSeekerDisabled()) {
+            disabledCounter = Math.max(disabledCounter - 1, 0);
             if (disabledCounter == 0) {
                 getObject().setFill(activated);
                 if (getMagnet() != 0) {
@@ -70,12 +77,11 @@ public class Seeker extends Physical {
         }
     }
 
-    @Override
-    public void accelerate(double deltaT) {
-        if (!isDisabled()) {
-            setAcceleration(getGame().getTorusDirection(getPosition(), getTarget()).multiply(deltaT));
+    public void accelerate() {
+        if (!isSeekerDisabled()) {
+            setAcceleration(getGame().getTorusDirection(getPosition(), getTarget()));
         } else {
-            setAcceleration(Vector2D.ZERO);
+            setAcceleration(Point2D.ZERO);
         }
     }
 
@@ -94,10 +100,10 @@ public class Seeker extends Physical {
     }
 
     @Override
-    public void collision(Physical another, double minDistance) {
+    public void collision(@Nonnull Physical another, double minDistance) {
         if (another instanceof Seeker) {
             Seeker collision = (Seeker) another;
-            if (collision.isDisabled()) {
+            if (collision.isSeekerDisabled()) {
                 disable();
             } else if (magnet != 0) {
                 disable();
@@ -147,11 +153,11 @@ public class Seeker extends Physical {
      * @return The magnetic force vector.
      */
     @Nonnull
-    public Vector2D getMagneticForce(@Nonnull Vector2D p) {
+    public Point2D getMagneticForce(@Nonnull Point2D p) {
         double r = getGame().getTorusDistance(getPosition(), p) / getGame().getDiameter() * 10;
-        Vector2D d = getGame().getTorusDirection(getPosition(), p);
+        Point2D d = getGame().getTorusDirection(getPosition(), p);
         double s = (r < 1) ? Math.exp(1 / (Math.pow(r, 2) - 1)) : 0;
-        return (isDisabled()) ? Vector2D.ZERO : d.multiply(-getMagnet() * s);
+        return (isSeekerDisabled()) ? Point2D.ZERO : d.multiply(-getMagnet() * s);
     }
 
     /**
@@ -189,7 +195,7 @@ public class Seeker extends Physical {
      * @param magnet The magnet value to set.
      */
     public void setMagnet(double magnet) {
-        if (!isDisabled()) {
+        if (!isSeekerDisabled()) {
             this.magnet = Math.max(Math.min(magnet, 1), -8);
             if (magnet != 0) {
                 getIndicators().forEach(c -> c.setVisible(true));
@@ -203,7 +209,7 @@ public class Seeker extends Physical {
      * Disables the Seeker.
      */
     public void disable() {
-        if (!isDisabled()) {
+        if (!isSeekerDisabled()) {
             disabledCounter = DISABLED_TIME;
             setMagnet(0.0);
             for (Circle indicator : getIndicators()) {
@@ -218,7 +224,7 @@ public class Seeker extends Physical {
      *
      * @return True if the Seeker is disabled, false otherwise.
      */
-    public boolean isDisabled() {
+    public boolean isSeekerDisabled() {
         return disabledCounter > 0;
     }
 
@@ -228,7 +234,7 @@ public class Seeker extends Physical {
      * @return The target position of the Seeker.
      */
     @Nonnull
-    public Vector2D getTarget() {
+    public Point2D getTarget() {
         return target;
     }
 
@@ -237,7 +243,7 @@ public class Seeker extends Physical {
      *
      * @param target The target position to set.
      */
-    public void setTarget(@Nonnull Vector2D target) {
+    public void setTarget(@Nonnull Point2D target) {
         this.target = target;
     }
 
@@ -269,7 +275,7 @@ public class Seeker extends Physical {
     @Override
     public org.seekers.grpc.game.Seeker associated() {
         return org.seekers.grpc.game.Seeker.newBuilder().setSuper((org.seekers.grpc.game.Physical) super.associated())
-                .setPlayerId(player.getId()).setMagnet(magnet).setTarget(TorusMap.toMessage(target))
+                .setPlayerId(player.getIdentifier()).setMagnet(magnet).setTarget(TorusMap.toMessage(target))
                 .setDisableCounter(disabledCounter).build();
     }
 

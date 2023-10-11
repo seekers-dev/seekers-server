@@ -1,9 +1,6 @@
 package org.seekers.grpc;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.util.*;
 
 import javax.annotation.Nonnull;
@@ -25,7 +22,7 @@ public class SeekersTournament implements Serializable, Iterator<SeekersTourname
 	 * Constructs a SeekersTournament object and initializes the matches queue.
 	 */
 	public SeekersTournament() {
-		File folder = new File(SeekersProperties.getDefault().getProjectPathToAis());
+		File folder = new File(SeekersConfig.getConfig().getProjectPathToAis());
 		String[] files = folder.list((File dir, String name) -> name.startsWith("ai") && name.endsWith(".py"));
 		Objects.requireNonNull(files);
 		for (int p = 0, size = files.length; p < size; p++) {
@@ -35,12 +32,10 @@ public class SeekersTournament implements Serializable, Iterator<SeekersTourname
 		}
 	}
 
-	public void save() {
+	public void save() throws IOException {
 		try (FileOutputStream stream = new FileOutputStream(hashCode() + ".json")) {
 			stream.write(gson.toJson(this).getBytes());
-		} catch (IOException e) {
-            throw new SeekersException(e);
-        }
+		}
     }
 
 	/**
