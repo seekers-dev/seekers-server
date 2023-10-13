@@ -25,7 +25,7 @@ public class Seeker extends Physical {
 
     private static final double MAGNET_SLOWDOWN = SeekersConfig.getConfig().getSeekerMagnetSlowdown();
     private static final double DISABLED_TIME = SeekersConfig.getConfig().getSeekerDisabledTime();
-    private static final double ANIMATION_RANGE = 18.0;
+    private static final double ANIMATION_RANGE = 26.0;
 
     private final @Nonnull Player player;
     private final @Nonnull List<Circle> indicators = new ArrayList<>();
@@ -55,6 +55,7 @@ public class Seeker extends Physical {
             Circle indicator = new Circle(getRange() + i * 0.25 * getAnimationRange());
             indicator.setFill(Color.TRANSPARENT);
             indicator.setStrokeWidth(2);
+            indicator.setVisible(false);
             getIndicators().add(indicator);
         }
         getChildren().addAll(getIndicators());
@@ -66,13 +67,11 @@ public class Seeker extends Physical {
     @Override
     public void update() {
         super.update();
+        animate();
         if (isSeekerDisabled()) {
             disabledCounter = Math.max(disabledCounter - 1, 0);
-            if (disabledCounter == 0) {
+            if (!isSeekerDisabled()) {
                 getObject().setFill(activated);
-                if (getMagnet() != 0) {
-                    getIndicators().forEach(c -> c.setVisible(true));
-                }
             }
         }
     }
@@ -86,16 +85,13 @@ public class Seeker extends Physical {
     }
 
     /**
-     * Animates the Seeker based on the time passed.
-     *
-     * @param deltaT The time passed since the last animation.
+     * Animates the Seeker.
      */
-    protected void animate(double deltaT) {
+    protected void animate() {
         for (Circle indicator : getIndicators()) {
-            var value = getRange()
-                    + (indicator.getRadius() - Math.signum(magnet) * (getRange() - deltaT)) % getAnimationRange();
-            indicator.setRadius(value);
-            indicator.setStrokeWidth(value / 10);
+            double expansion = (indicator.getRadius() + Math.signum(magnet) * 0.025) % getAnimationRange();
+            indicator.setRadius(expansion + getRange());
+            indicator.setStrokeWidth(3 * Math.sqrt(1 - expansion / getAnimationRange()));
         }
     }
 

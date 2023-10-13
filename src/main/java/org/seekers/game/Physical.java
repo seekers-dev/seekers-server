@@ -42,6 +42,7 @@ public abstract class Physical extends Pane implements Entity, Identifiable, Cor
         getGame().getEntities().add(this);
     }
 
+    @OverridingMethodsMustInvokeSuper
     @Override
     public void update() {
         accelerate();

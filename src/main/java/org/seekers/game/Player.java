@@ -134,14 +134,15 @@ public class Player extends Label implements Corresponding<org.seekers.grpc.game
 	 * @param color The color to set.
 	 */
 	public void setColor(@Nonnull Color color) {
-		this.color = color;
+		this.color = new Color(Math.max(0.25, color.getRed()), Math.max(0.25, color.getBlue()), Math.max(0.25,
+							color.getGreen()), 1.0);
 		for (Seeker seeker : seekers.values()) {
-			seeker.setColor(color);
+			seeker.setColor(this.color);
 		}
-		setTextFill(color);
+		setTextFill(this.color);
 
 		if (camp != null) {
-			camp.setStroke(color);
+			camp.setStroke(this.color);
 		}
 	}
 
