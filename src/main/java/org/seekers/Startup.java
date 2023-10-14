@@ -1,5 +1,7 @@
 package org.seekers;
 
+import org.seekers.grpc.SeekersConfig;
+
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -26,7 +28,7 @@ public class Startup {
      */
     private static final String RELEASE_SIDE = "https://github.com/seekers-dev/seekers-py/releases/download/v0.1.0/";
 
-    private static final @Nonnull String OUTPUT_FOLDER = "seekers-py";
+    private static final @Nonnull String OUTPUT_FOLDER = SeekersConfig.getConfig().getProjectPythonFolder();
     private static final @Nonnull String PYTHON_FILE_NAME = "seekers-py.zip";
     private static final @Nonnull String STUBS_FILE_NAME = "stubs.zip";
 
@@ -56,14 +58,13 @@ public class Startup {
             download(RELEASE_SIDE + PYTHON_FILE_NAME, PYTHON_FILE_NAME);
             unzip(PYTHON_FILE_NAME, OUTPUT_FOLDER);
         }
-        if (!new File(OUTPUT_FOLDER + "/seekers/grpc/stubs").exists()) {
+        if (!new File(OUTPUT_FOLDER + "seekers/grpc/stubs/").exists()) {
             download(RELEASE_SIDE + STUBS_FILE_NAME, STUBS_FILE_NAME);
             unzip(STUBS_FILE_NAME, OUTPUT_FOLDER + "/seekers/grpc/stubs");
         }
-        if (!new File(OUTPUT_FOLDER + "/venv").exists()) {
+        if (!new File(OUTPUT_FOLDER + "venv/").exists()) {
             Runtime runtime = Runtime.getRuntime();
-            runtime.exec("python -m venv venv", null, output);
-            runtime.exec("./venv/bin/activate", null, output);
+            runtime.exec(SeekersConfig.getConfig().getProjectPythonBinary() + " -m venv venv", null, output);
             runtime.exec("./venv/bin/pip install -r requirements.txt", null, output);
         }
     }

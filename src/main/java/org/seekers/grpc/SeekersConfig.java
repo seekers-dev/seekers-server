@@ -80,12 +80,18 @@ public class SeekersConfig implements Corresponding<Map<String, String>> {
 		return row == null ? value : func.apply(row);
 	}
 
-	public String getProjectExecCommand() {
-		return getOrDefault("project", "exec-command", k -> k, "python3 run_clients.py");
+	private static final String PROJECT = "project";
+
+	public String getProjectPythonBinary() {
+		return getOrDefault(PROJECT, "python-binary", k -> k, "python3.10/");
+	}
+
+	public String getProjectPythonFolder() {
+		return getOrDefault(PROJECT, "python-folder", k -> k, "seekers-py/");
 	}
 
 	public String getProjectPathToAis() {
-		return getOrDefault("project", "path-to-ais", k -> k, "ais/");
+		return getOrDefault(PROJECT, "path-to-ais", k -> k, "ais/");
 	}
 
 	private static final String GLOBAL = "global";

@@ -16,6 +16,9 @@ public class SeekersClient {
 
 	private static final @Nonnull Logger logger = LoggerFactory.getLogger(SeekersClient.class);
 
+	private static final @Nonnull String PYTHON_FOLDER = SeekersConfig.getConfig().getProjectPythonFolder();
+	private static final @Nonnull String PYTHON_BINARY = SeekersConfig.getConfig().getProjectPythonBinary();
+
 	private final @Nonnull ProcessBuilder builder;
 
 	/**
@@ -24,8 +27,8 @@ public class SeekersClient {
 	 * @param path The path to the Python file.
 	 */
 	public SeekersClient(String path) throws IOException {
-		builder = new ProcessBuilder(
-				SeekersConfig.getConfig().getProjectExecCommand().concat(" " + path).split(" "));
+		builder = new ProcessBuilder(PYTHON_FOLDER.concat("venv/bin/").concat(PYTHON_BINARY), PYTHON_FOLDER.concat(
+				"run_client.py"), path);
 		builder.redirectErrorStream(true);
 
 		File log = new File(path + ".log");
