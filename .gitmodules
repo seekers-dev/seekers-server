@@ -1,0 +1,3 @@
+[submodule "seekers-python"]
+    path = include
+    url = https://github.com/seekers-dev/seekers-py.github
