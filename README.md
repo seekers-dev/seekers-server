@@ -1,8 +1,8 @@
 <h1 align="center">Seekers Java</h1>
 
 <p align="center">
-    <a href="https://github.com/seekers-dev/seekers-java/actions/workflows/codeql.yml">
-        <img src="https://github.com/seekers-dev/seekers-java/actions/workflows/codeql.yml/badge.svg" alt="CodeQL">
+    <a href="https://github.com/seekers-dev/seekers-java/actions/workflows/github-code-scanning/codeql">
+        <img src="https://github.com/seekers-dev/seekers-java/actions/workflows/github-code-scanning/codeql/badge.svg" alt="CodeQL">
     </a>
     <a href="https://github.com/seekers-dev/seekers-java/actions/workflows/dependency-review.yml">
         <img src="https://github.com/seekers-dev/seekers-java/actions/workflows/dependency-review.yml/badge.svg" alt="Dependency Review">
