@@ -27,7 +27,7 @@ public class SeekersClient {
 	 * @param path The path to the Python file.
 	 */
 	public SeekersClient(String path) throws IOException {
-		builder = new ProcessBuilder(PYTHON_FOLDER.concat("venv/bin/").concat(PYTHON_BINARY), PYTHON_FOLDER.concat(
+		builder = new ProcessBuilder(PYTHON_FOLDER.concat(PYTHON_BINARY), PYTHON_FOLDER.concat(
 				"run_client.py"), path);
 		builder.redirectErrorStream(true);
 

@@ -10,6 +10,7 @@ RUN ./mvnw dependency:resolve
 
 COPY src ./src
 COPY server.ini ./
+COPY include ./include
 RUN ./mvnw compile
 
 CMD ["./mvnw", "exec:java"]

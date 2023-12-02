@@ -27,11 +27,14 @@ public class SeekersTournament implements Serializable, Iterator<SeekersTourname
 	public SeekersTournament() {
 		File folder = new File(SeekersConfig.getConfig().getProjectPathToAis());
 		String[] files = folder.list((File dir, String name) -> name.startsWith("ai") && name.endsWith(".py"));
-		Objects.requireNonNull(files);
-		for (int p = 0, size = files.length; p < size; p++) {
-			for (int m = p + 1; m < size; m++) {
-				matches.add(new Match(List.of(folder + "/" + files[p], folder + "/" + files[m])));
+		if (files != null) {
+			for (int p = 0, size = files.length; p < size; p++) {
+				for (int m = p + 1; m < size; m++) {
+					matches.add(new Match(List.of(folder + "/" + files[p], folder + "/" + files[m])));
+				}
 			}
+		} else {
+			logger.error("No AIs found in folder, maybe folder or files are missing?");
 		}
 	}
 
