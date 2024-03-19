@@ -8,7 +8,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 
 public class Launcher {
 	public static void main(String[] args) {
-		ArgumentParser parser = ArgumentParsers.newFor("seekers-service").build();
+		ArgumentParser parser = ArgumentParsers.newFor("seekers-server").build();
 		parser.addArgument("--port").type(int.class).help("sets the port").setDefault(7777);
 		parser.addArgument("--mode").type(String.class).help("the game mode").setDefault("standard");
 		parser.addArgument("locations").type(String.class).help("client locations").nargs("+");
