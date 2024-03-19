@@ -23,7 +23,7 @@ public interface TorusMap {
 	 * 
 	 * @param physical The Physical object to adjust the position for.
 	 */
-	default void putNormalizedPosition(@Nonnull Physical physical) {
+	default void putNormalizedPosition(@Nonnull Physical<?> physical) {
 		Point2D p = physical.getPosition();
 
 		physical.setPosition(physical.getPosition().subtract(Math.floor(p.getX() / getWidth()) * getWidth(),
@@ -38,11 +38,11 @@ public interface TorusMap {
 	 * @return The nearest Physical object.
 	 */
 	@Nullable
-	default Physical getNearestPhysicalOf(@Nonnull Point2D p, @Nonnull Iterable<? extends Physical> physicals) {
+	default Physical<?> getNearestPhysicalOf(@Nonnull Point2D p, @Nonnull Iterable<? extends Physical<?>> physicals) {
 		double distance = getWidth() * getHeight();
-		Physical nearest = null;
+		Physical<?> nearest = null;
 
-		for (Physical physical : physicals) {
+		for (Physical<?> physical : physicals) {
 			double dif = getTorusDistance(p, physical.getPosition());
 			if (dif < distance) {
 				distance = dif;
@@ -118,16 +118,6 @@ public interface TorusMap {
 	 */
 	default double getDiameter() {
 		return Math.hypot(getWidth(), getHeight());
-	}
-
-	/**
-	 * Returns the diameter of the torus map.
-	 * 
-	 * @return The diameter of the torus map.
-	 */
-	@Nonnull
-	default Point2D getCenter() {
-		return new Point2D(getWidth() / 2, getHeight() / 2);
 	}
 
 	/**

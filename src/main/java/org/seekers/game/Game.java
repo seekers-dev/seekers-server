@@ -2,13 +2,10 @@ package org.seekers.game;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.collections.*;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.control.Label;
@@ -19,10 +16,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
-import javafx.util.Pair;
+import org.ini4j.Ini;
 import org.seekers.grpc.Corresponding;
-import org.seekers.grpc.SeekersConfig;
-import org.seekers.grpc.SeekersTournament;
+import org.seekers.plugin.Tournament;
 import org.seekers.grpc.net.StatusResponse;
 
 import javax.annotation.Nonnull;
@@ -37,104 +33,110 @@ import java.util.*;
  */
 public class Game extends Scene implements TorusMap {
 
-    private static final double GLOBAL_SPEED = SeekersConfig.getConfig().getGlobalSpeed();
-    private static final double GLOBAL_PLAYTIME = SeekersConfig.getConfig().getGlobalPlaytime();
-    private static final int GLOBAL_PLAYERS = SeekersConfig.getConfig().getGlobalPlayers();
-    private static final int GLOBAL_SEEKERS = SeekersConfig.getConfig().getGlobalSeekers();
-    private static final int GLOBAL_GOALS = SeekersConfig.getConfig().getGlobalGoals();
-    private static final boolean GLOBAL_AUTO_PLAY = SeekersConfig.getConfig().getGlobalAutoPlay();
-
+    // Game objects
     private final @Nonnull List<Entity> entities = new ArrayList<>();
-    private final @Nonnull ObservableList<Player> players = FXCollections.observableArrayList();
-    private final @Nonnull ObservableList<Seeker> seekers = FXCollections.observableArrayList();
-    private final @Nonnull ObservableList<Goal> goals = FXCollections.observableArrayList();
-    private final @Nonnull ObservableList<Camp> camps = FXCollections.observableArrayList();
-    private final @Nonnull ObservableSet<Animation> animations = FXCollections.observableSet();
+    private final @Nonnull Set<Player> players = new HashSet<>();
+    private final @Nonnull Set<Seeker> seekers = new HashSet<>();
+    private final @Nonnull Set<Goal> goals = new HashSet<>();
+    private final @Nonnull Set<Camp> camps = new HashSet<>();
+    private final @Nonnull Set<Animation> animations = new HashSet<>();
+    private int tick = 0;
+
+    // Graphics
     private final @Nonnull BooleanProperty finished = new SimpleBooleanProperty(false);
     private final @Nonnull Label time = new Label();
+    private final @Nonnull VBox info = new VBox();
+    private final @Nonnull Group front = new Group();
+    private final @Nonnull Group back = new Group();
     private final @Nonnull BorderPane render;
 
-    private double passed = 0.0;
-	private final double width;
-	private final double height;
+    // Properties
+    private final @Nonnull Properties gameProperties;
+    private final @Nonnull Camp.Properties campProperties;
+    private final @Nonnull Seeker.Properties seekerProperties;
+    private final @Nonnull Goal.Properties goalProperties;
 
     /**
      * Constructs a new Game object. Initializes the game environment, creates the
      * game rendering components, and starts the game timeline.
      */
-    public Game(@Nonnull BorderPane parent, double width, double height) {
-        super(parent, width, height, true, SceneAntialiasing.BALANCED);
+    public Game(@Nonnull BorderPane parent, @Nonnull Game.Properties gameProperties, @Nonnull Camp.Properties campProperties,
+                @Nonnull Seeker.Properties seekerProperties, @Nonnull Goal.Properties goalProperties) {
+        super(parent, gameProperties.width, gameProperties.height, true, SceneAntialiasing.BALANCED);
         this.render = parent;
-        this.width = width;
-        this.height = height;
-
-        VBox info = new VBox();
-        render.setTop(info);
-
-        Group front = new Group();
-        Group back = new Group();
-        render.getChildren().addAll(back, front);
-
-        camps.addListener(getListener(back.getChildren()));
-        seekers.addListener(getListener(front.getChildren()));
-        goals.addListener(getListener(front.getChildren()));
-        players.addListener(getListener(info.getChildren()));
-        animations.addListener((SetChangeListener.Change<? extends Node> change) -> Platform.runLater(() -> {
-            if (change.wasAdded()) {
-                back.getChildren().add(change.getElementAdded());
-            } else if (change.wasRemoved()) {
-                back.getChildren().remove(change.getElementRemoved());
-            }
-        }));
+        this.gameProperties = gameProperties;
+        this.campProperties = campProperties;
+        this.seekerProperties = seekerProperties;
+        this.goalProperties = goalProperties;
 
         time.setFont(Font.font("Ubuntu", 14));
         time.setTextFill(Color.WHITESMOKE);
-        render.setBottom(time);
 
+        render.setTop(getInfo());
+        render.getChildren().addAll(getBack(), getFront());
+        render.setBottom(time);
         render.setBackground(new Background(new BackgroundFill(Color.gray(.1), null, null)));
+
         Timeline timeline = getTimeline();
         timeline.play();
-
         addGoals();
     }
 
-    private static <T extends Node> ListChangeListener<T> getListener(Collection<Node> coll) {
-        return e -> Platform.runLater(() -> {
-            e.next();
-            if (e.wasAdded()) {
-                for (int index = 0; index < e.getAddedSize(); index++) {
-                    coll.add(e.getAddedSubList().get(index));
-                }
-            }
-        });
+    public static class Properties {
+        private static final String SECTION = "global";
+
+        public Properties(Ini ini) {
+            autoPlay = ini.fetch(SECTION, "auto-play", boolean.class);
+            playtime = ini.fetch(SECTION, "playtime", int.class);
+            players = ini.fetch(SECTION, "players", int.class);
+            seekers = ini.fetch(SECTION, "seekers", int.class);
+            goals = ini.fetch(SECTION, "goals", int.class);
+            width = ini.fetch("map", "width", double.class);
+            height = ini.fetch("map", "height", int.class);
+        }
+
+        // Global properties
+        private final boolean autoPlay;
+        private final int playtime;
+        private final int players;
+        private final int seekers;
+        private final int goals;
+
+        // Map properties
+        private final double width;
+        private final double height;
     }
 
     private Timeline getTimeline() {
         Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10.0), e -> {
             if (hasOpenSlots())
                 return;
-            if (passed > GLOBAL_PLAYTIME) {
+            if (tick > gameProperties.playtime) {
                 finished.set(true);
                 return;
             }
-            int last = entities.size();
-            for (int i = 0; i < last; i++) {
-                int now = entities.size();
-                if (now < last) {
-                    i--;
-                }
-                last = now;
-                Entity entity = entities.get(i);
+            for (Entity entity : List.copyOf(getEntities())) {
                 entity.update();
-                if (GLOBAL_AUTO_PLAY && (entity instanceof Seeker)) {
+                if (gameProperties.autoPlay && (entity instanceof Seeker)) {
                     ((Seeker) entity).setAutoCommands();
                 }
             }
-            passed += GLOBAL_SPEED;
-            time.setText("[ " + passed + " ]");
+            time.setText("[ " + (++tick) + " ]");
         }));
         timeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
         return timeline;
+    }
+
+    public void reset() {
+        // Destroy entities
+        for (Player player : List.copyOf(players)) player.destroy();
+        for (Seeker seeker : List.copyOf(seekers)) seeker.destroy();
+        for (Camp camp : List.copyOf(camps)) camp.destroy();
+        for (Animation animation : List.copyOf(animations)) animation.destroy();
+
+        // Reset property
+        finished.set(false);
+        tick = 0;
     }
 
     /**
@@ -143,30 +145,12 @@ public class Game extends Scene implements TorusMap {
      * @return true if there are open slots, false otherwise
      */
     public boolean hasOpenSlots() {
-        return players.size() < GLOBAL_PLAYERS;
+        return players.size() < gameProperties.players;
     }
 
-    public void addToTournament(SeekersTournament tournament) {
-        List<Pair<String, Integer>> scores = new ArrayList<>();
+    public void addToTournament(Tournament tournament) {
         for (Player player : players) {
-            scores.add(new Pair<>(player.getName(), player.getScore()));
-            tournament.getCurrentMatch().getMembers().put(player.getName() + ".py", player.getScore());
-        }
-        tournament.getCurrentMatch().markAsOver();
-        scores.sort((a, b) -> b.getValue() - a.getValue());
-        if (scores.size() == 1) {
-            SeekersTournament.Participant card = tournament.getPlayerCard(scores.get(0).getKey());
-            card.setWins(card.getWins() + 1);
-        } else if (scores.size() >= 2) {
-            SeekersTournament.Participant card0 = tournament.getPlayerCard(scores.get(0).getKey());
-            SeekersTournament.Participant card1 = tournament.getPlayerCard(scores.get(1).getKey());
-            if (scores.get(0).getValue().equals(scores.get(1).getValue())) {
-                card0.setDraws(card0.getDraws() + 1);
-                card1.setDraws(card1.getDraws() + 1);
-            } else {
-                card0.setWins(card0.getWins() + 1);
-                card1.setLosses(card1.getLosses() + 1);
-            }
+            tournament.getResults().get(player.getName()).add(player.getScore());
         }
     }
 
@@ -177,13 +161,14 @@ public class Game extends Scene implements TorusMap {
      * @return the newly added player
      */
     public Player addPlayer() {
-        int cur = players.size();
         Player player = new Player(this);
-        new Camp(player, new Point2D(width / GLOBAL_PLAYERS * (cur + 0.5), height * 0.5));
-        for (int s = 0; s < GLOBAL_SEEKERS; s++) {
-            new Seeker(player, getRandomPosition());
+        Camp camp = new Camp(player, campProperties);
+        camp.setPosition(new Point2D(gameProperties.width * (players.size() - 0.5) / gameProperties.players,
+                gameProperties.height * 0.5));
+        for (int s = 0; s < gameProperties.seekers; s++) {
+            Seeker seeker = new Seeker(player, seekerProperties);
+            seeker.setPosition(getRandomPosition());
         }
-
         return player;
     }
 
@@ -191,8 +176,9 @@ public class Game extends Scene implements TorusMap {
      * Adds a specified number of goals to the game environment at random positions.
      */
     public void addGoals() {
-        for (int i = 0; i < GLOBAL_GOALS; i++) {
-            new Goal(this, getRandomPosition());
+        for (int i = 0; i < gameProperties.goals; i++) {
+            Goal goal = new Goal(this, goalProperties);
+            goal.setPosition(getRandomPosition());
         }
     }
 
@@ -202,20 +188,6 @@ public class Game extends Scene implements TorusMap {
                 .addAllSeekers(Seeker.transform(getSeekers()))
                 .addAllGoals(Goal.transform(getGoals()))
                 .setPassedPlaytime(getPassedPlaytime()).build();
-    }
-
-    public BooleanProperty finishedProperty() {
-        return finished;
-    }
-
-    /**
-     * Returns the rendering component of the game.
-     *
-     * @return the game rendering component
-     */
-    @Nonnull
-    public BorderPane getRender() {
-        return render;
     }
 
     /**
@@ -229,56 +201,74 @@ public class Game extends Scene implements TorusMap {
     }
 
     /**
-     * Returns the list of seekers in the game.
-     *
-     * @return the list of seekers
+     * @return the set of seekers
      */
     @Nonnull
-	public ObservableList<Seeker> getSeekers() {
+	public Set<Seeker> getSeekers() {
         return seekers;
     }
 
     /**
-     * Returns the list of players in the game.
-     *
-     * @return the list of players
+     * @return the set of players
      */
     @Nonnull
-	public ObservableList<Player> getPlayers() {
+	public Set<Player> getPlayers() {
         return players;
     }
 
     /**
-     * Returns the list of goals in the game.
-     *
-     * @return the list of goals
+     * @return the set of goals
      */
     @Nonnull
-	public ObservableList<Goal> getGoals() {
+	public Set<Goal> getGoals() {
         return goals;
     }
 
     /**
-     * Returns the list of camps in the game.
-     *
-     * @return the list of camps
+     * @return the set of camps
      */
     @Nonnull
-	public ObservableList<Camp> getCamps() {
+	public Set<Camp> getCamps() {
         return camps;
     }
 
     @Nonnull
-	public ObservableSet<Animation> getAnimations() {
+    public Set<Animation> getAnimations() {
         return animations;
     }
 
+    @Nonnull
+    public BooleanProperty finishedProperty() {
+        return finished;
+    }
+
     /**
-     * Returns the passed playtime in the game.
-     *
+     * @return the game rendering component
+     */
+    @Nonnull
+    public BorderPane getRender() {
+        return render;
+    }
+
+    @Nonnull
+    public VBox getInfo() {
+        return info;
+    }
+
+    @Nonnull
+    public Group getBack() {
+        return back;
+    }
+
+    @Nonnull
+    public Group getFront() {
+        return front;
+    }
+
+    /**
      * @return the passed playtime
      */
     public double getPassedPlaytime() {
-        return passed;
+        return tick;
     }
 }

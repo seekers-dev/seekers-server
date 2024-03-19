@@ -1,4 +1,4 @@
-<h1 align="center">Seekers Java</h1>
+<h1 align="center">Seekers Server</h1>
 
 <p align="center">
     <a href="https://github.com/seekers-dev/seekers-java/actions/workflows/github-code-scanning/codeql">

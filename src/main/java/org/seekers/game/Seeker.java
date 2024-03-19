@@ -3,7 +3,7 @@ package org.seekers.game;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import org.seekers.grpc.SeekersConfig;
+import org.ini4j.Ini;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,15 +17,11 @@ import java.util.stream.Collectors;
  *
  * @author karlz
  */
-public class Seeker extends Physical {
+public class Seeker extends Physical<Seeker.Properties> implements Destroyable {
 
     public static Iterable<org.seekers.grpc.game.Seeker> transform(Collection<? extends Seeker> seekers) {
         return seekers.stream().map(Seeker::associated).collect(Collectors.toList());
     }
-
-    private static final double MAGNET_SLOWDOWN = SeekersConfig.getConfig().getSeekerMagnetSlowdown();
-    private static final double DISABLED_TIME = SeekersConfig.getConfig().getSeekerDisabledTime();
-    private static final double ANIMATION_RANGE = 26.0;
 
     private final @Nonnull Player player;
     private final @Nonnull List<Circle> indicators = new ArrayList<>();
@@ -41,18 +37,14 @@ public class Seeker extends Physical {
      * Constructs a new instance of the Seeker class.
      *
      * @param player   The Player object associated with the Seeker.
-     * @param position The position of the Seeker.
      */
-    public Seeker(@Nonnull Player player, @Nullable Point2D position) {
-        super(player.getGame(), position);
+    public Seeker(@Nonnull Player player, Properties properties) {
+        super(player.getGame(), properties);
         this.player = player;
-        setThrust(SeekersConfig.getConfig().getSeekerThrust());
-        setRange(SeekersConfig.getConfig().getSeekerRadius());
-        setMass(SeekersConfig.getConfig().getSeekerMass());
         setColor(player.getColor());
 
         for (int i = 1; i < 3; i++) {
-            Circle indicator = new Circle(getRange() + i * 0.25 * getAnimationRange());
+            Circle indicator = new Circle(properties.radius + i * 0.25 * getAnimationRange());
             indicator.setFill(Color.TRANSPARENT);
             indicator.setStrokeWidth(2);
             indicator.setVisible(false);
@@ -62,6 +54,19 @@ public class Seeker extends Physical {
 
         player.getSeekers().put(getIdentifier(), this);
         getGame().getSeekers().add(this);
+    }
+
+    public static class Properties extends Physical.Properties {
+        private static final String SECTION = "seeker";
+
+        public Properties(Ini ini) {
+            super(ini, SECTION);
+            magnetSlowdown = ini.fetch(SECTION, "magnet-slowdown", double.class);
+            disabledTime = ini.fetch(SECTION, "disabled-time", double.class);
+        }
+
+        private final double magnetSlowdown;
+        private final double disabledTime;
     }
 
     @Override
@@ -90,13 +95,13 @@ public class Seeker extends Physical {
     protected void animate() {
         for (Circle indicator : getIndicators()) {
             double expansion = (indicator.getRadius() + Math.signum(magnet) * 0.025) % getAnimationRange();
-            indicator.setRadius(expansion + getRange());
+            indicator.setRadius(expansion + properties.radius);
             indicator.setStrokeWidth(3 * Math.sqrt(1 - expansion / getAnimationRange()));
         }
     }
 
     @Override
-    public void collision(@Nonnull Physical another, double minDistance) {
+    public void collision(@Nonnull Physical<?> another, double minDistance) {
         if (another instanceof Seeker) {
             Seeker collision = (Seeker) another;
             if (collision.isSeekerDisabled()) {
@@ -114,6 +119,14 @@ public class Seeker extends Physical {
         }
 
         super.collision(another, minDistance);
+    }
+
+    @Override
+    public void destroy() {
+        getGame().getSeekers().remove(this);
+        getGame().getEntities().remove(this);
+        getGame().getFront().getChildren().remove(this);
+        getPlayer().getSeekers().remove(getIdentifier());
     }
 
     public void setAutoCommands() {
@@ -139,7 +152,7 @@ public class Seeker extends Physical {
      * @return The animation range of the Seeker.
      */
     public double getAnimationRange() {
-        return ANIMATION_RANGE;
+        return 26;
     }
 
     /**
@@ -163,7 +176,7 @@ public class Seeker extends Physical {
      */
     @Override
     public double getThrust() {
-        return super.getThrust() * (magnet != 0 ? MAGNET_SLOWDOWN : 1);
+        return properties.thrust * (magnet != 0 ? properties.magnetSlowdown : 1);
     }
 
     /**
@@ -206,7 +219,7 @@ public class Seeker extends Physical {
      */
     public void disable() {
         if (!isSeekerDisabled()) {
-            disabledCounter = DISABLED_TIME;
+            disabledCounter = properties.disabledTime;
             setMagnet(0.0);
             for (Circle indicator : getIndicators()) {
                 indicator.setVisible(false);

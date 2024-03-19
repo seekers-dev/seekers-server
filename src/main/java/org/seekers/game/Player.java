@@ -19,7 +19,7 @@ import org.seekers.grpc.Identifiable;
  * 
  * @author karlz
  */
-public class Player extends Label implements Corresponding<org.seekers.grpc.game.Player>, Identifiable {
+public class Player extends Label implements Corresponding<org.seekers.grpc.game.Player>, Identifiable, Destroyable {
 
 	private static final @Nonnull Random rand = new Random();
 
@@ -44,8 +44,14 @@ public class Player extends Label implements Corresponding<org.seekers.grpc.game
 		setPadding(new Insets(2.0));
 		setFont(Font.font("Ubuntu", 24.0));
 		setTextFill(color);
-
+		getGame().getInfo().getChildren().add(this);
 		game.getPlayers().add(this);
+	}
+
+	@Override
+	public void destroy() {
+		getGame().getPlayers().remove(this);
+		getGame().getInfo().getChildren().remove(this);
 	}
 
 	/**

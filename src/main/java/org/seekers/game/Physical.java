@@ -5,41 +5,53 @@ import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import org.ini4j.Ini;
 import org.seekers.grpc.Corresponding;
 import org.seekers.grpc.Identifiable;
-import org.seekers.grpc.SeekersConfig;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.util.List;
 
-public abstract class Physical extends Pane implements Entity, Identifiable, Corresponding.ExtendableCorresponding {
-
-    private static final double PHYSICAL_FRICTION = SeekersConfig.getConfig().getPhysicalFriction();
+public abstract class Physical<P extends Physical.Properties> extends Pane
+        implements Entity, Identifiable, Corresponding.ExtendableCorresponding {
 
     private final @Nonnull Game game;
     private final @Nonnull Circle object = new Circle(10, Color.CRIMSON);
 
     private @Nonnull Point2D acceleration = Point2D.ZERO;
     private @Nonnull Point2D velocity = Point2D.ZERO;
-    private @Nonnull Point2D position;
+    private @Nonnull Point2D position = Point2D.ZERO;
 
-    private double mass = 1.0;
-    private double range = 1.0;
-    private double thrust;
+    protected final @Nonnull P properties;
 
     /**
      * Constructs a new instance of the Physical class.
      *
      * @param game     The Game object associated with the Physical object.
-     * @param position The initial position of the Physical object.
      */
-    protected Physical(@Nonnull Game game, @Nullable Point2D position) {
+    protected Physical(@Nonnull Game game, @Nonnull P properties) {
         this.game = game;
-        this.position = position == null ? Point2D.ZERO : position;
+        this.properties = properties;
+
+        object.setRadius(properties.radius);
         getChildren().add(object);
+        getGame().getFront().getChildren().add(this);
         getGame().getEntities().add(this);
+    }
+
+    public static class Properties {
+        public Properties(Ini ini, String section) {
+            mass = ini.fetch(section, "mass", double.class);
+            radius = ini.fetch(section, "radius", double.class);
+            thrust = ini.fetch(section, "thrust", double.class);
+            friction = ini.fetch(section, "friction", double.class);
+        }
+
+        final double mass;
+        final double radius;
+        final double thrust;
+        final double friction;
     }
 
     @OverridingMethodsMustInvokeSuper
@@ -54,7 +66,7 @@ public abstract class Physical extends Pane implements Entity, Identifiable, Cor
     public abstract void accelerate();
 
     public void velocity() {
-        setVelocity(getVelocity().multiply(1 - PHYSICAL_FRICTION));
+        setVelocity(getVelocity().multiply(1 - properties.friction));
         setVelocity(getVelocity().add(getAcceleration().multiply(getThrust())));
     }
 
@@ -71,10 +83,10 @@ public abstract class Physical extends Pane implements Entity, Identifiable, Cor
         for (Entity entity : entities) {
             if (!(entity instanceof Physical))
                 return;
-            Physical physical = (Physical) entity;
+            Physical<?> physical = (Physical<?>) entity;
             if (physical == this)
                 continue;
-            double min = range + physical.range;
+            double min = properties.radius + physical.properties.radius;
             double dist = getGame().getTorusDistance(position, physical.position);
             if (min > dist) {
                 collision(physical, min);
@@ -89,18 +101,18 @@ public abstract class Physical extends Pane implements Entity, Identifiable, Cor
      * @param minDistance The minimum distance required for a collision to occur.
      */
     @OverridingMethodsMustInvokeSuper
-    public void collision(@Nonnull Physical another, double minDistance) {
+    public void collision(@Nonnull Physical<?> another, double minDistance) {
         Point2D distance = game.getTorusDifference(getPosition(), another.getPosition());
 
         Point2D deltaR = distance.normalize();
         Point2D deltaV = another.getVelocity().subtract(getVelocity());
 
         double dualV = deltaV.getX() * deltaR.getX() + deltaV.getY() * deltaR.getY();
-        double dualM = 2 / (mass + another.mass);
+        double dualM = 2 / (properties.mass + another.properties.mass);
 
         if (dualV < 0) {
-            setVelocity(getVelocity().add(deltaR.multiply(another.mass * dualM * dualV)));
-            another.setVelocity(another.getVelocity().subtract(deltaR.multiply(mass * dualM * dualV)));
+            setVelocity(getVelocity().add(deltaR.multiply(another.properties.mass * dualM * dualV)));
+            another.setVelocity(another.getVelocity().subtract(deltaR.multiply(properties.mass * dualM * dualV)));
         }
         double ddn = distance.getX() * deltaR.getX() + distance.getY() * deltaR.getY();
         if (ddn < minDistance) {
@@ -188,54 +200,8 @@ public abstract class Physical extends Pane implements Entity, Identifiable, Cor
         this.acceleration = acceleration;
     }
 
-    /**
-     * Retrieves the mass of the Physical object.
-     *
-     * @return The mass value.
-     */
-    public double getMass() {
-        return mass;
-    }
-
-    /**
-     * Sets the mass of the Physical object.
-     *
-     * @param mass The new mass value.
-     */
-    public void setMass(double mass) {
-        this.mass = mass;
-    }
-
-    /**
-     * Retrieves the thrust applied to the Physical object.
-     *
-     * @return The thrust value.
-     */
     public double getThrust() {
-        return thrust;
-    }
-
-    public void setThrust(double thrust) {
-        this.thrust = thrust;
-    }
-
-    /**
-     * Retrieves the range of the Physical object.
-     *
-     * @return The range value.
-     */
-    public double getRange() {
-        return range;
-    }
-
-    /**
-     * Sets the range of the Physical object.
-     *
-     * @param range The new range value.
-     */
-    public void setRange(double range) {
-        this.range = range;
-        object.setRadius(range);
+        return properties.thrust;
     }
 
     @Override

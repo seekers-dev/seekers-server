@@ -3,12 +3,13 @@ package org.seekers.game;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import org.seekers.grpc.SeekersConfig;
+import org.ini4j.Ini;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.stream.Collectors;
+import java.util.List;
 
 /**
  * A goal is a physical object that can be adopted by a camp and used for
@@ -17,13 +18,13 @@ import java.util.stream.Collectors;
  *
  * @author karlz
  */
-public class Goal extends Physical {
+public class Goal extends Physical<Goal.Properties> {
 
     public static Iterable<org.seekers.grpc.game.Goal> transform(Collection<? extends Goal> goals) {
         return goals.stream().map(Goal::associated).collect(Collectors.toList());
     }
 
-    private static final double GOAL_SCORING_TIME = SeekersConfig.getConfig().getGoalScoringTime();
+    private final @Nonnull Properties properties;
 
     private @Nullable Camp capture;
     private double timeOwned = 0;
@@ -32,15 +33,23 @@ public class Goal extends Physical {
      * Constructs a new instance of the Goal class.
      *
      * @param game     The Game object associated with the Goal object.
-     * @param position The initial position of the Goal object.
      */
-    public Goal(@Nonnull Game game, @Nullable Point2D position) {
-        super(game, position);
+    public Goal(@Nonnull Game game, @Nonnull Properties properties) {
+        super(game, properties);
+        this.properties = properties;
         getObject().setFill(Color.WHITE);
-        setMass(SeekersConfig.getConfig().getGoalMass());
-        setThrust(SeekersConfig.getConfig().getGoalThrust());
-        setRange(SeekersConfig.getConfig().getGoalRadius());
         getGame().getGoals().add(this);
+    }
+
+    public static class Properties extends Physical.Properties {
+        private static final String SECTION = "goal";
+
+        public Properties(Ini ini) {
+            super(ini, SECTION);
+            scoringTime = ini.fetch(SECTION, "scoring-time", double.class);
+        }
+
+        private final double scoringTime;
     }
 
     @Override
@@ -52,8 +61,7 @@ public class Goal extends Physical {
     @Override
     public void accelerate() {
         Point2D force = Point2D.ZERO;
-        for (int index = 0, size = getGame().getSeekers().size(); index < size; index++) {
-            Seeker seeker = getGame().getSeekers().get(index);
+        for (Seeker seeker : List.copyOf(getGame().getSeekers())) {
             force = force.add(seeker.getMagneticForce(getPosition()));
         }
         setAcceleration(force);
@@ -67,7 +75,7 @@ public class Goal extends Physical {
             if (camp.contains(getPosition())) {
                 if (this.capture == camp) {
                     setTimeOwned(getTimeOwned() + 1);
-                    if (timeOwned >= GOAL_SCORING_TIME) {
+                    if (timeOwned >= properties.scoringTime) {
                         score(camp.getPlayer());
                         return;
                     }
@@ -111,9 +119,9 @@ public class Goal extends Physical {
             final Camp checked = this.capture;
             if (checked != null) {
                 Color color = checked.getPlayer().getColor();
-                getObject().setFill(Color.color(1 + (color.getRed() - 1) * timeOwned / GOAL_SCORING_TIME,
-                        1 + (color.getGreen() - 1) * timeOwned / GOAL_SCORING_TIME,
-                        1 + (color.getBlue() - 1) * timeOwned / GOAL_SCORING_TIME));
+                getObject().setFill(Color.color(1 + (color.getRed() - 1) * timeOwned / properties.scoringTime,
+                        1 + (color.getGreen() - 1) * timeOwned / properties.scoringTime,
+                        1 + (color.getBlue() - 1) * timeOwned / properties.scoringTime));
             }
         }
     }

@@ -3,9 +3,9 @@ package org.seekers.game;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import org.ini4j.Ini;
 import org.seekers.grpc.Corresponding;
 import org.seekers.grpc.Identifiable;
-import org.seekers.grpc.SeekersConfig;
 
 import javax.annotation.Nonnull;
 
@@ -15,37 +15,45 @@ import javax.annotation.Nonnull;
  *
  * @author karlz
  */
-public class Camp extends Rectangle implements Corresponding<org.seekers.grpc.game.Camp>, Identifiable {
+public class Camp extends Rectangle implements Corresponding<org.seekers.grpc.game.Camp>, Identifiable, Destroyable {
 
     private final @Nonnull Player player;
-    private final @Nonnull Point2D position;
+    private final @Nonnull Properties properties;
 
-    private final double width;
-    private final double height;
+    private @Nonnull Point2D position = Point2D.ZERO;
 
     /**
      * Constructs a new Camp object associated with the specified player and
      * positioned at the given position.
      *
-     * @param player   the player that owns the camp
-     * @param position the position of the camp
+     * @param player     the player that owns the camp
+     * @param properties the properties of the camp
      */
-    public Camp(@Nonnull Player player, @Nonnull Point2D position) {
+    public Camp(@Nonnull Player player, Properties properties) {
         this.player = player;
-        this.position = position;
-        this.width = SeekersConfig.getConfig().getCampWidth();
-        this.height = SeekersConfig.getConfig().getCampHeight();
+        this.properties = properties;
 
-        setLayoutX(position.getX() - width / 2);
-        setLayoutY(position.getY() - height / 2);
-        setWidth(width);
-        setHeight(height);
+        setWidth(properties.width);
+        setHeight(properties.height);
         setFill(Color.TRANSPARENT);
         setStroke(player.getColor());
-        setStrokeWidth(SeekersConfig.getConfig().getGoalRadius());
+        setStrokeWidth(6);
 
+        player.getGame().getBack().getChildren().add(this);
         player.setCamp(this);
         player.getGame().getCamps().add(this);
+    }
+
+    public static class Properties {
+        private static final String SECTION = "camp";
+
+        public Properties(Ini ini) {
+            width = ini.fetch(SECTION, "width", double.class);
+            height = ini.fetch(SECTION, "height", double.class);
+        }
+
+        private final double width;
+        private final double height;
     }
 
     /**
@@ -57,7 +65,13 @@ public class Camp extends Rectangle implements Corresponding<org.seekers.grpc.ga
     @Override
     public boolean contains(@Nonnull Point2D p) {
         Point2D deltaR = position.subtract(p);
-        return 2 * Math.abs(deltaR.getX()) < width && 2 * Math.abs(deltaR.getY()) < height;
+        return 2 * Math.abs(deltaR.getX()) < properties.width && 2 * Math.abs(deltaR.getY()) < properties.height;
+    }
+
+    @Override
+    public void destroy() {
+        getPlayer().getGame().getBack().getChildren().remove(this);
+        getPlayer().getGame().getCamps().remove(this);
     }
 
     /**
@@ -80,10 +94,16 @@ public class Camp extends Rectangle implements Corresponding<org.seekers.grpc.ga
         return position;
     }
 
+    public void setPosition(@Nonnull Point2D position) {
+        this.position = position;
+        setLayoutX(position.getX() - properties.width * 0.5);
+        setLayoutY(position.getY() - properties.height * 0.5);
+    }
+
     @Override
     public org.seekers.grpc.game.Camp associated() {
         return org.seekers.grpc.game.Camp.newBuilder().setId(getIdentifier()).setPlayerId(player.getIdentifier())
-                .setPosition(TorusMap.toMessage(position)).setWidth(width).setHeight(height).build();
+                .setPosition(TorusMap.toMessage(position)).setWidth(properties.width).setHeight(properties.height).build();
     }
 
 }
