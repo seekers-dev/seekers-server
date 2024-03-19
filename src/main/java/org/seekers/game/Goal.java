@@ -24,8 +24,6 @@ public class Goal extends Physical<Goal.Properties> {
         return goals.stream().map(Goal::associated).collect(Collectors.toList());
     }
 
-    private final @Nonnull Properties properties;
-
     private @Nullable Camp capture;
     private double timeOwned = 0;
 
@@ -36,7 +34,6 @@ public class Goal extends Physical<Goal.Properties> {
      */
     public Goal(@Nonnull Game game, @Nonnull Properties properties) {
         super(game, properties);
-        this.properties = properties;
         getObject().setFill(Color.WHITE);
         getGame().getGoals().add(this);
     }

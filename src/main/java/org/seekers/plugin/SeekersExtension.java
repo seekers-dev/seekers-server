@@ -1,4 +1,4 @@
-package org.seekers;
+package org.seekers.plugin;
 
 import org.pf4j.ExtensionPoint;
 

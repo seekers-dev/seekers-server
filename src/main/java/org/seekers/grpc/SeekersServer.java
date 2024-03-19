@@ -113,7 +113,7 @@ public class SeekersServer {
     private void hostNewClients() {
         logger.info("Host new clients");
         @SuppressWarnings("unused")
-        List<String> match = tournament.getMatches().removeFirst();
+        List<String> match = tournament.getMatches().remove(0);
         // TODO Add language loader
     }
 
