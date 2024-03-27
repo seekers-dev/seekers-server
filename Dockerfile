@@ -13,7 +13,7 @@ RUN ["chmod", "+x", "./mvnw"]
 RUN ./mvnw dependency:resolve
 
 COPY src ./src
-COPY server.ini ./
+COPY config.ini ./
 RUN ./mvnw compile
 
 ENTRYPOINT ["./mvnw"]
