@@ -5,7 +5,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import org.ini4j.Ini;
 import org.seekers.grpc.Corresponding;
-import org.seekers.grpc.Identifiable;
 
 import javax.annotation.Nonnull;
 
@@ -15,7 +14,7 @@ import javax.annotation.Nonnull;
  *
  * @author karlz
  */
-public class Camp extends Rectangle implements Corresponding<org.seekers.grpc.game.Camp>, Identifiable {
+public class Camp extends Rectangle implements Corresponding<org.seekers.grpc.game.Camp> {
 
     private final @Nonnull Player player;
     private final @Nonnull Properties properties;

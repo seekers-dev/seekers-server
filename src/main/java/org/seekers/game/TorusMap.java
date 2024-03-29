@@ -105,6 +105,7 @@ public class TorusMap implements GameMap {
 	 * 
 	 * @return The diameter of the torus map.
 	 */
+	@Override
 	public double getDiameter() {
 		return Math.hypot(getWidth(), getHeight());
 	}

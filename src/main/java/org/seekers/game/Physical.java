@@ -7,14 +7,13 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import org.ini4j.Ini;
 import org.seekers.grpc.Corresponding;
-import org.seekers.grpc.Identifiable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.util.List;
 
 public abstract class Physical<P extends Physical.Properties> extends Pane
-        implements Entity, Identifiable, Corresponding.ExtendableCorresponding {
+        implements Entity, Corresponding.ExtendableCorresponding {
 
     private final @Nonnull Game game;
     private final @Nonnull Circle object = new Circle(10, Color.CRIMSON);

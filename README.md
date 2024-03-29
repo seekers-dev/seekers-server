@@ -13,3 +13,27 @@
 </p>
 
 In seekers, AIs compete against each other with the aim of scoring as many points as possible. This project is competition-oriented for students.
+
+```mermaid
+classDiagram
+    Entity: update()
+    Entity <|-- Animation
+    Entity <|-- Physical
+    
+    Animation: destroy()
+    Animation <|-- GoalAnimation
+    
+    Physical: collision(...)
+    Physical <|-- Goal
+    Physical <|-- Seeker
+
+    Corresponding: associated()
+    Corresponding <|-- Physical
+    Corresponding <|-- Player
+    Corresponding <|-- Camp
+    
+    GameMap: getDistance(...)
+    GameMap: getDifference(...)
+    GameMap: getDirection(...)
+    GameMap <|-- TorusMap
+```

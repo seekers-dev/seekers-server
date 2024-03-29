@@ -12,7 +12,6 @@ import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import org.seekers.grpc.Corresponding;
-import org.seekers.grpc.Identifiable;
 
 /**
  * The Player class represents a player in the game.
@@ -20,7 +19,7 @@ import org.seekers.grpc.Identifiable;
  * @author karlz
 game.getFront().getChildren().add(this);
  */
-public class Player extends Label implements Corresponding<org.seekers.grpc.game.Player>, Identifiable {
+public class Player extends Label implements Corresponding<org.seekers.grpc.game.Player> {
 
 	private static final @Nonnull Random rand = new Random();
 

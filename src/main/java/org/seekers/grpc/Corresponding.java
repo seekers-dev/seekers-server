@@ -8,6 +8,14 @@ import java.util.stream.Collectors;
 public interface Corresponding<T> {
     T associated();
 
+    default String getType() {
+        return this.getClass().getSimpleName();
+    }
+
+    default String getIdentifier() {
+        return Integer.toHexString(this.hashCode());
+    }
+
     static <T> T transform(Corresponding<T> corresponding) {
         return corresponding.associated();
     }
