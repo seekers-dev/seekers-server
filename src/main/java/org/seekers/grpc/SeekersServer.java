@@ -57,7 +57,7 @@ public class SeekersServer {
         this.server = ServerBuilder.forPort(port).addService(new SeekersService()).build();
         this.stage = stage;
 
-        Ini ini = new Ini(new File("server.ini"));
+        Ini ini = new Ini(new File("config.ini"));
         for (Map.Entry<String, Profile.Section> section : ini.entrySet()) {
             for (Map.Entry<String, String> entry : section.getValue().entrySet()) {
                 properties.put(section.getKey() + '.' + entry.getKey(), entry.getValue());
