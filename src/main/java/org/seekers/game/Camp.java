@@ -15,7 +15,7 @@ import javax.annotation.Nonnull;
  *
  * @author karlz
  */
-public class Camp extends Rectangle implements Corresponding<org.seekers.grpc.game.Camp>, Identifiable, Destroyable {
+public class Camp extends Rectangle implements Corresponding<org.seekers.grpc.game.Camp>, Identifiable {
 
     private final @Nonnull Player player;
     private final @Nonnull Properties properties;
@@ -68,11 +68,6 @@ public class Camp extends Rectangle implements Corresponding<org.seekers.grpc.ga
         return 2 * Math.abs(deltaR.getX()) < properties.width && 2 * Math.abs(deltaR.getY()) < properties.height;
     }
 
-    @Override
-    public void destroy() {
-        getPlayer().getGame().getBack().getChildren().remove(this);
-        getPlayer().getGame().getCamps().remove(this);
-    }
 
     /**
      * Returns the player associated with this camp.

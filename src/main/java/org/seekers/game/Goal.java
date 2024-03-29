@@ -99,7 +99,7 @@ public class Goal extends Physical<Goal.Properties> {
      * Resets the state of the Goal object.
      */
     private void reset() {
-        setPosition(getGame().getRandomPosition());
+        setPosition(getGame().getGameMap().getRandomPosition());
         capture = null;
         setTimeOwned(0);
     }
@@ -146,7 +146,7 @@ public class Goal extends Physical<Goal.Properties> {
         }
 
         @Override
-        protected void animate() {
+        public void update() {
             var next = wave.getRadius() + 0.75;
             if (next < ANIMATION_RANGE) {
                 wave.setRadius(next);

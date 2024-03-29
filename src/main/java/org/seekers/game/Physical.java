@@ -72,7 +72,7 @@ public abstract class Physical<P extends Physical.Properties> extends Pane
 
     public void displacement() {
         setPosition(getPosition().add(getVelocity()));
-        getGame().putNormalizedPosition(this);
+        getGame().getGameMap().normPosition(this);
     }
 
     /**
@@ -87,7 +87,7 @@ public abstract class Physical<P extends Physical.Properties> extends Pane
             if (physical == this)
                 continue;
             double min = properties.radius + physical.properties.radius;
-            double dist = getGame().getTorusDistance(position, physical.position);
+            double dist = getGame().getGameMap().getDistance(position, physical.position);
             if (min > dist) {
                 collision(physical, min);
             }
@@ -102,7 +102,7 @@ public abstract class Physical<P extends Physical.Properties> extends Pane
      */
     @OverridingMethodsMustInvokeSuper
     public void collision(@Nonnull Physical<?> another, double minDistance) {
-        Point2D distance = game.getTorusDifference(getPosition(), another.getPosition());
+        Point2D distance = getGame().getGameMap().getDifference(getPosition(), another.getPosition());
 
         Point2D deltaR = distance.normalize();
         Point2D deltaV = another.getVelocity().subtract(getVelocity());

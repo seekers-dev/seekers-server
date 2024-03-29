@@ -18,6 +18,7 @@ import javafx.scene.text.Font;
 import javafx.util.Duration;
 import org.ini4j.Ini;
 import org.seekers.grpc.Corresponding;
+import org.seekers.plugin.GameMap;
 import org.seekers.plugin.Tournament;
 import org.seekers.grpc.net.StatusResponse;
 
@@ -31,16 +32,18 @@ import java.util.*;
  *
  * @author karlz
  */
-public class Game extends Scene implements TorusMap {
+public class Game extends Scene {
 
     // Game objects
     private final @Nonnull List<Entity> entities = new ArrayList<>();
-    private final @Nonnull Set<Player> players = new HashSet<>();
-    private final @Nonnull Set<Seeker> seekers = new HashSet<>();
-    private final @Nonnull Set<Goal> goals = new HashSet<>();
-    private final @Nonnull Set<Camp> camps = new HashSet<>();
-    private final @Nonnull Set<Animation> animations = new HashSet<>();
+    private final GameMap gameMap;
     private int tick = 0;
+
+    // Cached types for gRPC fast access
+    private final @Nonnull List<Player> players = new ArrayList<>();
+    private final @Nonnull List<Seeker> seekers = new ArrayList<>();
+    private final @Nonnull List<Goal> goals = new ArrayList<>();
+    private final @Nonnull List<Camp> camps = new ArrayList<>();
 
     // Graphics
     private final @Nonnull BooleanProperty finished = new SimpleBooleanProperty(false);
@@ -48,7 +51,6 @@ public class Game extends Scene implements TorusMap {
     private final @Nonnull VBox info = new VBox();
     private final @Nonnull Group front = new Group();
     private final @Nonnull Group back = new Group();
-    private final @Nonnull BorderPane render;
 
     // Properties
     private final @Nonnull Properties gameProperties;
@@ -63,19 +65,19 @@ public class Game extends Scene implements TorusMap {
     public Game(@Nonnull BorderPane parent, @Nonnull Game.Properties gameProperties, @Nonnull Camp.Properties campProperties,
                 @Nonnull Seeker.Properties seekerProperties, @Nonnull Goal.Properties goalProperties) {
         super(parent, gameProperties.width, gameProperties.height, true, SceneAntialiasing.BALANCED);
-        this.render = parent;
         this.gameProperties = gameProperties;
         this.campProperties = campProperties;
         this.seekerProperties = seekerProperties;
         this.goalProperties = goalProperties;
+        this.gameMap = new TorusMap(gameProperties.width, gameProperties.height);
 
         time.setFont(Font.font("Ubuntu", 14));
         time.setTextFill(Color.WHITESMOKE);
 
-        render.setTop(getInfo());
-        render.getChildren().addAll(getBack(), getFront());
-        render.setBottom(time);
-        render.setBackground(new Background(new BackgroundFill(Color.gray(.1), null, null)));
+        parent.setTop(getInfo());
+        parent.getChildren().addAll(getBack(), getFront());
+        parent.setBottom(time);
+        parent.setBackground(new Background(new BackgroundFill(Color.gray(.1), null, null)));
 
         Timeline timeline = getTimeline();
         timeline.play();
@@ -127,12 +129,21 @@ public class Game extends Scene implements TorusMap {
         return timeline;
     }
 
-    public void reset() {
-        // Destroy entities
-        for (Player player : List.copyOf(players)) player.destroy();
-        for (Seeker seeker : List.copyOf(seekers)) seeker.destroy();
-        for (Camp camp : List.copyOf(camps)) camp.destroy();
-        for (Animation animation : List.copyOf(animations)) animation.destroy();
+    public synchronized void reset() {
+        // Destroy entities and clear cache
+        entities.clear();
+        players.clear();
+        seekers.clear();
+        goals.clear();
+        camps.clear();
+
+        // Clear scene content
+        getBack().getChildren().clear();
+        getFront().getChildren().clear();
+        getInfo().getChildren().clear();
+
+        // Add goals back to game
+        addGoals();
 
         // Reset property
         finished.set(false);
@@ -167,7 +178,7 @@ public class Game extends Scene implements TorusMap {
                 gameProperties.height * 0.5));
         for (int s = 0; s < gameProperties.seekers; s++) {
             Seeker seeker = new Seeker(player, seekerProperties);
-            seeker.setPosition(getRandomPosition());
+            seeker.setPosition(getGameMap().getRandomPosition());
         }
         return player;
     }
@@ -178,7 +189,7 @@ public class Game extends Scene implements TorusMap {
     public void addGoals() {
         for (int i = 0; i < gameProperties.goals; i++) {
             Goal goal = new Goal(this, goalProperties);
-            goal.setPosition(getRandomPosition());
+            goal.setPosition(getGameMap().getRandomPosition());
         }
     }
 
@@ -201,53 +212,44 @@ public class Game extends Scene implements TorusMap {
     }
 
     /**
-     * @return the set of seekers
+     * @return the list of seekers
      */
     @Nonnull
-	public Set<Seeker> getSeekers() {
+	public List<Seeker> getSeekers() {
         return seekers;
     }
 
     /**
-     * @return the set of players
+     * @return the list of players
      */
     @Nonnull
-	public Set<Player> getPlayers() {
+	public List<Player> getPlayers() {
         return players;
     }
 
     /**
-     * @return the set of goals
+     * @return the list of goals
      */
     @Nonnull
-	public Set<Goal> getGoals() {
+	public List<Goal> getGoals() {
         return goals;
     }
 
     /**
-     * @return the set of camps
+     * @return the list of camps
      */
     @Nonnull
-	public Set<Camp> getCamps() {
+	public List<Camp> getCamps() {
         return camps;
     }
 
-    @Nonnull
-    public Set<Animation> getAnimations() {
-        return animations;
+    public GameMap getGameMap() {
+        return gameMap;
     }
 
     @Nonnull
     public BooleanProperty finishedProperty() {
         return finished;
-    }
-
-    /**
-     * @return the game rendering component
-     */
-    @Nonnull
-    public BorderPane getRender() {
-        return render;
     }
 
     @Nonnull

@@ -1,9 +1,9 @@
 package org.seekers.game;
 
 import javafx.geometry.Point2D;
+import org.seekers.plugin.GameMap;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * The TorusMap class provides utility methods for handling positions and
@@ -11,7 +11,15 @@ import javax.annotation.Nullable;
  * 
  * @author karlz
  */
-public interface TorusMap {
+public class TorusMap implements GameMap {
+
+	private final double width;
+	private final double height;
+
+	public TorusMap(double width, double height) {
+        this.width = width;
+        this.height = height;
+    }
 
 	static org.seekers.grpc.game.Vector2D toMessage(Point2D vec) {
 		return org.seekers.grpc.game.Vector2D.newBuilder().setX(vec.getX()).setY(vec.getY()).build();
@@ -23,33 +31,12 @@ public interface TorusMap {
 	 * 
 	 * @param physical The Physical object to adjust the position for.
 	 */
-	default void putNormalizedPosition(@Nonnull Physical<?> physical) {
+	@Override
+	public void normPosition(@Nonnull Physical<?> physical) {
 		Point2D p = physical.getPosition();
 
 		physical.setPosition(physical.getPosition().subtract(Math.floor(p.getX() / getWidth()) * getWidth(),
 				Math.floor(p.getY() / getHeight()) * getHeight()));
-	}
-
-	/**
-	 * Finds the nearest Physical object to a given position.
-	 * 
-	 * @param p         The position to find the nearest Physical object from.
-	 * @param physicals The collection of Physical objects to search from.
-	 * @return The nearest Physical object.
-	 */
-	@Nullable
-	default Physical<?> getNearestPhysicalOf(@Nonnull Point2D p, @Nonnull Iterable<? extends Physical<?>> physicals) {
-		double distance = getWidth() * getHeight();
-		Physical<?> nearest = null;
-
-		for (Physical<?> physical : physicals) {
-			double dif = getTorusDistance(p, physical.getPosition());
-			if (dif < distance) {
-				distance = dif;
-				nearest = physical;
-			}
-		}
-		return nearest;
 	}
 
 	private static double distance(double p0, double p1, double d) {
@@ -64,7 +51,8 @@ public interface TorusMap {
 	 * @param p1 The second position.
 	 * @return The torus distance between the two positions.
 	 */
-	default double getTorusDistance(@Nonnull Point2D p0, @Nonnull Point2D p1) {
+	@Override
+	public double getDistance(@Nonnull Point2D p0, @Nonnull Point2D p1) {
 		return new Point2D(distance(p0.getX(), p1.getX(), getWidth()), distance(p0.getY(), p1.getY(), getHeight()))
 				.magnitude();
 	}
@@ -81,14 +69,14 @@ public interface TorusMap {
 	 * @param p1 The second position.
 	 * @return The torus difference between the two positions.
 	 */
+	@Override
 	@Nonnull
-	default Point2D getTorusDifference(@Nonnull Point2D p0, @Nonnull Point2D p1) {
+	public Point2D getDifference(@Nonnull Point2D p0, @Nonnull Point2D p1) {
 		return new Point2D(difference(p0.getX(), p1.getX(), getWidth()),
 				difference(p0.getY(), p1.getY(), getHeight()));
 	}
 
 	/**
-	 * 
 	 * Calculates the torus direction from one position to another.
 	 * 
 	 * @param p0 The starting position.
@@ -96,9 +84,10 @@ public interface TorusMap {
 	 * @return The torus direction from the starting position to the target
 	 *         position.
 	 */
+	@Override
 	@Nonnull
-	default Point2D getTorusDirection(@Nonnull Point2D p0, @Nonnull Point2D p1) {
-		return getTorusDifference(p0, p1).normalize();
+	public Point2D getDirection(@Nonnull Point2D p0, @Nonnull Point2D p1) {
+		return getDifference(p0, p1).normalize();
 	}
 
 	/**
@@ -107,7 +96,7 @@ public interface TorusMap {
 	 * @return A random position on the torus map.
 	 */
 	@Nonnull
-	default Point2D getRandomPosition() {
+	public Point2D getRandomPosition() {
 		return new Point2D(Math.random() * getWidth(), Math.random() * getHeight());
 	}
 
@@ -116,7 +105,7 @@ public interface TorusMap {
 	 * 
 	 * @return The diameter of the torus map.
 	 */
-	default double getDiameter() {
+	public double getDiameter() {
 		return Math.hypot(getWidth(), getHeight());
 	}
 
@@ -125,13 +114,17 @@ public interface TorusMap {
 	 * 
 	 * @return The width of the torus map.
 	 */
-	double getWidth();
+	public double getWidth() {
+		return width;
+	}
 
 	/**
 	 * Returns the height of the torus map.
 	 * 
 	 * @return The height of the torus map.
 	 */
-	double getHeight();
+	public double getHeight() {
+		return height;
+	}
 
 }

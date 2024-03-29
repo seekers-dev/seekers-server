@@ -114,7 +114,9 @@ public class SeekersServer {
         logger.info("Host new clients");
         @SuppressWarnings("unused")
         List<String> match = tournament.getMatches().remove(0);
-        // TODO Add language loader
+        for (String player : match) {
+            getGame().addPlayer().setName(player); // TODO Add language loader and host new client instead of directly adding player
+        }
     }
 
     private void rebaseCached() {

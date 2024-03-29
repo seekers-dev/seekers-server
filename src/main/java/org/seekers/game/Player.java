@@ -18,8 +18,9 @@ import org.seekers.grpc.Identifiable;
  * The Player class represents a player in the game.
  * 
  * @author karlz
+game.getFront().getChildren().add(this);
  */
-public class Player extends Label implements Corresponding<org.seekers.grpc.game.Player>, Identifiable, Destroyable {
+public class Player extends Label implements Corresponding<org.seekers.grpc.game.Player>, Identifiable {
 
 	private static final @Nonnull Random rand = new Random();
 
@@ -46,12 +47,6 @@ public class Player extends Label implements Corresponding<org.seekers.grpc.game
 		setTextFill(color);
 		getGame().getInfo().getChildren().add(this);
 		game.getPlayers().add(this);
-	}
-
-	@Override
-	public void destroy() {
-		getGame().getPlayers().remove(this);
-		getGame().getInfo().getChildren().remove(this);
 	}
 
 	/**

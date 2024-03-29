@@ -16,7 +16,7 @@ import java.util.*;
  */
 public class Tournament implements Serializable {
 
-	private static final Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+	private static final Logger logger = LoggerFactory.getLogger(Tournament.class);
 	private static final Gson gson = new Gson();
 
 	private final @Nonnull List<List<String>> matches = new LinkedList<>();
@@ -32,6 +32,9 @@ public class Tournament implements Serializable {
 				}
 			}
 		} else {
+			matches.add(List.of("P1", "P2")); // TODO For testing only, remove later
+			results.put("P1", new ArrayList<>());
+			results.put("P2", new ArrayList<>());
 			logger.error("No AIs found in folder, maybe folder or files are missing?");
 		}
 	}

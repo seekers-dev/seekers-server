@@ -4,6 +4,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import org.ini4j.Ini;
+import org.seekers.plugin.GameMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
  *
  * @author karlz
  */
-public class Seeker extends Physical<Seeker.Properties> implements Destroyable {
+public class Seeker extends Physical<Seeker.Properties> {
 
     public static Iterable<org.seekers.grpc.game.Seeker> transform(Collection<? extends Seeker> seekers) {
         return seekers.stream().map(Seeker::associated).collect(Collectors.toList());
@@ -46,7 +47,8 @@ public class Seeker extends Physical<Seeker.Properties> implements Destroyable {
         for (int i = 1; i < 3; i++) {
             Circle indicator = new Circle(properties.radius + i * 0.25 * getAnimationRange());
             indicator.setFill(Color.TRANSPARENT);
-            indicator.setStrokeWidth(2);
+            indicator.setStrokeWidth(3);
+            indicator.setStroke(player.getColor());
             indicator.setVisible(false);
             getIndicators().add(indicator);
         }
@@ -81,9 +83,10 @@ public class Seeker extends Physical<Seeker.Properties> implements Destroyable {
         }
     }
 
+    @Override
     public void accelerate() {
         if (!isSeekerDisabled()) {
-            setAcceleration(getGame().getTorusDirection(getPosition(), getTarget()));
+            setAcceleration(getGame().getGameMap().getDirection(getPosition(), getTarget()));
         } else {
             setAcceleration(Point2D.ZERO);
         }
@@ -94,9 +97,8 @@ public class Seeker extends Physical<Seeker.Properties> implements Destroyable {
      */
     protected void animate() {
         for (Circle indicator : getIndicators()) {
-            double expansion = (indicator.getRadius() + Math.signum(magnet) * 0.025) % getAnimationRange();
+            double expansion = (indicator.getRadius() + Math.signum(magnet)) % getAnimationRange();
             indicator.setRadius(expansion + properties.radius);
-            indicator.setStrokeWidth(3 * Math.sqrt(1 - expansion / getAnimationRange()));
         }
     }
 
@@ -121,19 +123,32 @@ public class Seeker extends Physical<Seeker.Properties> implements Destroyable {
         super.collision(another, minDistance);
     }
 
-    @Override
-    public void destroy() {
-        getGame().getSeekers().remove(this);
-        getGame().getEntities().remove(this);
-        getGame().getFront().getChildren().remove(this);
-        getPlayer().getSeekers().remove(getIdentifier());
+    /**
+     * Finds the nearest Physical object to a given position.
+     *
+     * @param p         The position to find the nearest Physical object from.
+     * @param physicals The collection of Physical objects to search from.
+     * @return The nearest Physical object.
+     */
+    private static @Nullable Physical<?> getNearestPhysicalOf(GameMap map, @Nonnull Point2D p, @Nonnull Iterable<? extends Physical<?>> physicals) {
+        double distance = map.getDiameter();
+        Physical<?> nearest = null;
+
+        for (Physical<?> physical : physicals) {
+            double dif = map.getDistance(p, physical.getPosition());
+            if (dif < distance) {
+                distance = dif;
+                nearest = physical;
+            }
+        }
+        return nearest;
     }
 
     public void setAutoCommands() {
         @SuppressWarnings("null")
-        @Nullable final Goal goal = (Goal) getGame().getNearestPhysicalOf(getPosition(), getGame().getGoals());
+        @Nullable final Goal goal = (Goal) getNearestPhysicalOf(getGame().getGameMap(), getPosition(), getGame().getGoals());
         if (goal != null) {
-            if (getGame().getTorusDistance(getPosition(), goal.getPosition()) > 30) {
+            if (getGame().getGameMap().getDistance(getPosition(), goal.getPosition()) > 30) {
                 setTarget(goal.getPosition());
                 setMagnet(0);
             } else {
@@ -163,8 +178,8 @@ public class Seeker extends Physical<Seeker.Properties> implements Destroyable {
      */
     @Nonnull
     public Point2D getMagneticForce(@Nonnull Point2D p) {
-        double r = getGame().getTorusDistance(getPosition(), p) / getGame().getDiameter() * 10;
-        Point2D d = getGame().getTorusDirection(getPosition(), p);
+        double r = getGame().getGameMap().getDistance(getPosition(), p) / getGame().getGameMap().getDiameter() * 10;
+        Point2D d = getGame().getGameMap().getDirection(getPosition(), p);
         double s = (r < 1) ? Math.exp(1 / (Math.pow(r, 2) - 1)) : 0;
         return (isSeekerDisabled()) ? Point2D.ZERO : d.multiply(-getMagnet() * s);
     }
@@ -206,10 +221,10 @@ public class Seeker extends Physical<Seeker.Properties> implements Destroyable {
     public void setMagnet(double magnet) {
         if (!isSeekerDisabled()) {
             this.magnet = Math.max(Math.min(magnet, 1), -8);
-            if (magnet != 0) {
-                getIndicators().forEach(c -> c.setVisible(true));
-            } else {
+            if (magnet == 0) {
                 getIndicators().forEach(c -> c.setVisible(false));
+            } else {
+                getIndicators().forEach(c -> c.setVisible(true));
             }
         }
     }
@@ -254,16 +269,6 @@ public class Seeker extends Physical<Seeker.Properties> implements Destroyable {
      */
     public void setTarget(@Nonnull Point2D target) {
         this.target = target;
-    }
-
-    /**
-     * Returns the color of the Seeker.
-     *
-     * @return The color of the Seeker.
-     */
-    @Nonnull
-    public Color getColor() {
-        return activated;
     }
 
     /**
