@@ -8,9 +8,7 @@ import org.seekers.plugin.GameMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -25,7 +23,7 @@ public class Seeker extends Physical<Seeker.Properties> {
     }
 
     private final @Nonnull Player player;
-    private final @Nonnull List<Circle> indicators = new ArrayList<>();
+    private final @Nonnull SeekerAnimation animation;
 
     private @Nonnull Point2D target = getPosition();
     private @Nonnull Color activated = Color.WHITE;
@@ -42,18 +40,8 @@ public class Seeker extends Physical<Seeker.Properties> {
     public Seeker(@Nonnull Player player, Properties properties) {
         super(player.getGame(), properties);
         this.player = player;
+        this.animation = new SeekerAnimation(getGame());
         setColor(player.getColor());
-
-        for (int i = 1; i < 3; i++) {
-            Circle indicator = new Circle(properties.radius + i * 0.25 * getAnimationRange());
-            indicator.setFill(Color.TRANSPARENT);
-            indicator.setStrokeWidth(3);
-            indicator.setStroke(player.getColor());
-            indicator.setVisible(false);
-            getIndicators().add(indicator);
-        }
-        getChildren().addAll(getIndicators());
-
         player.getSeekers().put(getIdentifier(), this);
         getGame().getSeekers().add(this);
     }
@@ -74,11 +62,10 @@ public class Seeker extends Physical<Seeker.Properties> {
     @Override
     public void update() {
         super.update();
-        animate();
         if (isSeekerDisabled()) {
             disabledCounter = Math.max(disabledCounter - 1, 0);
             if (!isSeekerDisabled()) {
-                getObject().setFill(activated);
+                setFill(activated);
             }
         }
     }
@@ -89,16 +76,6 @@ public class Seeker extends Physical<Seeker.Properties> {
             setAcceleration(getGame().getGameMap().getDirection(getPosition(), getTarget()));
         } else {
             setAcceleration(Point2D.ZERO);
-        }
-    }
-
-    /**
-     * Animates the Seeker.
-     */
-    protected void animate() {
-        for (Circle indicator : getIndicators()) {
-            double expansion = (indicator.getRadius() + Math.signum(magnet)) % getAnimationRange();
-            indicator.setRadius(expansion + properties.radius);
         }
     }
 
@@ -162,15 +139,6 @@ public class Seeker extends Physical<Seeker.Properties> {
     }
 
     /**
-     * Returns the animation range of the Seeker.
-     *
-     * @return The animation range of the Seeker.
-     */
-    public double getAnimationRange() {
-        return 26;
-    }
-
-    /**
      * Calculates the magnetic force between the Seeker and a given position.
      *
      * @param p The position to calculate the magnetic force with.
@@ -221,11 +189,7 @@ public class Seeker extends Physical<Seeker.Properties> {
     public void setMagnet(double magnet) {
         if (!isSeekerDisabled()) {
             this.magnet = Math.max(Math.min(magnet, 1), -8);
-            if (magnet == 0) {
-                getIndicators().forEach(c -> c.setVisible(false));
-            } else {
-                getIndicators().forEach(c -> c.setVisible(true));
-            }
+            animation.setVisible(magnet != 0);
         }
     }
 
@@ -236,10 +200,8 @@ public class Seeker extends Physical<Seeker.Properties> {
         if (!isSeekerDisabled()) {
             disabledCounter = properties.disabledTime;
             setMagnet(0.0);
-            for (Circle indicator : getIndicators()) {
-                indicator.setVisible(false);
-            }
-            getObject().setFill(disabled);
+            animation.setVisible(false);
+            setFill(disabled);
         }
     }
 
@@ -280,10 +242,15 @@ public class Seeker extends Physical<Seeker.Properties> {
     public void setColor(final @Nonnull Color color) {
         this.activated = color;
         this.disabled = color.darker().darker();
-        getObject().setFill(color);
-        for (Circle circle : getIndicators()) {
-            circle.setStroke(color);
-        }
+        setFill(color);
+        animation.indicator.setStroke(color);
+    }
+
+    @Override
+    public void setPosition(@Nonnull Point2D position) {
+        super.setPosition(position);
+        animation.indicator.setCenterX(getPosition().getX());
+        animation.indicator.setCenterY(getPosition().getY());
     }
 
     @Override
@@ -293,8 +260,37 @@ public class Seeker extends Physical<Seeker.Properties> {
                 .setDisableCounter(disabledCounter).build();
     }
 
-    @Nonnull
-    public List<Circle> getIndicators() {
-        return indicators;
+    public class SeekerAnimation extends Animation {
+
+        private final @Nonnull Circle indicator = new Circle(properties.radius + 0.25 * getAnimationRange());
+
+        protected SeekerAnimation(@Nonnull Game game) {
+            super(game);
+            indicator.setFill(Color.TRANSPARENT);
+            indicator.setStrokeWidth(5);
+            indicator.setStroke(player.getColor());
+            getChildren().add(indicator);
+            setVisible(false);
+        }
+
+        @Override
+        public void update() {
+            double expansion = (indicator.getRadius() + Math.signum(magnet)) % getAnimationRange();
+            indicator.setRadius(expansion + properties.radius);
+        }
+
+        @Override
+        public void destroy() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Returns the animation range of the Seeker.
+         *
+         * @return The animation range of the Seeker.
+         */
+        public double getAnimationRange() {
+            return 26;
+        }
     }
 }

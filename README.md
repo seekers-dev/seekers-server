@@ -22,6 +22,7 @@ classDiagram
     
     Animation: destroy()
     Animation <|-- GoalAnimation
+    Animation <|-- SeekerAnimation
     
     Physical: collision(...)
     Physical <|-- Goal

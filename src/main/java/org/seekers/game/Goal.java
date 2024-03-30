@@ -34,7 +34,7 @@ public class Goal extends Physical<Goal.Properties> {
      */
     public Goal(@Nonnull Game game, @Nonnull Properties properties) {
         super(game, properties);
-        getObject().setFill(Color.WHITE);
+        setFill(Color.WHITE);
         getGame().getGoals().add(this);
     }
 
@@ -102,6 +102,7 @@ public class Goal extends Physical<Goal.Properties> {
         setPosition(getGame().getGameMap().getRandomPosition());
         capture = null;
         setTimeOwned(0);
+        setFill(Color.WHITE);
     }
 
     public double getTimeOwned() {
@@ -111,12 +112,12 @@ public class Goal extends Physical<Goal.Properties> {
     public void setTimeOwned(double timeOwned) {
         this.timeOwned = timeOwned;
         if (timeOwned == 0) {
-            getObject().setFill(Color.WHITE);
+            setFill(Color.WHITE);
         } else {
             final Camp checked = this.capture;
             if (checked != null) {
                 Color color = checked.getPlayer().getColor();
-                getObject().setFill(Color.color(1 + (color.getRed() - 1) * timeOwned / properties.scoringTime,
+                setFill(Color.color(1 + (color.getRed() - 1) * timeOwned / properties.scoringTime,
                         1 + (color.getGreen() - 1) * timeOwned / properties.scoringTime,
                         1 + (color.getBlue() - 1) * timeOwned / properties.scoringTime));
             }

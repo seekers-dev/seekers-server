@@ -2,8 +2,6 @@ package org.seekers.game;
 
 import com.google.protobuf.Message;
 import javafx.geometry.Point2D;
-import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import org.ini4j.Ini;
 import org.seekers.grpc.Corresponding;
@@ -12,12 +10,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.util.List;
 
-public abstract class Physical<P extends Physical.Properties> extends Pane
-        implements Entity, Corresponding.ExtendableCorresponding {
+public abstract class Physical<P extends Physical.Properties> extends Circle implements Entity,
+        Corresponding.ExtendableCorresponding {
 
     private final @Nonnull Game game;
-    private final @Nonnull Circle object = new Circle(10, Color.CRIMSON);
-
     private @Nonnull Point2D acceleration = Point2D.ZERO;
     private @Nonnull Point2D velocity = Point2D.ZERO;
     private @Nonnull Point2D position = Point2D.ZERO;
@@ -27,30 +23,28 @@ public abstract class Physical<P extends Physical.Properties> extends Pane
     /**
      * Constructs a new instance of the Physical class.
      *
-     * @param game     The Game object associated with the Physical object.
+     * @param game The Game object associated with the Physical object.
      */
     protected Physical(@Nonnull Game game, @Nonnull P properties) {
         this.game = game;
         this.properties = properties;
 
-        object.setRadius(properties.radius);
-        getChildren().add(object);
+        setRadius(properties.radius);
         getGame().getFront().getChildren().add(this);
         getGame().getEntities().add(this);
     }
 
     public static class Properties {
+        final double mass;
+        final double radius;
+        final double thrust;
+        final double friction;
         public Properties(Ini ini, String section) {
             mass = ini.fetch(section, "mass", double.class);
             radius = ini.fetch(section, "radius", double.class);
             thrust = ini.fetch(section, "thrust", double.class);
             friction = ini.fetch(section, "friction", double.class);
         }
-
-        final double mass;
-        final double radius;
-        final double thrust;
-        final double friction;
     }
 
     @OverridingMethodsMustInvokeSuper
@@ -80,11 +74,9 @@ public abstract class Physical<P extends Physical.Properties> extends Pane
     private void checks() {
         final List<Entity> entities = getGame().getEntities();
         for (Entity entity : entities) {
-            if (!(entity instanceof Physical))
-                return;
-            Physical<?> physical = (Physical<?>) entity;
-            if (physical == this)
+            if (entity == this || !(entity instanceof Physical))
                 continue;
+            Physical<?> physical = (Physical<?>) entity;
             double min = properties.radius + physical.properties.radius;
             double dist = getGame().getGameMap().getDistance(position, physical.position);
             if (min > dist) {
@@ -121,16 +113,6 @@ public abstract class Physical<P extends Physical.Properties> extends Pane
     }
 
     /**
-     * Retrieves the Circle object representing the Physical object in the UI.
-     *
-     * @return The Circle object.
-     */
-    @Nonnull
-    public Circle getObject() {
-        return object;
-    }
-
-    /**
      * Retrieves the Game object associated with the Physical object.
      *
      * @return The Game object.
@@ -157,8 +139,8 @@ public abstract class Physical<P extends Physical.Properties> extends Pane
      */
     public void setPosition(@Nonnull Point2D position) {
         this.position = position;
-        setLayoutX(position.getX());
-        setLayoutY(position.getY());
+        setCenterX(position.getX());
+        setCenterY(position.getY());
     }
 
     /**
