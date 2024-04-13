@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.seekers</groupId>
-    <artifactId>seekers</artifactId>
+    <artifactId>seekers-server</artifactId>
     <version>0.0.1</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -14,6 +14,7 @@
         <maven.compiler.release>${project.javaVersion}</maven.compiler.release>
     </properties>
     <repositories>
+        <!-- Use JitPack for snapshot builds -->
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
@@ -46,6 +47,11 @@
             <groupId>org.ini4j</groupId>
             <artifactId>ini4j</artifactId>
             <version>0.5.4</version>
+        </dependency>
+        <dependency> <!-- Only needed for plugins -->
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>1.9.23</version>
         </dependency>
         <!-- Annotations -->
         <dependency>

@@ -53,9 +53,10 @@ public class SeekersServer {
     /**
      * Constructs a new SeekersServer instance.
      */
-    public SeekersServer(@Nonnull Stage stage) throws IOException {
+    public SeekersServer(@Nonnull Stage stage, Collection<LanguageLoader> loaders) throws IOException {
         this.server = ServerBuilder.forPort(7777).addService(new SeekersService()).build();
         this.stage = stage;
+        this.loaders.addAll(loaders);
 
         Ini ini = new Ini(new File("config.ini"));
         for (Map.Entry<String, Profile.Section> section : ini.entrySet()) {
@@ -99,6 +100,7 @@ public class SeekersServer {
      */
     public void stop() throws InterruptedException, IOException {
         stopOldClients();
+        logger.info("Match results: {}", tournament.getResults());
         server.shutdown().awaitTermination(5L, TimeUnit.SECONDS);
         logger.info("Server shutdown");
     }
@@ -155,11 +157,6 @@ public class SeekersServer {
     @Nonnull
     public Game getGame() {
         return game;
-    }
-
-    @Nonnull
-    public Set<LanguageLoader> getLoaders() {
-        return loaders;
     }
 
     /**

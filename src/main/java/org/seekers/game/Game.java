@@ -161,7 +161,7 @@ public class Game extends Scene {
 
     public void addToTournament(Tournament tournament) {
         for (Player player : players) {
-            tournament.getResults().get(player.getName()).add(player.getScore());
+            tournament.getResults().computeIfAbsent(player.getName(), n -> new ArrayList<>()).add(player.getScore());
         }
     }
 

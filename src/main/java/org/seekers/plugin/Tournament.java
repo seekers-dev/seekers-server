@@ -24,7 +24,7 @@ public class Tournament implements Serializable {
 
 	public Tournament(String path) {
 		File folder = new File(path);
-		String[] files = folder.list((File dir, String name) -> name.startsWith("ai"));
+		String[] files = folder.list((File dir, String name) -> name.startsWith("ai") && !name.endsWith(".log"));
 		if (files != null) {
 			for (int p = 0, size = files.length; p < size; p++) {
 				for (int m = p + 1; m < size; m++) {
