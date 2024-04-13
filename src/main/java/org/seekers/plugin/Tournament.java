@@ -24,7 +24,7 @@ public class Tournament implements Serializable {
 
 	public Tournament(String path) {
 		File folder = new File(path);
-		String[] files = folder.list((File dir, String name) -> name.startsWith("ai") && name.endsWith(".py"));
+		String[] files = folder.list((File dir, String name) -> name.startsWith("ai"));
 		if (files != null) {
 			for (int p = 0, size = files.length; p < size; p++) {
 				for (int m = p + 1; m < size; m++) {
@@ -32,9 +32,6 @@ public class Tournament implements Serializable {
 				}
 			}
 		} else {
-			matches.add(List.of("P1", "P2")); // TODO For testing only, remove later
-			results.put("P1", new ArrayList<>());
-			results.put("P2", new ArrayList<>());
 			logger.error("No AIs found in folder, maybe folder or files are missing?");
 		}
 	}

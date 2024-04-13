@@ -1,32 +1,39 @@
 package org.seekers;
 
-import net.sourceforge.argparse4j.ArgumentParsers;
-import net.sourceforge.argparse4j.inf.ArgumentParser;
-import net.sourceforge.argparse4j.inf.ArgumentParserException;
-import net.sourceforge.argparse4j.inf.Namespace;
+import org.pf4j.JarPluginManager;
+import org.pf4j.PluginManager;
 import org.seekers.grpc.SeekersServer;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
+import org.seekers.plugin.LanguageLoader;
+import org.seekers.plugin.SeekersExtension;
+
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 
 public class App extends Application {
 
+	private final @Nonnull List<LanguageLoader> loaders = new ArrayList<>();
+
 	@Override
-	public void start(Stage stage) throws Exception {
-		Parameters parameters = getParameters();
-		String[] args = parameters.getRaw().toArray(new String[0]);
-		ArgumentParser parser = ArgumentParsers.newFor("seekers-server").build();
-		parser.addArgument("--port").type(int.class).help("sets the port").setDefault(7777);
-		parser.addArgument("--mode").type(String.class).help("the game mode").setDefault("standard");
-		// parser.addArgument("locations").type(String.class).help("client locations").nargs("+");
-		try {
-			@SuppressWarnings("unused") // TODO use args
-			Namespace res = parser.parseArgs(args);
-		} catch (ArgumentParserException e) {
-			parser.handleError(e);
+	public void init() {
+		PluginManager manager = new JarPluginManager();
+		manager.loadPlugins();
+		manager.startPlugins();
+
+		for (SeekersExtension extension : manager.getExtensions(SeekersExtension.class)) {
+			extension.addLanguageLoaders(loaders);
 		}
 
-		final SeekersServer server = new SeekersServer(stage, 7777);
+		manager.stopPlugins();
+	}
+
+	@Override
+	public void start(Stage stage) throws Exception {
+		final SeekersServer server = new SeekersServer(stage);
+		server.getLoaders().addAll(loaders);
 		stage.setOnCloseRequest(c -> {
 			try {
 				server.stop();

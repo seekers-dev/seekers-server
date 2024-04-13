@@ -1,5 +1,7 @@
-# Runtime files
-seekers-py/
+### Setup ###
+dist/
+players/
+plugins/
 results/
 
 # Compiled class file

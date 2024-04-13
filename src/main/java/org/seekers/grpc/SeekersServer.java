@@ -16,6 +16,7 @@ import org.ini4j.Profile;
 import org.seekers.game.*;
 import org.seekers.grpc.net.*;
 import org.seekers.grpc.net.SeekersGrpc.SeekersImplBase;
+import org.seekers.plugin.LanguageLoader;
 import org.seekers.plugin.Tournament;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +39,6 @@ import java.util.concurrent.TimeUnit;
 public class SeekersServer {
     private static final Logger logger = LoggerFactory.getLogger(SeekersServer.class);
 
-    private static final String SECTION = "project";
-
     private final @Nonnull Server server; // gRPC server socket
     private final @Nonnull Stage stage; // Cache for close
 	private final @Nonnull Game game; // Game
@@ -48,13 +47,14 @@ public class SeekersServer {
     // Collections
     private final @Nonnull Map<String, Player> players = new HashMap<>();
 	private final @Nonnull Set<SeekersClient> clients = new HashSet<>();
+    private final @Nonnull Set<LanguageLoader> loaders = new HashSet<>();
     private final @Nonnull Map<String, String> properties = new HashMap<>();
 
     /**
      * Constructs a new SeekersServer instance.
      */
-    public SeekersServer(@Nonnull Stage stage, int port) throws IOException {
-        this.server = ServerBuilder.forPort(port).addService(new SeekersService()).build();
+    public SeekersServer(@Nonnull Stage stage) throws IOException {
+        this.server = ServerBuilder.forPort(7777).addService(new SeekersService()).build();
         this.stage = stage;
 
         Ini ini = new Ini(new File("config.ini"));
@@ -66,8 +66,7 @@ public class SeekersServer {
 
         this.game = new Game(new BorderPane(), new Game.Properties(ini), new Camp.Properties(ini),
                 new Seeker.Properties(ini), new Goal.Properties(ini));
-        this.tournament = new Tournament(ini.fetch(SECTION, "path-to-ais", String.class));
-
+        this.tournament = new Tournament("players");
         start();
     }
 
@@ -112,10 +111,16 @@ public class SeekersServer {
 
     private void hostNewClients() {
         logger.info("Host new clients");
-        @SuppressWarnings("unused")
         List<String> match = tournament.getMatches().remove(0);
-        for (String player : match) {
-            getGame().addPlayer().setName(player); // TODO Add language loader and host new client instead of directly adding player
+        for (String file : match) {
+            for (LanguageLoader loader : loaders) {
+                if (loader.canHost(file)) {
+                    SeekersClient client = loader.create();
+                    client.host(new File(file));
+                    clients.add(client);
+                    break;
+                }
+            }
         }
     }
 
@@ -150,6 +155,11 @@ public class SeekersServer {
     @Nonnull
     public Game getGame() {
         return game;
+    }
+
+    @Nonnull
+    public Set<LanguageLoader> getLoaders() {
+        return loaders;
     }
 
     /**

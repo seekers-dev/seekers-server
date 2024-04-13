@@ -19,6 +19,13 @@ public interface LanguageLoader {
      */
     Collection<String> recognizedPatterns();
 
+    default boolean canHost(String file) {
+        for (String pattern : recognizedPatterns()) {
+            if (file.endsWith(pattern)) return true;
+        }
+        return false;
+    }
+
     /**
      * Creates a new seekers client that loads the language file.
      *
