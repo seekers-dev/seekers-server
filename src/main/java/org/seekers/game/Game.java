@@ -31,6 +31,7 @@ import java.util.*;
  * entities, and provides visual rendering.
  *
  * @author karlz
+ * @author joendter
  */
 public class Game extends Scene {
 
@@ -84,9 +85,17 @@ public class Game extends Scene {
         addGoals();
     }
 
+    /**
+     * Properties for all global config attributes.
+     */
     public static class Properties {
         private static final String SECTION = "global";
 
+        /**
+         * Creates a new properties instance from the ini object.
+         *
+         * @param ini the ini object that holds the data of {@code config.ini}
+         */
         public Properties(Ini ini) {
             autoPlay = ini.fetch(SECTION, "auto-play", boolean.class);
             playtime = ini.fetch(SECTION, "playtime", int.class);
@@ -109,6 +118,13 @@ public class Game extends Scene {
         private final double height;
     }
 
+    /**
+     * Creates and returns the new timeline. The Timeline runs and updates the game. It will update every entity every
+     * 10 milliseconds. Entities are only updated if all players have joined the game and there is still playtime
+     * remaining. Resetting the game will not reset the timeline.
+     *
+     * @return the created timeline object
+     */
     private Timeline getTimeline() {
         Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10.0), e -> {
             if (hasOpenSlots())
@@ -129,6 +145,14 @@ public class Game extends Scene {
         return timeline;
     }
 
+    /**
+     * Resets the game. This will:
+     * <ol>
+     *     <li>Destroy all entities</li>
+     *     <li>Clears the scene</li>
+     *     <li>Resets all changed properties</li>
+     * </ol>
+     */
     public synchronized void reset() {
         // Destroy entities and clear cache
         entities.clear();
@@ -193,6 +217,9 @@ public class Game extends Scene {
         }
     }
 
+    /**
+     * @return the current status of the game
+     */
     public synchronized StatusResponse getStatusResponse() {
         return StatusResponse.newBuilder().addAllPlayers(Corresponding.transform(getPlayers()))
                 .addAllCamps(Corresponding.transform(getCamps()))
@@ -202,9 +229,7 @@ public class Game extends Scene {
     }
 
     /**
-     * Returns the list of physical entities in the game.
-     *
-     * @return the list of physical entities
+     * @return the list of entities
      */
     @Nonnull
     public List<Entity> getEntities() {

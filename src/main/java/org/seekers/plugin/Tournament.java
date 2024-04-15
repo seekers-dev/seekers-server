@@ -13,6 +13,8 @@ import java.util.*;
 
 /**
  * Represents a Seekers Tournament.
+ *
+ * @author karlz
  */
 public class Tournament implements Serializable {
 
