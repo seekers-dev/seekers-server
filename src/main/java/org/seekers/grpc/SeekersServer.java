@@ -55,23 +55,23 @@ public class SeekersServer {
      * Constructs a new {@code SeekersServer} instance for the port 7777.
      *
      * @param stage   the javafx stage to show the match
+     * @param config  the config
      * @param loaders the list of language loaders for loading the clients
      * @throws IOException if unable to bind
      */
-    public SeekersServer(@Nonnull Stage stage, Collection<LanguageLoader> loaders) throws IOException {
+    public SeekersServer(@Nonnull Stage stage, Ini config, Collection<LanguageLoader> loaders) throws IOException {
         this.server = ServerBuilder.forPort(7777).addService(new SeekersService()).build();
         this.stage = stage;
         this.loaders.addAll(loaders);
 
-        Ini ini = new Ini(new File("config.ini"));
-        for (Map.Entry<String, Profile.Section> section : ini.entrySet()) {
+        for (Map.Entry<String, Profile.Section> section : config.entrySet()) {
             for (Map.Entry<String, String> entry : section.getValue().entrySet()) {
                 properties.put(section.getKey() + '.' + entry.getKey(), entry.getValue());
             }
         }
 
-        this.game = new Game(new BorderPane(), new Game.Properties(ini), new Camp.Properties(ini),
-                new Seeker.Properties(ini), new Goal.Properties(ini));
+        this.game = new Game(new BorderPane(), new Game.Properties(config), new Camp.Properties(config),
+                new Seeker.Properties(config), new Goal.Properties(config));
         this.tournament = new Tournament("players");
         start();
     }
