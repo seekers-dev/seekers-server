@@ -105,10 +105,18 @@ public class Goal extends Physical<Goal.Properties> {
         setFill(Color.WHITE);
     }
 
+    /**
+     * @return the time this goal was inside the current camp, or 0 if it was not inside a camp at all.
+     */
     public double getTimeOwned() {
         return timeOwned;
     }
 
+    /**
+     * Sets the time owned by a camp.
+     *
+     * @param timeOwned the time owned by a camp
+     */
     public void setTimeOwned(double timeOwned) {
         this.timeOwned = timeOwned;
         if (timeOwned == 0) {
@@ -130,11 +138,21 @@ public class Goal extends Physical<Goal.Properties> {
                 .setCampId((capture != null) ? capture.getIdentifier() : "").setTimeOwned(timeOwned).build();
     }
 
+    /**
+     * The scoring animation for goals.
+     *
+     * @author karlz
+     */
     public class GoalAnimation extends Animation {
 
         private static final double ANIMATION_RANGE = 50.0;
         private final Circle wave = new Circle(0);
 
+        /**
+         *
+         *
+         * @param game
+         */
         public GoalAnimation(Game game) {
             super(game);
             getChildren().add(wave);

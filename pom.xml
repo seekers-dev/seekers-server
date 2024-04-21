@@ -4,6 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.seekers</groupId>
     <artifactId>seekers-server</artifactId>
+    <description>Server for the seekers game.</description>
+    <inceptionYear>2022</inceptionYear>
     <version>0.0.1</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

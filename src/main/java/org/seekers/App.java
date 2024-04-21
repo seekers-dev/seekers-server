@@ -12,17 +12,39 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Creates the server and application for the {@code SeekersServer}.
+ *
+ * @author karlz
+ */
 public class App extends Application {
 
 	private static final Logger logger = LoggerFactory.getLogger(App.class);
 
 	private final @Nonnull List<LanguageLoader> loaders = new ArrayList<>();
 
+	/**
+	 * Checks for all content folders. If a folder does not exist, it will be created. Loads all plugins.
+	 */
 	@Override
 	public void init() {
+		for (String folder : List.of("dist", "players", "plugins", "results")) {
+			Path path = Path.of(folder);
+			if (!Files.exists(path)) {
+				try {
+					Files.createDirectory(path);
+				} catch (IOException ex) {
+					logger.error("Could not create directory", ex);
+				}
+			}
+		}
+
 		PluginManager manager = new DefaultPluginManager();
 		manager.loadPlugins();
 		manager.startPlugins();
@@ -32,6 +54,9 @@ public class App extends Application {
 		for (SeekersExtension extension : extensions) {
 			extension.addLanguageLoaders(loaders);
 		}
+
+		manager.stopPlugins();
+		manager.unloadPlugins();
 	}
 
 	@Override

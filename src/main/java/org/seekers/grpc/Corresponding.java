@@ -5,6 +5,12 @@ import com.google.protobuf.Message;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+/**
+ * Every corresponding instance is associated with another object.
+ *
+ * @param <T> the associated type
+ * @author karlz
+ */
 public interface Corresponding<T> {
     /**
      * @return the associated object

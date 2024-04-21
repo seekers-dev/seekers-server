@@ -29,29 +29,34 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The SeekersServer class represents the server-side implementation of the
- * Seekers game. It provides the server functionality for hosting the game,
- * handling client requests, and managing game state. The server uses gRPC for
+ * The {@code SeekersServer} class represents the server-side implementation of the Seekers game. It provides the server
+ * functionality for hosting the game, handling client requests, and managing game state. The server uses gRPC for
  * communication with clients.
  *
  * @author karlz
+ * @author Supergecki
+ * @see SeekersClient
  */
 public class SeekersServer {
     private static final Logger logger = LoggerFactory.getLogger(SeekersServer.class);
 
     private final @Nonnull Server server; // gRPC server socket
     private final @Nonnull Stage stage; // Cache for close
-	private final @Nonnull Game game; // Game
+    private final @Nonnull Game game; // Game
     private final @Nonnull Tournament tournament; // Tournament
 
     // Collections
     private final @Nonnull Map<String, Player> players = new HashMap<>();
-	private final @Nonnull Set<SeekersClient> clients = new HashSet<>();
+    private final @Nonnull Set<SeekersClient> clients = new HashSet<>();
     private final @Nonnull Set<LanguageLoader> loaders = new HashSet<>();
     private final @Nonnull Map<String, String> properties = new HashMap<>();
 
     /**
-     * Constructs a new SeekersServer instance.
+     * Constructs a new {@code SeekersServer} instance for the port 7777.
+     *
+     * @param stage   the javafx stage to show the match
+     * @param loaders the list of language loaders for loading the clients
+     * @throws IOException if unable to bind
      */
     public SeekersServer(@Nonnull Stage stage, Collection<LanguageLoader> loaders) throws IOException {
         this.server = ServerBuilder.forPort(7777).addService(new SeekersService()).build();
@@ -72,7 +77,7 @@ public class SeekersServer {
     }
 
     /**
-     * Starts the server.
+     * Starts the server and rotates the matching schedule of the tournament. This will start the game matches.
      *
      * @throws IOException if unable to bind
      */
@@ -94,9 +99,10 @@ public class SeekersServer {
     }
 
     /**
-     * Stops the server.
+     * Stops all old clients, logs the match results and closes the server.
      *
      * @throws InterruptedException if the shutdown is interrupted.
+     * @throws IOException          if it could not close the clients
      */
     public void stop() throws InterruptedException, IOException {
         stopOldClients();
@@ -105,33 +111,62 @@ public class SeekersServer {
         logger.info("Server shutdown");
     }
 
+    /**
+     * Stops all old clients. This will clear the list of connected clients.
+     *
+     * @throws IOException if it could not close the client
+     */
     private void stopOldClients() throws IOException {
         logger.info("Stop old clients");
         for (SeekersClient client : clients) client.close();
         clients.clear();
     }
 
+    /**
+     * Tries to host a single file over a language loader. If no language loader was found that can host the specified
+     * file, it must be hosted manually.
+     *
+     * @param file the name of the file
+     */
+    private void hostFile(String file) {
+        for (LanguageLoader loader : loaders) {
+            if (loader.canHost(file)) {
+                SeekersClient client = loader.create();
+                client.host(new File(file));
+                clients.add(client);
+                return;
+            }
+        }
+        logger.error("Could not find loader for file {}", file);
+    }
+
+    /**
+     * Hosts new clients for the next match.
+     */
     private void hostNewClients() {
         logger.info("Host new clients");
         List<String> match = tournament.getMatches().remove(0);
         for (String file : match) {
-            for (LanguageLoader loader : loaders) {
-                if (loader.canHost(file)) {
-                    SeekersClient client = loader.create();
-                    client.host(new File(file));
-                    clients.add(client);
-                    break;
-                }
-            }
+            hostFile(file);
         }
     }
 
+    /**
+     * Resets the game and clears all connection data from the current players.
+     */
     private void rebaseCached() {
         logger.info("Reset game and clear players");
         game.reset();
         players.clear();
     }
 
+    /**
+     * Rotates the matches. This will stop the current match. First stops all old clients, then restarts the game.
+     * Finally, it will host new clients for the new match. If there are no matches left, it will close the server
+     * instead.
+     *
+     * @throws IOException if it could not close the clients
+     */
     public synchronized void rotate() throws IOException {
         logger.info("Rebase server");
         stopOldClients();
@@ -160,13 +195,13 @@ public class SeekersServer {
     }
 
     /**
-     * The SeekersService class handles the game-related gRPC service requests.
+     * The {@code SeekersService} class handles the game-related gRPC service requests.
      */
     protected class SeekersService extends SeekersImplBase {
 
         /**
-         * Handles the "properties" request from a client. Responds with a
-         * PropertiesResponse containing the default seeker properties.
+         * Handles the "properties" request from a client. Responds with a PropertiesResponse containing the default
+         * seeker properties.
          *
          * @param request          The properties request.
          * @param responseObserver The response observer.
@@ -178,8 +213,8 @@ public class SeekersServer {
         }
 
         /**
-         * Handles the "status" request from a client. Responds with a StatusResponse
-         * containing the associated game data for the given token.
+         * Handles the "status" request from a client. Responds with a StatusResponse containing the associated game
+         * data for the given token.
          *
          * @param request          The status request.
          * @param responseObserver The response observer.
@@ -191,11 +226,14 @@ public class SeekersServer {
         }
 
         /**
-         * Handles the "command" request from a client. Updates the target and magnet
-         * properties of the specified seeker.
+         * Handles the "command" request from a client. Updates the target and magnet properties of the specified
+         * seeker.
          *
          * @param request          The command request.
          * @param responseObserver The response observer.
+         * @apiNote Will throw {@code PERMISSION_DENIED} if the token is not valid. Commands that target seekers the
+         * player does not control will be ignored. The seekers changed number only counts the number of seekers that
+         * were successfully altered by the request.
          */
         @Override
         public void command(CommandRequest request, StreamObserver<CommandResponse> responseObserver) {
@@ -224,13 +262,13 @@ public class SeekersServer {
         }
 
         /**
-         * Handles the "join" request from a client. If there are open slots in the
-         * game, a new player is added and assigned a token. The player details are
-         * stored in the players map along with the associated token and dispatch
-         * helper.
+         * Handles the "join" request from a client. If there are open slots in the game, a new player is added and
+         * assigned a token. The player details are stored in the players map along with the associated token and
+         * dispatch helper.
          *
          * @param request          The join request.
          * @param responseObserver The response observer.
+         * @apiNote Will throw {@code RESOURCE_EXHAUSTED} if there are no player slots available.
          */
         @Override
         public synchronized void join(JoinRequest request, StreamObserver<JoinResponse> responseObserver) {
@@ -241,11 +279,13 @@ public class SeekersServer {
                         player.setName(request.getDetailsMap().getOrDefault("name", "Unnamed Player"));
                         player.setColor(
                                 Color.web(request.getDetailsMap().getOrDefault("color", player.getColor().toString())));
-                        String token = Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
-                                .toString();
+                        String token =
+                                Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
+                                        .toString();
                         players.put(token, player);
 
-                        responseObserver.onNext(JoinResponse.newBuilder().setPlayerId(player.getIdentifier()).setToken(token).build());
+                        responseObserver.onNext(
+                                JoinResponse.newBuilder().setPlayerId(player.getIdentifier()).setToken(token).build());
                         responseObserver.onCompleted();
                     });
                 } catch (Exception e) {
@@ -257,8 +297,8 @@ public class SeekersServer {
         }
 
         /**
-         * Handles the "ping" request from a client. Responds with a PingResponse
-         * containing the current server timestamp.
+         * Handles the "ping" request from a client. Responds with a PingResponse containing the current server
+         * timestamp.
          *
          * @param request          The ping request.
          * @param responseObserver The response observer.

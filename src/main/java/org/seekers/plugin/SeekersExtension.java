@@ -4,6 +4,9 @@ import org.pf4j.ExtensionPoint;
 
 import java.util.List;
 
+/**
+ * @author karlz
+ */
 public interface SeekersExtension extends ExtensionPoint {
 
     /**
