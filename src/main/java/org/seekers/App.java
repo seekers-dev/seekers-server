@@ -38,7 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Creates the server and application for the {@code SeekersServer}.
+ * Creates the server and application for the {@code SeekersServer}. Loads and unloads plugins. Loads the  If the stage is closed,
+ * the server closes automatically, and vice versa.
  *
  * @author karlz
  */
@@ -46,28 +47,35 @@ public class App extends Application {
 
 	private static final Logger logger = LoggerFactory.getLogger(App.class);
 
+    private final @Nonnull PluginManager manager = new DefaultPluginManager();
 	private final @Nonnull List<LanguageLoader> loaders = new ArrayList<>();
 	private final @Nonnull Ini config = new Ini();
 
 	/**
-	 * Checks for all content folders. If a folder does not exist, it will be created. Loads all plugins.
+	 * Before the server or stage is started, three things must be checked:
+	 * <ol>
+	 *     <li>Loads the config.ini file</li>
+	 *     <li>Checks for all content folders. If a folder does not exist, it will be created.</li>
+	 *     <li>Loads all plugins.</li>
+	 * </ol>
+	 *
+	 * @throws IOException if it could not read from the config file
 	 */
 	@Override
 	public void init() throws IOException {
 		config.load(new File("config.ini"));
 
-		for (String folder : List.of("dist", "players", "plugins", "results")) {
+		for (String folder : List.of("players", "plugins", "results")) {
 			Path path = Path.of(folder);
 			if (!Files.exists(path)) {
 				try {
 					Files.createDirectory(path);
 				} catch (IOException ex) {
-					logger.error("Could not create directory", ex);
+					logger.error("Could not find nor create directory", ex);
 				}
 			}
 		}
 
-		PluginManager manager = new DefaultPluginManager();
 		manager.loadPlugins();
 		manager.startPlugins();
 
@@ -79,14 +87,14 @@ public class App extends Application {
 		}
 
 		manager.stopPlugins();
-		manager.unloadPlugins();
 	}
 
 	@Override
 	public void start(Stage stage) throws Exception {
 		final SeekersServer server = new SeekersServer(stage, config, loaders);
 		stage.setOnCloseRequest(c -> {
-			logger.info("Try stopping server on stage close request");
+			logger.info("Try unloading plugins and stopping server on stage close request");
+		    manager.unloadPlugins();
 			try {
 				server.stop();
 			} catch (Exception ex) {
