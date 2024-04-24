@@ -166,9 +166,9 @@ public class Goal extends Physical<Goal.Properties> {
         private final Circle wave = new Circle(0);
 
         /**
+         * Creates a new scoring animation.
          *
-         *
-         * @param game
+         * @param game the game
          */
         public GoalAnimation(Game game) {
             super(game);

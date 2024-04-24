@@ -1,8 +1,5 @@
-### Setup ###
-dist/
-players/
-plugins/
-results/
+/*/
+!src
 
 # Compiled class file
 *.class

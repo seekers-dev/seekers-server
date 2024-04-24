@@ -50,11 +50,6 @@
             <artifactId>ini4j</artifactId>
             <version>0.5.4</version>
         </dependency>
-        <dependency> <!-- Only needed for plugins -->
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib</artifactId>
-            <version>1.9.23</version>
-        </dependency>
         <!-- Annotations -->
         <dependency>
             <groupId>org.apache.tomcat</groupId>

@@ -18,7 +18,7 @@
 package org.seekers;
 
 import org.ini4j.Ini;
-import org.pf4j.DefaultPluginManager;
+import org.pf4j.JarPluginManager;
 import org.pf4j.PluginManager;
 import org.seekers.grpc.SeekersServer;
 
@@ -47,7 +47,7 @@ public class App extends Application {
 
 	private static final Logger logger = LoggerFactory.getLogger(App.class);
 
-    private final @Nonnull PluginManager manager = new DefaultPluginManager();
+    private final @Nonnull PluginManager manager = new JarPluginManager();
 	private final @Nonnull List<LanguageLoader> loaders = new ArrayList<>();
 	private final @Nonnull Ini config = new Ini();
 
