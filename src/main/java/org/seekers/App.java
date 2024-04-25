@@ -55,8 +55,8 @@ public class App extends Application {
 	/**
 	 * Before the server or stage is started, three things must be checked:
 	 * <ol>
-	 *     <li>Loads the config.ini file</li>
 	 *     <li>Checks for all content folders. If a folder does not exist, it will be created.</li>
+	 *     <li>Loads the config.ini file</li>
 	 *     <li>Loads all plugins.</li>
 	 * </ol>
 	 *
@@ -89,8 +89,6 @@ public class App extends Application {
 			extension.setup(config.get(manager.whichPlugin(extension.getClass()).getPluginId()));
 			extension.addLanguageLoaders(loaders);
 		}
-
-		manager.stopPlugins();
 	}
 
 	@Override
@@ -98,6 +96,7 @@ public class App extends Application {
 		final SeekersServer server = new SeekersServer(stage, config, loaders);
 		stage.setOnCloseRequest(c -> {
 			logger.info("Try unloading plugins and stopping server on stage close request");
+			manager.stopPlugins();
 		    manager.unloadPlugins();
 			try {
 				server.stop();

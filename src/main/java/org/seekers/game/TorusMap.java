@@ -18,6 +18,7 @@
 package org.seekers.game;
 
 import javafx.geometry.Point2D;
+import org.seekers.grpc.game.Vector2DOuterClass;
 import org.seekers.plugin.GameMap;
 
 import javax.annotation.Nonnull;
@@ -38,8 +39,8 @@ public class TorusMap implements GameMap {
         this.height = height;
     }
 
-	static org.seekers.grpc.game.Vector2D toMessage(Point2D vec) {
-		return org.seekers.grpc.game.Vector2D.newBuilder().setX(vec.getX()).setY(vec.getY()).build();
+	static Vector2DOuterClass.Vector2D toMessage(Point2D vec) {
+		return Vector2DOuterClass.Vector2D.newBuilder().setX(vec.getX()).setY(vec.getY()).build();
 	}
 
 	/**

@@ -21,6 +21,8 @@ import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import org.ini4j.Ini;
+import org.seekers.grpc.game.PhysicalOuterClass;
+import org.seekers.grpc.game.SeekerOuterClass;
 import org.seekers.plugin.GameMap;
 
 import javax.annotation.Nonnull;
@@ -35,7 +37,7 @@ import java.util.stream.Collectors;
  */
 public class Seeker extends Physical<Seeker.Properties> {
 
-    public static Iterable<org.seekers.grpc.game.Seeker> transform(Collection<? extends Seeker> seekers) {
+    public static Iterable<? extends SeekerOuterClass.Seeker> transform(Collection<? extends Seeker> seekers) {
         return seekers.stream().map(Seeker::associated).collect(Collectors.toList());
     }
 
@@ -271,8 +273,8 @@ public class Seeker extends Physical<Seeker.Properties> {
     }
 
     @Override
-    public org.seekers.grpc.game.Seeker associated() {
-        return org.seekers.grpc.game.Seeker.newBuilder().setSuper((org.seekers.grpc.game.Physical) super.associated())
+    public SeekerOuterClass.Seeker associated() {
+        return SeekerOuterClass.Seeker.newBuilder().setSuper((PhysicalOuterClass.Physical) super.associated())
                 .setPlayerId(player.getIdentifier()).setMagnet(magnet).setTarget(TorusMap.toMessage(target))
                 .setDisableCounter(disabledCounter).build();
     }

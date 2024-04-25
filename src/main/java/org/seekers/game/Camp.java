@@ -22,6 +22,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import org.ini4j.Ini;
 import org.seekers.grpc.Corresponding;
+import org.seekers.grpc.game.CampOuterClass;
 
 import javax.annotation.Nonnull;
 
@@ -31,7 +32,7 @@ import javax.annotation.Nonnull;
  *
  * @author karlz
  */
-public class Camp extends Rectangle implements Corresponding<org.seekers.grpc.game.Camp> {
+public class Camp extends Rectangle implements Corresponding<CampOuterClass.Camp> {
 
     private final @Nonnull Player player;
     private final @Nonnull Properties properties;
@@ -112,8 +113,8 @@ public class Camp extends Rectangle implements Corresponding<org.seekers.grpc.ga
     }
 
     @Override
-    public org.seekers.grpc.game.Camp associated() {
-        return org.seekers.grpc.game.Camp.newBuilder().setId(getIdentifier()).setPlayerId(player.getIdentifier())
+    public CampOuterClass.Camp associated() {
+        return CampOuterClass.Camp.newBuilder().setId(getIdentifier()).setPlayerId(player.getIdentifier())
                 .setPosition(TorusMap.toMessage(position)).setWidth(properties.width).setHeight(properties.height).build();
     }
 

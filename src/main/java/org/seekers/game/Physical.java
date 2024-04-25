@@ -22,6 +22,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.shape.Circle;
 import org.ini4j.Ini;
 import org.seekers.grpc.Corresponding;
+import org.seekers.grpc.game.PhysicalOuterClass;
 
 import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -204,7 +205,7 @@ public abstract class Physical<P extends Physical.Properties> extends Circle imp
 
     @Override
     public Message associated() {
-        return org.seekers.grpc.game.Physical.newBuilder().setId(getIdentifier())
+        return PhysicalOuterClass.Physical.newBuilder().setId(getIdentifier())
                 .setAcceleration(TorusMap.toMessage(acceleration)).setPosition(TorusMap.toMessage(position))
                 .setVelocity(TorusMap.toMessage(velocity)).build();
     }

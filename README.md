@@ -62,7 +62,8 @@ If you start the server for the first time, the following file and folders will 
 |  `results`   | Save tournament results               |
 
 Before the server starts, the app checks first if all listed paths exist. If a path does not exist, it will be created.
-Then it will launch all plugins. 
+Then it will launch all plugins. It will create a tournament with a list of matches. In the tournament will every player
+play a match against every other opponent. If the 
 
 ## Config
 
@@ -71,11 +72,50 @@ For example, the section of the python plugin is `[python-plugin]`. The name of 
 the plugin. Please note that the config file of the seekers-py repo and this config file are interchangeable. If you
 have already altered your config file for python, you can simply reuse it for the server.
 
+Please note that the playtime is measured in game ticks. For a conversion between ticks and time, you can look at the
+table below:
+
+|   Ticks    | Time  |
+|:----------:|:-----:|
+|     1      | 10ms  |
+|    100     |  1s   |
+|    6000    | 1min  |
+|   30000    | 5min  |
+|   90000    | 15min |
+|   360000   |  1h   |
+|  8640000   |  1d   |
+| 3155760000 |  1a   |
+
 ## Players
+
+The server will create a tournament with all AIs that are in the `players` folder. A file is marked as a valid player
+if it starts with `ai`. Drop all files you want to run into this folder and start the server. Please note that an empty
+folder will result into an empty tournament. If the tournament is empty, the server will be closed automatically.
 
 ## Plugins
 
+The server will not host any clients on its own. If you want to do it automatically instead manually, you can add
+plugins. Simply download the plugin jar from the release page of the publisher, move it to the plugins folder and add
+the settings if required to the config.
+
 ## Results
+
+All results will be saved in the ``results`` folder. This file contains a list of all matches that are still running and
+a map of all results for the players. Every player has a list of all the points that it received in the respective
+match.
+
+```json
+{
+  "matches": [
+    ["players/ai-x\u003dx+1.py", "players/ai-triumvirat.py"],
+    ["players/ai-undefined.py", "players/ai-triumvirat.py"]
+  ],
+  "results": {
+    "players/ai-x\u003dx+1": [0], 
+    "players/ai-undefined":[0]
+  }
+}
+```
 
 ## Structure
 

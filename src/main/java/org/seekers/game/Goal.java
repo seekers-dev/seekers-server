@@ -21,6 +21,8 @@ import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import org.ini4j.Ini;
+import org.seekers.grpc.game.GoalOuterClass;
+import org.seekers.grpc.game.PhysicalOuterClass;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,7 +39,7 @@ import java.util.List;
  */
 public class Goal extends Physical<Goal.Properties> {
 
-    public static Iterable<org.seekers.grpc.game.Goal> transform(Collection<? extends Goal> goals) {
+    public static Iterable<GoalOuterClass.Goal> transform(Collection<? extends Goal> goals) {
         return goals.stream().map(Goal::associated).collect(Collectors.toList());
     }
 
@@ -150,8 +152,8 @@ public class Goal extends Physical<Goal.Properties> {
     }
 
     @Override
-    public org.seekers.grpc.game.Goal associated() {
-        return org.seekers.grpc.game.Goal.newBuilder().setSuper((org.seekers.grpc.game.Physical) super.associated())
+    public GoalOuterClass.Goal associated() {
+        return GoalOuterClass.Goal.newBuilder().setSuper((PhysicalOuterClass.Physical) super.associated())
                 .setCampId((capture != null) ? capture.getIdentifier() : "").setTimeOwned(timeOwned).build();
     }
 

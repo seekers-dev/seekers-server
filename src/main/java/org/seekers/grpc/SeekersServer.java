@@ -31,8 +31,7 @@ import javafx.stage.Stage;
 import org.ini4j.Ini;
 import org.ini4j.Profile;
 import org.seekers.game.*;
-import org.seekers.grpc.net.*;
-import org.seekers.grpc.net.SeekersGrpc.SeekersImplBase;
+import org.seekers.grpc.service.*;
 import org.seekers.plugin.LanguageLoader;
 import org.seekers.plugin.Tournament;
 import org.slf4j.Logger;
@@ -66,7 +65,7 @@ public class SeekersServer {
     private final @Nonnull Map<String, Player> players = new HashMap<>();
     private final @Nonnull Set<SeekersClient> clients = new HashSet<>();
     private final @Nonnull Set<LanguageLoader> loaders = new HashSet<>();
-    private final @Nonnull Map<String, String> properties = new HashMap<>();
+    private final @Nonnull List<Section> sections = new ArrayList<>();
 
     /**
      * Constructs a new {@code SeekersServer} instance for the port 7777.
@@ -82,9 +81,7 @@ public class SeekersServer {
         this.loaders.addAll(loaders);
 
         for (Map.Entry<String, Profile.Section> section : config.entrySet()) {
-            for (Map.Entry<String, String> entry : section.getValue().entrySet()) {
-                properties.put(section.getKey() + '.' + entry.getKey(), entry.getValue());
-            }
+            sections.add(Section.newBuilder().setName(section.getKey()).putAllEntries(section.getValue()).build());
         }
 
         this.game = new Game(new BorderPane(), new Game.Properties(config), new Camp.Properties(config),
@@ -214,33 +211,7 @@ public class SeekersServer {
     /**
      * The {@code SeekersService} class handles the game-related gRPC service requests.
      */
-    protected class SeekersService extends SeekersImplBase {
-
-        /**
-         * Handles the "properties" request from a client. Responds with a PropertiesResponse containing the default
-         * seeker properties.
-         *
-         * @param request          The properties request.
-         * @param responseObserver The response observer.
-         */
-        @Override
-        public void properties(Empty request, StreamObserver<PropertiesResponse> responseObserver) {
-            responseObserver.onNext(PropertiesResponse.newBuilder().putAllEntries(properties).build());
-            responseObserver.onCompleted();
-        }
-
-        /**
-         * Handles the "status" request from a client. Responds with a StatusResponse containing the associated game
-         * data for the given token.
-         *
-         * @param request          The status request.
-         * @param responseObserver The response observer.
-         */
-        @Override
-        public void status(Empty request, StreamObserver<StatusResponse> responseObserver) {
-            responseObserver.onNext(game.getStatusResponse());
-            responseObserver.onCompleted();
-        }
+    protected class SeekersService extends SeekersGrpc.SeekersImplBase {
 
         /**
          * Handles the "command" request from a client. Updates the target and magnet properties of the specified
@@ -270,8 +241,7 @@ public class SeekersServer {
                         }
                     }
                 }
-                responseObserver.onNext(CommandResponse.newBuilder().setStatus(game.getStatusResponse())
-                        .setSeekersChanged(changed).build());
+                responseObserver.onNext(game.getCommandResponse().setSeekersChanged(changed).build());
                 responseObserver.onCompleted();
             } else {
                 responseObserver.onError(new StatusException(Status.PERMISSION_DENIED));
@@ -293,16 +263,16 @@ public class SeekersServer {
                 try {
                     Platform.runLater(() -> {
                         Player player = game.addPlayer();
-                        player.setName(request.getDetailsMap().getOrDefault("name", "Unnamed Player"));
-                        player.setColor(
-                                Color.web(request.getDetailsMap().getOrDefault("color", player.getColor().toString())));
-                        String token =
-                                Hashing.fingerprint2011().hashString("" + Math.random(), Charset.defaultCharset())
-                                        .toString();
+                        if (request.hasName())
+                            player.setName(request.getName());
+                        if (request.hasColor())
+                            player.setColor(Color.web(request.getColor()));
+                        String token = Hashing.fingerprint2011().hashString("" + Math.random(),
+                                Charset.defaultCharset()).toString();
                         players.put(token, player);
 
-                        responseObserver.onNext(
-                                JoinResponse.newBuilder().setPlayerId(player.getIdentifier()).setToken(token).build());
+                        responseObserver.onNext(JoinResponse.newBuilder().setPlayerId(player.getIdentifier())
+                                .setToken(token).addAllSections(sections).build());
                         responseObserver.onCompleted();
                     });
                 } catch (Exception e) {
@@ -313,17 +283,5 @@ public class SeekersServer {
             }
         }
 
-        /**
-         * Handles the "ping" request from a client. Responds with a PingResponse containing the current server
-         * timestamp.
-         *
-         * @param request          The ping request.
-         * @param responseObserver The response observer.
-         */
-        @Override
-        public void ping(Empty request, StreamObserver<PingResponse> responseObserver) {
-            responseObserver.onNext(PingResponse.newBuilder().setTimestamp(System.nanoTime()).build());
-            responseObserver.onCompleted();
-        }
     }
 }

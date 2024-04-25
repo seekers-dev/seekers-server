@@ -35,9 +35,9 @@ import javafx.scene.text.Font;
 import javafx.util.Duration;
 import org.ini4j.Ini;
 import org.seekers.grpc.Corresponding;
+import org.seekers.grpc.service.CommandResponse;
 import org.seekers.plugin.GameMap;
 import org.seekers.plugin.Tournament;
-import org.seekers.grpc.net.StatusResponse;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -55,7 +55,7 @@ public class Game extends Scene {
     // Game objects
     private final @Nonnull List<Entity> entities = new ArrayList<>();
     private final GameMap gameMap;
-    private int tick = 0;
+    private long tick = 0;
 
     // Cached types for gRPC fast access
     private final @Nonnull List<Player> players = new ArrayList<>();
@@ -237,12 +237,12 @@ public class Game extends Scene {
     /**
      * @return the current status of the game
      */
-    public synchronized StatusResponse getStatusResponse() {
-        return StatusResponse.newBuilder().addAllPlayers(Corresponding.transform(getPlayers()))
-                .addAllCamps(Corresponding.transform(getCamps()))
-                .addAllSeekers(Seeker.transform(getSeekers()))
-                .addAllGoals(Goal.transform(getGoals()))
-                .setPassedPlaytime(getPassedPlaytime()).build();
+    public synchronized CommandResponse.Builder getCommandResponse() {
+        return CommandResponse.newBuilder().addAllPlayers(Corresponding.transform(getPlayers()))
+            .addAllCamps(Corresponding.transform(getCamps()))
+            .addAllSeekers(Seeker.transform(getSeekers()))
+            .addAllGoals(Goal.transform(getGoals()))
+            .setPassedPlaytime(getPassedPlaytime());
     }
 
     /**
@@ -312,7 +312,7 @@ public class Game extends Scene {
     /**
      * @return the passed playtime
      */
-    public double getPassedPlaytime() {
+    public long getPassedPlaytime() {
         return tick;
     }
 }

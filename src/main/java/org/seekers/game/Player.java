@@ -29,6 +29,7 @@ import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import org.seekers.grpc.Corresponding;
+import org.seekers.grpc.game.PlayerOuterClass;
 
 /**
  * The Player class represents a player in the game.
@@ -36,7 +37,7 @@ import org.seekers.grpc.Corresponding;
  * @author karlz
 game.getFront().getChildren().add(this);
  */
-public class Player extends Label implements Corresponding<org.seekers.grpc.game.Player> {
+public class Player extends Label implements Corresponding<PlayerOuterClass.Player> {
 
 	private static final @Nonnull Random rand = new Random();
 
@@ -181,10 +182,9 @@ public class Player extends Label implements Corresponding<org.seekers.grpc.game
 	}
 
 	@Override
-	public org.seekers.grpc.game.Player associated() {
-		return org.seekers.grpc.game.Player.newBuilder().setId(getIdentifier()).addAllSeekerIds(seekers.keySet())
-				.setCampId(camp != null ? camp.getIdentifier() : "").setName(name).setColor(color.toString())
-				.setScore(score).build();
+	public PlayerOuterClass.Player associated() {
+		return PlayerOuterClass.Player.newBuilder().setId(getIdentifier()).addAllSeekerIds(seekers.keySet())
+				.setCampId(camp != null ? camp.getIdentifier() : "").setScore(score).build();
 	}
 
 }
