@@ -36,6 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Creates the server and application for the {@code SeekersServer}. Loads and unloads plugins. Loads the  If the stage is closed,
@@ -63,10 +64,12 @@ public class App extends Application {
 	 */
 	@Override
 	public void init() throws IOException {
-		config.load(new File("config.ini"));
-
-		for (String folder : List.of("players", "plugins", "results")) {
-			Path path = Path.of(folder);
+		Path path = Path.of("config.ini");
+		if (!Files.exists(path)) {
+			Files.copy(Objects.requireNonNull(getClass().getResourceAsStream("config.ini")), path);
+		}
+		for (String folder : new String[] {"players", "plugins", "results"}) {
+			path = Path.of(folder);
 			if (!Files.exists(path)) {
 				try {
 					Files.createDirectory(path);
@@ -76,6 +79,7 @@ public class App extends Application {
 			}
 		}
 
+		config.load(new File("config.ini"));
 		manager.loadPlugins();
 		manager.startPlugins();
 
