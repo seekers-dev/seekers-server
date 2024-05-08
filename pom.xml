@@ -48,7 +48,7 @@
         <dependency>
             <groupId>com.github.seekers-dev</groupId>
             <artifactId>seekers-grpc</artifactId>
-            <version>555ce6bc3c</version>
+            <version>-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.pf4j</groupId>
