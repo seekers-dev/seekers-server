@@ -30,7 +30,7 @@ import java.util.List;
 public interface SeekersExtension extends ExtensionPoint {
 
     /**
-     * Setups the plugin with the config from the server.
+     * Setups the plugin with the config from the server. Always called first.
      *
      * @param section the section of the config
      */
@@ -39,7 +39,14 @@ public interface SeekersExtension extends ExtensionPoint {
     /**
      * Extension point to add your own custom language loaders.
      *
-     * @param loaders list of language loaders
+     * @param loaders list of added language loaders
      */
-    void addLanguageLoaders(@Nonnull final List<LanguageLoader> loaders);
+    void addClientLoaders(@Nonnull final List<ClientLoader> loaders);
+
+    /**
+     * Extension point to add your own custom game modes.
+     *
+     * @param modes list of added game modes
+     */
+    void addGameModes(@Nonnull final List<GameMode> modes);
 }

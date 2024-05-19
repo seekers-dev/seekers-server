@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.seekers.plugin;
+package org.seekers.game;
 
 import com.google.gson.Gson;
 import org.slf4j.Logger;

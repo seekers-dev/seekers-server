@@ -21,7 +21,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
@@ -37,8 +36,8 @@ import org.ini4j.Ini;
 import org.seekers.grpc.Corresponding;
 import org.seekers.grpc.service.CommandResponse;
 import org.seekers.plugin.GameMap;
-import org.seekers.plugin.Tournament;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.util.*;
 
@@ -54,7 +53,7 @@ public class Game extends Scene {
 
     // Game objects
     private final @Nonnull List<Entity> entities = new ArrayList<>();
-    private final GameMap gameMap;
+    private GameMap gameMap;
     private long tick = 0;
 
     // Cached types for gRPC fast access
@@ -87,7 +86,6 @@ public class Game extends Scene {
         this.campProperties = campProperties;
         this.seekerProperties = seekerProperties;
         this.goalProperties = goalProperties;
-        this.gameMap = new TorusMap(gameProperties.width, gameProperties.height);
 
         time.setFont(Font.font("Ubuntu", 14));
         time.setTextFill(Color.WHITESMOKE);
@@ -99,7 +97,6 @@ public class Game extends Scene {
 
         Timeline timeline = getTimeline();
         timeline.play();
-        addGoals();
     }
 
     /**
@@ -114,7 +111,6 @@ public class Game extends Scene {
          * @param ini the ini object that holds the data of {@code config.ini}
          */
         public Properties(Ini ini) {
-            autoPlay = ini.fetch(SECTION, "auto-play", boolean.class);
             playtime = ini.fetch(SECTION, "playtime", int.class);
             players = ini.fetch(SECTION, "players", int.class);
             seekers = ini.fetch(SECTION, "seekers", int.class);
@@ -124,15 +120,14 @@ public class Game extends Scene {
         }
 
         // Global properties
-        private final boolean autoPlay;
-        private final int playtime;
-        private final int players;
-        private final int seekers;
-        private final int goals;
+        final int playtime;
+        final int players;
+        final int seekers;
+        final int goals;
 
         // Map properties
-        private final double width;
-        private final double height;
+        final double width;
+        final double height;
     }
 
     /**
@@ -152,9 +147,6 @@ public class Game extends Scene {
             }
             for (Entity entity : List.copyOf(getEntities())) {
                 entity.update();
-                if (gameProperties.autoPlay && (entity instanceof Seeker)) {
-                    ((Seeker) entity).setAutoCommands();
-                }
             }
             time.setText("[ " + (++tick) + " ]");
         }));
@@ -175,7 +167,6 @@ public class Game extends Scene {
         entities.clear();
         players.clear();
         seekers.clear();
-        goals.clear();
         camps.clear();
 
         // Clear scene content
@@ -183,8 +174,11 @@ public class Game extends Scene {
         getFront().getChildren().clear();
         getInfo().getChildren().clear();
 
-        // Add goals back to game
-        addGoals();
+        // Add goals back
+        for (Goal goal : goals) {
+            getFront().getChildren().add(goal);
+            getEntities().add(goal);
+        }
 
         // Reset property
         finished.set(false);
@@ -203,34 +197,6 @@ public class Game extends Scene {
     public void addToTournament(Tournament tournament) {
         for (Player player : players) {
             tournament.getResults().computeIfAbsent(player.getName(), n -> new ArrayList<>()).add(player.getScore());
-        }
-    }
-
-    /**
-     * Adds a new player to the game environment. Creates a camp and a specified
-     * number of seekers for the player.
-     *
-     * @return the newly added player
-     */
-    public Player addPlayer() {
-        Player player = new Player(this);
-        Camp camp = new Camp(player, campProperties);
-        camp.setPosition(new Point2D(gameProperties.width * (players.size() - 0.5) / gameProperties.players,
-                gameProperties.height * 0.5));
-        for (int s = 0; s < gameProperties.seekers; s++) {
-            Seeker seeker = new Seeker(player, seekerProperties);
-            seeker.setPosition(getGameMap().getRandomPosition());
-        }
-        return player;
-    }
-
-    /**
-     * Adds a specified number of goals to the game environment at random positions.
-     */
-    public void addGoals() {
-        for (int i = 0; i < gameProperties.goals; i++) {
-            Goal goal = new Goal(this, goalProperties);
-            goal.setPosition(getGameMap().getRandomPosition());
         }
     }
 
@@ -285,8 +251,13 @@ public class Game extends Scene {
         return camps;
     }
 
+    @CheckReturnValue
     public GameMap getGameMap() {
         return gameMap;
+    }
+
+    public void setGameMap(@Nonnull GameMap gameMap) {
+        this.gameMap = gameMap;
     }
 
     @Nonnull
@@ -314,5 +285,25 @@ public class Game extends Scene {
      */
     public long getPassedPlaytime() {
         return tick;
+    }
+
+    @Nonnull
+    public Properties getGameProperties() {
+        return gameProperties;
+    }
+
+    @Nonnull
+    public Seeker.Properties getSeekerProperties() {
+        return seekerProperties;
+    }
+
+    @Nonnull
+    public Goal.Properties getGoalProperties() {
+        return goalProperties;
+    }
+
+    @Nonnull
+    public Camp.Properties getCampProperties() {
+        return campProperties;
     }
 }

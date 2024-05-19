@@ -1,5 +1,6 @@
 /*/
 !src
+config.ini
 
 # Compiled class file
 *.class

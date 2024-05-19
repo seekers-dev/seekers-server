@@ -27,7 +27,7 @@ import java.util.Collection;
  * @author karlz
  * @see SeekersClient
  */
-public interface LanguageLoader {
+public interface ClientLoader {
 
     /**
      * Defines all patterns of file extensions that this loader supports.

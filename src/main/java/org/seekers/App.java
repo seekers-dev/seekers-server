@@ -20,11 +20,14 @@ package org.seekers;
 import org.ini4j.Ini;
 import org.pf4j.JarPluginManager;
 import org.pf4j.PluginManager;
+import org.seekers.game.StandardMode;
+import org.seekers.game.Tournament;
 import org.seekers.grpc.SeekersServer;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
-import org.seekers.plugin.LanguageLoader;
+import org.seekers.plugin.ClientLoader;
+import org.seekers.plugin.GameMode;
 import org.seekers.plugin.SeekersExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +52,8 @@ public class App extends Application {
 	private static final Logger logger = LoggerFactory.getLogger(App.class);
 
     private final @Nonnull PluginManager manager = new JarPluginManager();
-	private final @Nonnull List<LanguageLoader> loaders = new ArrayList<>();
+	private final @Nonnull List<ClientLoader> loaders = new ArrayList<>();
+	private final @Nonnull List<GameMode> modes = new ArrayList<>();
 	private final @Nonnull Ini config = new Ini();
 
 	/**
@@ -87,13 +91,16 @@ public class App extends Application {
 		logger.info("Found following extensions: {}", extensions);
 		for (SeekersExtension extension : extensions) {
 			extension.setup(config.get(manager.whichPlugin(extension.getClass()).getPluginId()));
-			extension.addLanguageLoaders(loaders);
+			extension.addClientLoaders(loaders);
+			extension.addGameModes(modes);
 		}
 	}
 
 	@Override
 	public void start(Stage stage) throws Exception {
-		final SeekersServer server = new SeekersServer(stage, config, loaders);
+		final SeekersServer server = new SeekersServer(stage, config).setGameMode(new StandardMode())
+				.setTournament(new Tournament("players")).addClientLoaders(loaders);
+		server.start();
 		stage.setOnCloseRequest(c -> {
 			logger.info("Try unloading plugins and stopping server on stage close request");
 			manager.stopPlugins();
@@ -104,7 +111,6 @@ public class App extends Application {
 				Thread.currentThread().interrupt();
 			}
 		});
-		stage.setScene(server.getGame());
 		stage.setTitle("Seekers");
 		stage.setAlwaysOnTop(true);
 		stage.setResizable(false);

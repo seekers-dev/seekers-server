@@ -25,15 +25,15 @@ import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
 import javafx.application.Platform;
 import javafx.geometry.Point2D;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.ini4j.Ini;
 import org.ini4j.Profile;
 import org.seekers.game.*;
 import org.seekers.grpc.service.*;
-import org.seekers.plugin.LanguageLoader;
-import org.seekers.plugin.Tournament;
+import org.seekers.plugin.GameMode;
+import org.seekers.plugin.ClientLoader;
+import org.seekers.game.Tournament;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,36 +58,32 @@ public class SeekersServer {
 
     private final @Nonnull Server server; // gRPC server socket
     private final @Nonnull Stage stage; // Cache for close
-    private final @Nonnull Game game; // Game
-    private final @Nonnull Tournament tournament; // Tournament
+    private final @Nonnull Ini config;
 
     // Collections
     private final @Nonnull Map<String, Player> players = new HashMap<>();
     private final @Nonnull Set<SeekersClient> clients = new HashSet<>();
-    private final @Nonnull Set<LanguageLoader> loaders = new HashSet<>();
+    private final @Nonnull Set<ClientLoader> loaders = new HashSet<>();
     private final @Nonnull List<Section> sections = new ArrayList<>();
+
+    private GameMode mode;
+    private Game game; // Game
+    private Tournament tournament; // Tournament
 
     /**
      * Constructs a new {@code SeekersServer} instance for the port 7777.
      *
      * @param stage   the javafx stage to show the match
      * @param config  the config
-     * @param loaders the list of language loaders for loading the clients
-     * @throws IOException if unable to bind
      */
-    public SeekersServer(@Nonnull Stage stage, Ini config, Collection<LanguageLoader> loaders) throws IOException {
+    public SeekersServer(@Nonnull Stage stage, @Nonnull Ini config) {
         this.server = ServerBuilder.forPort(7777).addService(new SeekersService()).build();
         this.stage = stage;
-        this.loaders.addAll(loaders);
+        this.config = config;
 
         for (Map.Entry<String, Profile.Section> section : config.entrySet()) {
             sections.add(Section.newBuilder().setName(section.getKey()).putAllEntries(section.getValue()).build());
         }
-
-        this.game = new Game(new BorderPane(), new Game.Properties(config), new Camp.Properties(config),
-                new Seeker.Properties(config), new Goal.Properties(config));
-        this.tournament = new Tournament("players");
-        start();
     }
 
     /**
@@ -96,7 +92,13 @@ public class SeekersServer {
      * @throws IOException if unable to bind
      */
     public void start() throws IOException {
+        Objects.requireNonNull(mode);
+        Objects.requireNonNull(tournament);
+
         server.start();
+        game = mode.createGame(new Game.Properties(config), new Camp.Properties(config), new Seeker.Properties(config),
+                new Goal.Properties(config));
+        stage.setScene(game);
         game.finishedProperty().addListener(c -> {
             if (game.finishedProperty().get()) {
                 game.addToTournament(tournament);
@@ -143,7 +145,7 @@ public class SeekersServer {
      * @param file the name of the file
      */
     private void hostFile(String file) {
-        for (LanguageLoader loader : loaders) {
+        for (ClientLoader loader : loaders) {
             if (loader.canHost(file)) {
                 SeekersClient client = loader.create();
                 client.host(new File(file));
@@ -198,14 +200,19 @@ public class SeekersServer {
         }
     }
 
-    /**
-     * Retrieves the game instance.
-     *
-     * @return The game.
-     */
-    @Nonnull
-    public Game getGame() {
-        return game;
+    public SeekersServer setGameMode(@Nonnull GameMode mode) {
+        this.mode = mode;
+        return this;
+    }
+
+    public SeekersServer setTournament(@Nonnull Tournament tournament) {
+        this.tournament = tournament;
+        return this;
+    }
+
+    public SeekersServer addClientLoaders(@Nonnull Collection<ClientLoader> loaders) {
+        this.loaders.addAll(loaders);
+        return this;
     }
 
     /**
@@ -260,13 +267,17 @@ public class SeekersServer {
         @Override
         public synchronized void join(JoinRequest request, StreamObserver<JoinResponse> responseObserver) {
             if (game.hasOpenSlots()) {
-                try {
-                    Platform.runLater(() -> {
-                        Player player = game.addPlayer();
-                        if (request.hasName())
-                            player.setName(request.getName());
-                        if (request.hasColor())
-                            player.setColor(Color.web(request.getColor()));
+                Platform.runLater(() -> {
+                    try {
+                        Player player = mode.createPlayer(game);
+                        if (request.hasName() && !request.getName().isBlank()) {
+                            System.err.printf("INFO: Used color %s%n", request.getName().substring(9));
+                            player.setName(request.getName().substring(9));
+                        }
+                        if (request.hasColor() && !request.getColor().isBlank()) {
+                            System.err.printf("INFO: Used color %s%n", request.getColor().substring(9));
+                            player.setColor(Color.web(request.getColor().substring(9)));
+                        }
                         String token = Hashing.fingerprint2011().hashString("" + Math.random(),
                                 Charset.defaultCharset()).toString();
                         players.put(token, player);
@@ -274,10 +285,10 @@ public class SeekersServer {
                         responseObserver.onNext(JoinResponse.newBuilder().setPlayerId(player.getIdentifier())
                                 .setToken(token).addAllSections(sections).build());
                         responseObserver.onCompleted();
-                    });
-                } catch (Exception e) {
-                    logger.warn(e.getMessage(), e);
-                }
+                    } catch (Exception e) {
+                        logger.warn(e.getMessage(), e);
+                    }
+                });
             } else {
                 responseObserver.onError(new StatusException(Status.RESOURCE_EXHAUSTED));
             }
