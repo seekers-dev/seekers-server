@@ -112,6 +112,7 @@ public class Game extends Scene {
          */
         public Properties(Ini ini) {
             playtime = ini.fetch(SECTION, "playtime", int.class);
+            tickDuration = ini.fetch(SECTION, "tick-duration", double.class);
             players = ini.fetch(SECTION, "players", int.class);
             seekers = ini.fetch(SECTION, "seekers", int.class);
             goals = ini.fetch(SECTION, "goals", int.class);
@@ -121,6 +122,7 @@ public class Game extends Scene {
 
         // Global properties
         final int playtime;
+        final double tickDuration;
         final int players;
         final int seekers;
         final int goals;
@@ -138,7 +140,8 @@ public class Game extends Scene {
      * @return the created timeline object
      */
     private Timeline getTimeline() {
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10.0), e -> {
+        System.err.printf("time: %s, duration: %s%n", getGameProperties().playtime, getGameProperties().tickDuration);
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(getGameProperties().tickDuration), e -> {
             if (hasOpenSlots())
                 return;
             if (tick > gameProperties.playtime) {
