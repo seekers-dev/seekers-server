@@ -140,7 +140,6 @@ public class Game extends Scene {
      * @return the created timeline object
      */
     private Timeline getTimeline() {
-        System.err.printf("time: %s, duration: %s%n", getGameProperties().playtime, getGameProperties().tickDuration);
         Timeline timeline = new Timeline(new KeyFrame(Duration.millis(getGameProperties().tickDuration), e -> {
             if (hasOpenSlots())
                 return;
@@ -198,8 +197,13 @@ public class Game extends Scene {
     }
 
     public void addToTournament(Tournament tournament) {
+        int sum = 0;
         for (Player player : players) {
-            tournament.getResults().computeIfAbsent(player.getName(), n -> new ArrayList<>()).add(player.getScore());
+            tournament.getResults().computeIfAbsent(player.getName(), n -> new ArrayList<>());
+            sum += player.getScore();
+        }
+        for (Player player : players) {
+            tournament.getResults().get(player.getName()).add(100 * (sum == 0 ? 1 / players.size() : player.getScore() / sum));
         }
     }
 

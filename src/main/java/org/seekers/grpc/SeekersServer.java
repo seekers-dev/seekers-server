@@ -153,7 +153,7 @@ public class SeekersServer {
                 return;
             }
         }
-        logger.error("Could not find loader for file {}", file);
+        logger.warn("Could not find loader for file {}", file);
     }
 
     /**
@@ -271,12 +271,12 @@ public class SeekersServer {
                     try {
                         Player player = mode.createPlayer(game);
                         if (request.hasName() && !request.getName().isBlank()) {
-                            System.err.printf("INFO: Used color %s%n", request.getName().substring(9));
-                            player.setName(request.getName().substring(9));
+                            logger.info("INFO: Used name {}", request.getName());
+                            player.setName(request.getName());
                         }
                         if (request.hasColor() && !request.getColor().isBlank()) {
-                            System.err.printf("INFO: Used color %s%n", request.getColor().substring(9));
-                            player.setColor(Color.web(request.getColor().substring(9)));
+                            logger.info("INFO: Used color {}", request.getColor());
+                            player.setColor(Color.web(request.getColor()));
                         }
                         String token = Hashing.fingerprint2011().hashString("" + Math.random(),
                                 Charset.defaultCharset()).toString();
@@ -286,6 +286,7 @@ public class SeekersServer {
                                 .setToken(token).addAllSections(sections).build());
                         responseObserver.onCompleted();
                     } catch (Exception e) {
+                        responseObserver.onError(e);
                         logger.warn(e.getMessage(), e);
                     }
                 });
