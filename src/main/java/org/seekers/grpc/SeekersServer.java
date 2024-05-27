@@ -27,6 +27,7 @@ import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 import org.ini4j.Ini;
 import org.ini4j.Profile;
 import org.seekers.game.*;
@@ -233,7 +234,7 @@ public class SeekersServer {
         @Override
         public void command(CommandRequest request, StreamObserver<CommandResponse> responseObserver) {
             Player player = players.get(request.getToken());
-            if (player != null) {
+            if (player != null && !game.getObservers().containsKey(request.getToken())) {
                 int changed = 0;
                 for (Command command : request.getCommandsList()) {
                     Seeker seeker = player.getSeekers().get(command.getSeekerId());
@@ -248,8 +249,7 @@ public class SeekersServer {
                         }
                     }
                 }
-                responseObserver.onNext(game.getCommandResponse().setSeekersChanged(changed).build());
-                responseObserver.onCompleted();
+                game.getObservers().put(request.getToken(), new Pair<>(responseObserver, changed));
             } else {
                 responseObserver.onError(new StatusException(Status.PERMISSION_DENIED));
             }

@@ -23,10 +23,8 @@ import javafx.scene.shape.Circle;
 import org.ini4j.Ini;
 import org.seekers.grpc.game.PhysicalOuterClass;
 import org.seekers.grpc.game.SeekerOuterClass;
-import org.seekers.plugin.GameMap;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -117,44 +115,6 @@ public class Seeker extends Physical<Seeker.Properties> {
         }
 
         super.collision(another, minDistance);
-    }
-
-    /**
-     * Finds the nearest Physical object to a given position.
-     *
-     * @param p         The position to find the nearest Physical object from.
-     * @param physicals The collection of Physical objects to search from.
-     * @return The nearest Physical object.
-     */
-    private static @Nullable Physical<?> getNearestPhysicalOf(GameMap map, @Nonnull Point2D p, @Nonnull Iterable<? extends Physical<?>> physicals) {
-        double distance = map.getDiameter();
-        Physical<?> nearest = null;
-
-        for (Physical<?> physical : physicals) {
-            double dif = map.getDistance(p, physical.getPosition());
-            if (dif < distance) {
-                distance = dif;
-                nearest = physical;
-            }
-        }
-        return nearest;
-    }
-
-    public void setAutoCommands() {
-        @SuppressWarnings("null")
-        @Nullable final Goal goal = (Goal) getNearestPhysicalOf(getGame().getGameMap(), getPosition(), getGame().getGoals());
-        if (goal != null) {
-            if (getGame().getGameMap().getDistance(getPosition(), goal.getPosition()) > 30) {
-                setTarget(goal.getPosition());
-                setMagnet(0);
-            } else {
-                final Camp checked = getPlayer().getCamp();
-                if (checked != null) {
-                    setTarget(checked.getPosition());
-                    setMagnet(1);
-                }
-            }
-        }
     }
 
     /**
@@ -257,7 +217,6 @@ public class Seeker extends Physical<Seeker.Properties> {
      *
      * @param color The color to set.
      */
-    @SuppressWarnings("null")
     public void setColor(final @Nonnull Color color) {
         this.activated = color;
         this.disabled = color.darker().darker();
@@ -286,16 +245,22 @@ public class Seeker extends Physical<Seeker.Properties> {
         protected SeekerAnimation(@Nonnull Game game) {
             super(game);
             indicator.setFill(Color.TRANSPARENT);
-            indicator.setStrokeWidth(5);
+            indicator.setStrokeWidth(3);
             indicator.setStroke(player.getColor());
             getChildren().add(indicator);
             setVisible(false);
         }
 
+        private int frameTime = 30;
+
         @Override
         public void update() {
-            double expansion = (indicator.getRadius() + Math.signum(magnet)) % getAnimationRange();
-            indicator.setRadius(expansion + properties.radius);
+            frameTime--;
+            if (frameTime < 0) {
+                double expansion = (indicator.getRadius() + Math.signum(magnet)) % getAnimationRange();
+                indicator.setRadius(expansion + properties.radius);
+                frameTime = 30;
+            }
         }
 
         @Override

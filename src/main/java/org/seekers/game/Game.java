@@ -17,6 +17,7 @@
 
 package org.seekers.game;
 
+import io.grpc.stub.StreamObserver;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
@@ -32,6 +33,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
+import javafx.util.Pair;
 import org.ini4j.Ini;
 import org.seekers.grpc.Corresponding;
 import org.seekers.grpc.service.CommandResponse;
@@ -61,6 +63,9 @@ public class Game extends Scene {
     private final @Nonnull List<Seeker> seekers = new ArrayList<>();
     private final @Nonnull List<Goal> goals = new ArrayList<>();
     private final @Nonnull List<Camp> camps = new ArrayList<>();
+
+    // List of all observers for sending the next status update
+    private final @Nonnull Map<String, Pair<StreamObserver<CommandResponse>, Integer>> observers = new HashMap<>();
 
     // Graphics
     private final @Nonnull BooleanProperty finished = new SimpleBooleanProperty(false);
@@ -150,6 +155,13 @@ public class Game extends Scene {
             for (Entity entity : List.copyOf(getEntities())) {
                 entity.update();
             }
+            var response = getCommandResponse();
+            for (var pair : getObservers().values()) {
+                var observer = pair.getKey();
+                observer.onNext(response.setSeekersChanged(pair.getValue()).build());
+                observer.onCompleted();
+            }
+            getObservers().clear();
             time.setText("[ " + (++tick) + " ]");
         }));
         timeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
@@ -170,6 +182,7 @@ public class Game extends Scene {
         players.clear();
         seekers.clear();
         camps.clear();
+        observers.clear();
 
         // Clear scene content
         getBack().getChildren().clear();
@@ -256,6 +269,11 @@ public class Game extends Scene {
     @Nonnull
 	public List<Camp> getCamps() {
         return camps;
+    }
+
+    @Nonnull
+    public Map<String, Pair<StreamObserver<CommandResponse>, Integer>> getObservers() {
+        return observers;
     }
 
     @CheckReturnValue
