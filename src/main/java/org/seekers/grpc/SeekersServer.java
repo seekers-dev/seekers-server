@@ -100,15 +100,14 @@ public class SeekersServer {
         game = mode.createGame(new Game.Properties(config), new Camp.Properties(config), new Seeker.Properties(config),
                 new Goal.Properties(config));
         stage.setScene(game);
-        game.finishedProperty().addListener(c -> {
-            if (game.finishedProperty().get()) {
-                game.addToTournament(tournament);
-                try {
-                    tournament.save();
-                    rotate();
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
-                }
+        game.setOnGameStarted(g -> logger.info("Game started with players {}", g.getPlayers()));
+        game.setOnGameFinished(g -> {
+            g.addToTournament(tournament);
+            try {
+                tournament.save();
+                rotate();
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
             }
         });
         rotate();
@@ -234,7 +233,7 @@ public class SeekersServer {
         @Override
         public void command(CommandRequest request, StreamObserver<CommandResponse> responseObserver) {
             Player player = players.get(request.getToken());
-            if (player != null && !game.getObservers().containsKey(request.getToken())) {
+            if (player != null) {
                 int changed = 0;
                 for (Command command : request.getCommandsList()) {
                     Seeker seeker = player.getSeekers().get(command.getSeekerId());
@@ -249,8 +248,9 @@ public class SeekersServer {
                         }
                     }
                 }
-                game.getObservers().put(request.getToken(), new Pair<>(responseObserver, changed));
+                player.setObserver(new Pair<>(responseObserver, changed));
             } else {
+                logger.error("Player {} is not part of the game", request.getToken());
                 responseObserver.onError(new StatusException(Status.PERMISSION_DENIED));
             }
         }
@@ -291,6 +291,7 @@ public class SeekersServer {
                     }
                 });
             } else {
+                logger.error("Player {} tried to join game, but the game is already full", request.getName());
                 responseObserver.onError(new StatusException(Status.RESOURCE_EXHAUSTED));
             }
         }

@@ -21,15 +21,19 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import io.grpc.stub.StreamObserver;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.util.Pair;
 import org.seekers.grpc.Corresponding;
 import org.seekers.grpc.game.PlayerOuterClass;
+import org.seekers.grpc.service.CommandResponse;
 
 /**
  * The Player class represents a player in the game.
@@ -37,7 +41,7 @@ import org.seekers.grpc.game.PlayerOuterClass;
  * @author karlz
 game.getFront().getChildren().add(this);
  */
-public class Player extends Label implements Corresponding<PlayerOuterClass.Player> {
+public class Player extends Label implements Entity, Corresponding<PlayerOuterClass.Player> {
 
 	private static final @Nonnull Random rand = new Random();
 
@@ -48,6 +52,8 @@ public class Player extends Label implements Corresponding<PlayerOuterClass.Play
 	private @Nonnull Color color;
 	private @Nonnull String name;
 	private int score;
+
+	private @CheckForNull Pair<StreamObserver<CommandResponse>, Integer> observer;
 
 	/**
 	 * Constructs a new instance of the Player class.
@@ -62,8 +68,18 @@ public class Player extends Label implements Corresponding<PlayerOuterClass.Play
 		setPadding(new Insets(2.0));
 		setFont(Font.font("Ubuntu", 24.0));
 		setTextFill(color);
+		getGame().getEntities().add(this);
 		getGame().getInfo().getChildren().add(this);
-		game.getPlayers().add(this);
+		getGame().getPlayers().add(this);
+	}
+
+	@Override
+	public void update() {
+		if (observer != null) {
+			observer.getKey().onNext(getGame().getCommandResponse().setSeekersChanged(observer.getValue()).build());
+			observer.getKey().onCompleted();
+			observer = null;
+		}
 	}
 
 	/**
@@ -179,6 +195,11 @@ public class Player extends Label implements Corresponding<PlayerOuterClass.Play
 	public void putUp() {
 		score++;
 		setText(name + ": " + score);
+	}
+
+	public void setObserver(
+			@CheckForNull Pair<StreamObserver<CommandResponse>, Integer> observer) {
+		this.observer = observer;
 	}
 
 	@Override

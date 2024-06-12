@@ -17,11 +17,8 @@
 
 package org.seekers.game;
 
-import io.grpc.stub.StreamObserver;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
@@ -33,7 +30,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
-import javafx.util.Pair;
 import org.ini4j.Ini;
 import org.seekers.grpc.Corresponding;
 import org.seekers.grpc.service.CommandResponse;
@@ -41,7 +37,9 @@ import org.seekers.plugin.GameMap;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * The Game class represents a game environment where players, seekers, goals,
@@ -55,6 +53,7 @@ public class Game extends Scene {
 
     // Game objects
     private final @Nonnull List<Entity> entities = new ArrayList<>();
+    private GameState gameState;
     private GameMap gameMap;
     private long tick = 0;
 
@@ -64,11 +63,7 @@ public class Game extends Scene {
     private final @Nonnull List<Goal> goals = new ArrayList<>();
     private final @Nonnull List<Camp> camps = new ArrayList<>();
 
-    // List of all observers for sending the next status update
-    private final @Nonnull Map<String, Pair<StreamObserver<CommandResponse>, Integer>> observers = new HashMap<>();
-
     // Graphics
-    private final @Nonnull BooleanProperty finished = new SimpleBooleanProperty(false);
     private final @Nonnull Label time = new Label();
     private final @Nonnull VBox info = new VBox();
     private final @Nonnull Group front = new Group();
@@ -79,6 +74,10 @@ public class Game extends Scene {
     private final @Nonnull Camp.Properties campProperties;
     private final @Nonnull Seeker.Properties seekerProperties;
     private final @Nonnull Goal.Properties goalProperties;
+
+    // Events
+    private @Nullable Consumer<Game> onGameStarted;
+    private @Nullable Consumer<Game> onGameFinished;
 
     /**
      * Constructs a new Game object. Initializes the game environment, creates the
@@ -146,22 +145,21 @@ public class Game extends Scene {
      */
     private Timeline getTimeline() {
         Timeline timeline = new Timeline(new KeyFrame(Duration.millis(getGameProperties().tickDuration), e -> {
-            if (hasOpenSlots())
+            if (hasOpenSlots()) {
                 return;
-            if (tick > gameProperties.playtime) {
-                finished.set(true);
+            } else if (getGameState() == GameState.PREPARING) {
+                if (getOnGameStarted() != null) getOnGameStarted().accept(this);
+                setGameState(GameState.RUNNING);
+            } else if (getGameState() == GameState.RUNNING && tick > getGameProperties().playtime) {
+                if (getOnGameFinished() != null)
+                    getOnGameFinished().accept(this);
+                setGameState(GameState.FINISHED);
                 return;
             }
+
             for (Entity entity : List.copyOf(getEntities())) {
                 entity.update();
             }
-            var response = getCommandResponse();
-            for (var pair : getObservers().values()) {
-                var observer = pair.getKey();
-                observer.onNext(response.setSeekersChanged(pair.getValue()).build());
-                observer.onCompleted();
-            }
-            getObservers().clear();
             time.setText("[ " + (++tick) + " ]");
         }));
         timeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
@@ -182,7 +180,6 @@ public class Game extends Scene {
         players.clear();
         seekers.clear();
         camps.clear();
-        observers.clear();
 
         // Clear scene content
         getBack().getChildren().clear();
@@ -190,13 +187,13 @@ public class Game extends Scene {
         getInfo().getChildren().clear();
 
         // Add goals back
-        for (Goal goal : goals) {
+        for (Goal goal : getGoals()) {
             getFront().getChildren().add(goal);
             getEntities().add(goal);
         }
 
         // Reset property
-        finished.set(false);
+        setGameState(GameState.PREPARING);
         tick = 0;
     }
 
@@ -210,13 +207,14 @@ public class Game extends Scene {
     }
 
     public void addToTournament(Tournament tournament) {
-        int sum = 0;
+        double sum = 0;
         for (Player player : players) {
             tournament.getResults().computeIfAbsent(player.getName(), n -> new ArrayList<>());
             sum += player.getScore();
         }
         for (Player player : players) {
-            tournament.getResults().get(player.getName()).add(100 * (sum == 0 ? 1 / players.size() : player.getScore() / sum));
+            int score = (int) Math.round(100 * (sum == 0 ? 1.0 / players.size() : player.getScore() / sum));
+            tournament.getResults().get(player.getName()).add(score);
         }
     }
 
@@ -272,25 +270,6 @@ public class Game extends Scene {
     }
 
     @Nonnull
-    public Map<String, Pair<StreamObserver<CommandResponse>, Integer>> getObservers() {
-        return observers;
-    }
-
-    @CheckReturnValue
-    public GameMap getGameMap() {
-        return gameMap;
-    }
-
-    public void setGameMap(@Nonnull GameMap gameMap) {
-        this.gameMap = gameMap;
-    }
-
-    @Nonnull
-    public BooleanProperty finishedProperty() {
-        return finished;
-    }
-
-    @Nonnull
     public VBox getInfo() {
         return info;
     }
@@ -330,5 +309,41 @@ public class Game extends Scene {
     @Nonnull
     public Camp.Properties getCampProperties() {
         return campProperties;
+    }
+
+    @CheckReturnValue
+    public GameMap getGameMap() {
+        return gameMap;
+    }
+
+    public void setGameMap(@Nonnull GameMap gameMap) {
+        this.gameMap = gameMap;
+    }
+
+    @CheckReturnValue
+    public GameState getGameState() {
+        return gameState;
+    }
+
+    public void setGameState(@Nonnull GameState gameState) {
+        this.gameState = gameState;
+    }
+
+    public void setOnGameStarted(@Nonnull Consumer<Game> onGameStarted) {
+        this.onGameStarted = onGameStarted;
+    }
+
+    @Nullable
+    public Consumer<Game> getOnGameStarted() {
+        return onGameStarted;
+    }
+
+    public void setOnGameFinished(@Nonnull Consumer<Game> onGameFinished) {
+        this.onGameFinished = onGameFinished;
+    }
+
+    @Nullable
+    public Consumer<Game> getOnGameFinished() {
+        return onGameFinished;
     }
 }

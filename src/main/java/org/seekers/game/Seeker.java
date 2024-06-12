@@ -25,8 +25,10 @@ import org.seekers.grpc.game.PhysicalOuterClass;
 import org.seekers.grpc.game.SeekerOuterClass;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
+import java.util.List;
 
 /**
  * The Seeker class represents a seeker in the game.
@@ -221,14 +223,17 @@ public class Seeker extends Physical<Seeker.Properties> {
         this.activated = color;
         this.disabled = color.darker().darker();
         setFill(color);
-        animation.indicator.setStroke(color);
+        for (var indicator : animation.indicators)
+            indicator.setStroke(color);
     }
 
     @Override
     public void setPosition(@Nonnull Point2D position) {
         super.setPosition(position);
-        animation.indicator.setCenterX(getPosition().getX());
-        animation.indicator.setCenterY(getPosition().getY());
+        for (var indicator : animation.indicators) {
+            indicator.setCenterX(getPosition().getX());
+            indicator.setCenterY(getPosition().getY());
+        }
     }
 
     @Override
@@ -240,26 +245,40 @@ public class Seeker extends Physical<Seeker.Properties> {
 
     public class SeekerAnimation extends Animation {
 
-        private final @Nonnull Circle indicator = new Circle(properties.radius + 0.25 * getAnimationRange());
+        private final @Nonnull List<Circle> indicators = List.of(
+                new Circle(properties.radius + getAnimationRange() / 3),
+                new Circle(properties.radius + getAnimationRange() * 2 / 3) ,
+                new Circle(properties.radius + getAnimationRange())
+        );
+        private final @Nonnull List<Double> expansions = new ArrayList<>(List.of(
+                getAnimationRange() / 3, getAnimationRange() * 2 / 3, getAnimationRange()
+        ));
 
         protected SeekerAnimation(@Nonnull Game game) {
             super(game);
-            indicator.setFill(Color.TRANSPARENT);
-            indicator.setStrokeWidth(3);
-            indicator.setStroke(player.getColor());
-            getChildren().add(indicator);
+            for (var indicator : indicators) {
+                indicator.setFill(Color.TRANSPARENT);
+                indicator.setStrokeWidth(2);
+                indicator.setStroke(player.getColor());
+                getChildren().add(indicator);
+            }
             setVisible(false);
         }
 
-        private int frameTime = 30;
+        private int frameTime = 8;
 
         @Override
         public void update() {
             frameTime--;
             if (frameTime < 0) {
-                double expansion = (indicator.getRadius() + Math.signum(magnet)) % getAnimationRange();
-                indicator.setRadius(expansion + properties.radius);
-                frameTime = 30;
+                for (int i = 0; i < expansions.size(); i++) {
+                    var range = expansions.get(i) - Math.signum(getMagnet());
+                    if (range > getAnimationRange()) range -= getAnimationRange();
+                    if (range < 0) range += getAnimationRange();
+                    expansions.set(i, range);
+                    indicators.get(i).setRadius(range + properties.radius);
+                    frameTime = 8;
+                }
             }
         }
 

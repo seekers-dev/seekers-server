@@ -22,6 +22,8 @@ import javafx.scene.layout.BorderPane;
 import org.seekers.plugin.GameMap;
 import org.seekers.plugin.GameMode;
 
+import javax.annotation.Nonnull;
+
 public class StandardMode implements GameMode {
 
     @Override
@@ -35,7 +37,7 @@ public class StandardMode implements GameMode {
     }
 
     @Override
-    public GameMap createGameMap(Game game) {
+    public GameMap createGameMap(@Nonnull Game game) {
         return new TorusMap(game.getGameProperties().width, game.getGameProperties().height);
     }
 

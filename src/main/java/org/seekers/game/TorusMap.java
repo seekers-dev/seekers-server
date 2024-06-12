@@ -53,8 +53,13 @@ public class TorusMap implements GameMap {
 	public void normPosition(@Nonnull Physical<?> physical) {
 		Point2D p = physical.getPosition();
 
-		physical.setPosition(physical.getPosition().subtract(Math.floor(p.getX() / getWidth()) * getWidth(),
-				Math.floor(p.getY() / getHeight()) * getHeight()));
+		physical.setPosition(new Point2D(norm(p.getX(), 0, getWidth()), norm(p.getY(), 0, getHeight())));
+	}
+
+	private static double norm(double v, double min, double max) {
+		if (min > v) return max + v - min;
+		if (max < v) return min + v - max;
+		return v;
 	}
 
 	private static double distance(double p0, double p1, double d) {
