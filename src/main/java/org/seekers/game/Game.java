@@ -68,6 +68,7 @@ public class Game extends Scene {
     private final @Nonnull VBox info = new VBox();
     private final @Nonnull Group front = new Group();
     private final @Nonnull Group back = new Group();
+    private final @Nonnull Timeline timeline;
 
     // Properties
     private final @Nonnull Properties gameProperties;
@@ -90,6 +91,15 @@ public class Game extends Scene {
         this.campProperties = campProperties;
         this.seekerProperties = seekerProperties;
         this.goalProperties = goalProperties;
+        this.timeline = new Timeline(new KeyFrame(
+                Duration.millis(getGameProperties().tickDuration), e -> {
+            for (Entity entity : List.copyOf(getEntities())) {
+                entity.update();
+            }
+            getTime().setText("[ " + (tick++) + " ]");
+        }));
+        this.timeline.setCycleCount(getGameProperties().playtime);
+        this.timeline.setOnFinished(e -> setGameState(GameState.FINISHED));
 
         time.setFont(Font.font("Ubuntu", 14));
         time.setTextFill(Color.WHITESMOKE);
@@ -98,9 +108,6 @@ public class Game extends Scene {
         parent.getChildren().addAll(getBack(), getFront());
         parent.setBottom(time);
         parent.setBackground(new Background(new BackgroundFill(Color.gray(.1), null, null)));
-
-        Timeline timeline = getTimeline();
-        timeline.play();
     }
 
     /**
@@ -134,36 +141,6 @@ public class Game extends Scene {
         // Map properties
         final double width;
         final double height;
-    }
-
-    /**
-     * Creates and returns the new timeline. The Timeline runs and updates the game. It will update every entity every
-     * 10 milliseconds. Entities are only updated if all players have joined the game and there is still playtime
-     * remaining. Resetting the game will not reset the timeline.
-     *
-     * @return the created timeline object
-     */
-    private Timeline getTimeline() {
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(getGameProperties().tickDuration), e -> {
-            if (hasOpenSlots()) {
-                return;
-            } else if (getGameState() == GameState.PREPARING) {
-                if (getOnGameStarted() != null) getOnGameStarted().accept(this);
-                setGameState(GameState.RUNNING);
-            } else if (getGameState() == GameState.RUNNING && tick > getGameProperties().playtime) {
-                if (getOnGameFinished() != null)
-                    getOnGameFinished().accept(this);
-                setGameState(GameState.FINISHED);
-                return;
-            }
-
-            for (Entity entity : List.copyOf(getEntities())) {
-                entity.update();
-            }
-            time.setText("[ " + (++tick) + " ]");
-        }));
-        timeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
-        return timeline;
     }
 
     /**
@@ -284,6 +261,16 @@ public class Game extends Scene {
         return front;
     }
 
+    @Nonnull
+    public Label getTime() {
+        return time;
+    }
+
+    @Nonnull
+    public Timeline getTimeline() {
+        return timeline;
+    }
+
     /**
      * @return the passed playtime
      */
@@ -326,6 +313,10 @@ public class Game extends Scene {
     }
 
     public void setGameState(@Nonnull GameState gameState) {
+        if (getGameState() == GameState.PREPARING && gameState == GameState.RUNNING && getOnGameStarted() != null)
+            getOnGameStarted().accept(this);
+        if (getGameState() == GameState.RUNNING && gameState == GameState.FINISHED && getOnGameFinished() != null)
+            getOnGameFinished().accept(this);
         this.gameState = gameState;
     }
 

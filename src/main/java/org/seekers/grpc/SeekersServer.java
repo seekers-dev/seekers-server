@@ -27,7 +27,6 @@ import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 import org.ini4j.Ini;
 import org.ini4j.Profile;
 import org.seekers.game.*;
@@ -100,7 +99,10 @@ public class SeekersServer {
         game = mode.createGame(new Game.Properties(config), new Camp.Properties(config), new Seeker.Properties(config),
                 new Goal.Properties(config));
         stage.setScene(game);
-        game.setOnGameStarted(g -> logger.info("Game started with players {}", g.getPlayers()));
+        game.setOnGameStarted(g -> {
+            logger.info("Game started with players {}", g.getPlayers());
+            game.getTimeline().playFromStart();
+        });
         game.setOnGameFinished(g -> {
             g.addToTournament(tournament);
             try {
@@ -234,7 +236,6 @@ public class SeekersServer {
         public void command(CommandRequest request, StreamObserver<CommandResponse> responseObserver) {
             Player player = players.get(request.getToken());
             if (player != null) {
-                int changed = 0;
                 for (Command command : request.getCommandsList()) {
                     Seeker seeker = player.getSeekers().get(command.getSeekerId());
                     if (seeker != null) {
@@ -244,11 +245,10 @@ public class SeekersServer {
                                 seeker.setTarget(target);
                                 seeker.setMagnet(command.getMagnet());
                             });
-                            changed++;
                         }
                     }
                 }
-                player.setObserver(new Pair<>(responseObserver, changed));
+                player.setObserver(responseObserver);
             } else {
                 logger.error("Player {} is not part of the game", request.getToken());
                 responseObserver.onError(new StatusException(Status.PERMISSION_DENIED));
@@ -288,6 +288,10 @@ public class SeekersServer {
                     } catch (Exception e) {
                         responseObserver.onError(e);
                         logger.warn(e.getMessage(), e);
+                    } finally {
+                        if (!game.hasOpenSlots()) {
+                            game.setGameState(GameState.RUNNING);
+                        }
                     }
                 });
             } else {

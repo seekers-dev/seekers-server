@@ -44,7 +44,7 @@ public class Goal extends Physical<Goal.Properties> {
     }
 
     private @Nullable Camp capture;
-    private double timeOwned = 0;
+    private int timeOwned = 0;
 
     /**
      * Constructs a new instance of the Goal class.
@@ -127,7 +127,7 @@ public class Goal extends Physical<Goal.Properties> {
     /**
      * @return the time this goal was inside the current camp, or 0 if it was not inside a camp at all.
      */
-    public double getTimeOwned() {
+    public int getTimeOwned() {
         return timeOwned;
     }
 
@@ -136,7 +136,7 @@ public class Goal extends Physical<Goal.Properties> {
      *
      * @param timeOwned the time owned by a camp
      */
-    public void setTimeOwned(double timeOwned) {
+    public void setTimeOwned(int timeOwned) {
         this.timeOwned = timeOwned;
         if (timeOwned == 0) {
             setFill(Color.WHITE);

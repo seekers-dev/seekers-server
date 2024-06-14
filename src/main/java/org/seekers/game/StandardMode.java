@@ -44,8 +44,8 @@ public class StandardMode implements GameMode {
     @Override
     public Player createPlayer(Game game) {
         Player player = new Player(game);
-        createCamp(player).setPosition(new Point2D(game.getGameProperties().width * (game.getPlayers().size() - 0.5)
-                / game.getGameProperties().players, game.getGameProperties().height * 0.5));
+        createCamp(player).setPosition(new Point2D(game.getGameProperties().width * 0.5,
+            game.getGameProperties().height * (game.getPlayers().size() - 0.5) / game.getGameProperties().players));
         for (int i = 0; i < game.getGameProperties().seekers; i++)
             createSeeker(player).setPosition(game.getGameMap().getRandomPosition());
         return player;

@@ -37,7 +37,7 @@ import java.util.List;
  */
 public class Seeker extends Physical<Seeker.Properties> {
 
-    public static Iterable<? extends SeekerOuterClass.Seeker> transform(Collection<? extends Seeker> seekers) {
+    public static Iterable<? extends SeekerOuterClass.Seeker> transform(@Nonnull Collection<? extends Seeker> seekers) {
         return seekers.stream().map(Seeker::associated).collect(Collectors.toList());
     }
 
@@ -49,7 +49,7 @@ public class Seeker extends Physical<Seeker.Properties> {
     private @Nonnull Color disabled = Color.WHITE;
 
     private double magnet = 0.0;
-    private double disabledCounter = 0.0;
+    private int disabledCounter = 0;
 
     /**
      * Constructs a new instance of the Seeker class.
@@ -71,11 +71,11 @@ public class Seeker extends Physical<Seeker.Properties> {
         public Properties(Ini ini) {
             super(ini, SECTION);
             magnetSlowdown = ini.fetch(SECTION, "magnet-slowdown", double.class);
-            disabledTime = ini.fetch(SECTION, "disabled-time", double.class);
+            disabledTime = ini.fetch(SECTION, "disabled-time", int.class);
         }
 
         private final double magnetSlowdown;
-        private final double disabledTime;
+        private final int disabledTime;
     }
 
     @Override

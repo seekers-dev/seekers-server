@@ -30,7 +30,6 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.util.Pair;
 import org.seekers.grpc.Corresponding;
 import org.seekers.grpc.game.PlayerOuterClass;
 import org.seekers.grpc.service.CommandResponse;
@@ -53,7 +52,7 @@ public class Player extends Label implements Entity, Corresponding<PlayerOuterCl
 	private @Nonnull String name;
 	private int score;
 
-	private @CheckForNull Pair<StreamObserver<CommandResponse>, Integer> observer;
+	private @CheckForNull StreamObserver<CommandResponse> observer;
 
 	/**
 	 * Constructs a new instance of the Player class.
@@ -76,8 +75,8 @@ public class Player extends Label implements Entity, Corresponding<PlayerOuterCl
 	@Override
 	public void update() {
 		if (observer != null) {
-			observer.getKey().onNext(getGame().getCommandResponse().setSeekersChanged(observer.getValue()).build());
-			observer.getKey().onCompleted();
+			observer.onNext(getGame().getCommandResponse().build());
+			observer.onCompleted();
 			observer = null;
 		}
 	}
@@ -197,8 +196,7 @@ public class Player extends Label implements Entity, Corresponding<PlayerOuterCl
 		setText(name + ": " + score);
 	}
 
-	public void setObserver(
-			@CheckForNull Pair<StreamObserver<CommandResponse>, Integer> observer) {
+	public void setObserver(@Nonnull StreamObserver<CommandResponse> observer) {
 		this.observer = observer;
 	}
 
