@@ -1,6 +1,5 @@
-<h1 align="center">Seekers Server</h1>
-
-<p align="center">
+<div align="center">
+    <h1>Seekers Server</h1>
 	<a href="https://jitpack.io/#seekers-dev/seekers-server">
 		<img alt="Jitpack" src="https://jitpack.io/v/seekers-dev/seekers-server.svg">
 	</a>
@@ -16,7 +15,7 @@
     <img alt="GitHub License" src="https://img.shields.io/github/license/seekers-dev/seekers-java">
     <img alt="GitHub top language" src="https://img.shields.io/github/languages/top/seekers-dev/seekers-java">
     <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/seekers-dev/seekers-java">
-</p>
+</div>
 
 In seekers, AIs compete against each other with the aim of scoring as many points as possible. This project is competition-oriented for students.
 
@@ -26,12 +25,7 @@ Please note that at least java 11 is required.
 
 ### Installation
 
-Get a jar file from the release or build it on your own.
-
-#### From release
-
-There is currently no official release available, however you can check out [Jitpack](https://jitpack.io/#seekers-dev/seekers-server)
-for snapshot builds.
+Get a jar file from the latest release or build it on your own.
 
 #### Build it on your own
 
@@ -58,22 +52,21 @@ If you start the server for the first time, the following file and folders will 
 |:------------:|---------------------------------------|
 | `config.ini` | Config file for changing the settings |
 |  `players`   | Bot files from the players            |
-|  `plugins`   | Loading plugin jar files              |
+|  `drivers`   | Store local drivers                   |
 |  `results`   | Save tournament results               |
 
 Before the server starts, the app checks first if all listed paths exist. If a path does not exist, it will be created.
 Then it will launch all plugins. It will create a tournament with a list of matches. In the tournament will every player
-play a match against every other opponent. If the 
+play a match against every other opponent.
 
 ## Config
 
-In the `config.ini`, you can set properties for the game and your plugins. Note that all plugins have their own section.
-For example, the section of the python plugin is `[python-plugin]`. The name of the section is equivalent to the id of
-the plugin. Please note that the config file of the seekers-py repo and this config file are interchangeable. If you
+In the `config.ini`, you can set properties for the game and your drivers.
+Please note that the config file of the seekers-py repo and this config file are interchangeable. If you
 have already altered your config file for python, you can simply reuse it for the server.
 
-Please note that the playtime is measured in game ticks. For a conversion between ticks and time, you can look at the
-table below:
+Please note that the `playtime` is measured in game ticks. For a conversion between ticks and time, you can look at the
+table below for a `tick-duration` of $10.0$:
 
 |   Ticks    | Time  |
 |:----------:|:-----:|
@@ -86,17 +79,15 @@ table below:
 |  8640000   |  1d   |
 | 3155760000 |  1a   |
 
+The tick duration is measured in milliseconds. To calculate the duration of any match $t$ in minutes based on the tick duration $\Delta t$ and playtime $p$, you can use the following formula:
+
+$$t=\frac{p \cdot \Delta t}{60\cdot1000}$$
+
 ## Players
 
 The server will create a tournament with all AIs that are in the `players` folder. A file is marked as a valid player
 if it starts with `ai`. Drop all files you want to run into this folder and start the server. Please note that an empty
 folder will result into an empty tournament. If the tournament is empty, the server will be closed automatically.
-
-## Plugins
-
-The server will not host any clients on its own. If you want to do it automatically instead manually, you can add
-plugins. Simply download the plugin jar from the release page of the publisher, move it to the plugins folder and add
-the settings if required to the config.
 
 ## Results
 

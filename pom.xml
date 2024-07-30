@@ -17,6 +17,13 @@
         <maven.compiler.release>${project.javaVersion}</maven.compiler.release>
     </properties>
 
+    <licenses>
+        <license>
+            <name>GNU General Public License</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+        </license>
+    </licenses>
+
     <contributors>
         <contributor>
             <name>Karl Zschiebsch</name>
