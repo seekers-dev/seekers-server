@@ -18,17 +18,12 @@
 package org.seekers;
 
 import org.ini4j.Ini;
-import org.pf4j.JarPluginManager;
-import org.pf4j.PluginManager;
 import org.seekers.game.StandardMode;
 import org.seekers.game.Tournament;
 import org.seekers.grpc.SeekersServer;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
-import org.seekers.plugin.ClientLoader;
-import org.seekers.plugin.GameMode;
-import org.seekers.plugin.SeekersExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +32,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -51,9 +44,6 @@ public class App extends Application {
 
 	private static final Logger logger = LoggerFactory.getLogger(App.class);
 
-    private final @Nonnull PluginManager manager = new JarPluginManager();
-	private final @Nonnull List<ClientLoader> loaders = new ArrayList<>();
-	private final @Nonnull List<GameMode> modes = new ArrayList<>();
 	private final @Nonnull Ini config = new Ini();
 
 	/**
@@ -72,7 +62,7 @@ public class App extends Application {
 		if (!Files.exists(path)) {
 			Files.copy(Objects.requireNonNull(getClass().getResourceAsStream("config.ini")), path);
 		}
-		for (String folder : new String[] {"players", "plugins", "results"}) {
+		for (String folder : new String[] {"players", "drivers", "results"}) {
 			path = Path.of(folder);
 			if (!Files.exists(path)) {
 				try {
@@ -84,27 +74,15 @@ public class App extends Application {
 		}
 
 		config.load(new File("config.ini"));
-		manager.loadPlugins();
-		manager.startPlugins();
-
-		var extensions = manager.getExtensions(SeekersExtension.class);
-		logger.info("Found following extensions: {}", extensions);
-		for (SeekersExtension extension : extensions) {
-			extension.setup(config.get(manager.whichPlugin(extension.getClass()).getPluginId()));
-			extension.addClientLoaders(loaders);
-			extension.addGameModes(modes);
-		}
 	}
 
 	@Override
 	public void start(Stage stage) throws Exception {
 		final SeekersServer server = new SeekersServer(stage, config).setGameMode(new StandardMode())
-				.setTournament(new Tournament("players")).addClientLoaders(loaders);
+				.setTournament(new Tournament("players"));
 		server.start();
 		stage.setOnCloseRequest(c -> {
 			logger.info("Try unloading plugins and stopping server on stage close request");
-			manager.stopPlugins();
-		    manager.unloadPlugins();
 			try {
 				server.stop();
 			} catch (Exception ex) {

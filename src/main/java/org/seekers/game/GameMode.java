@@ -15,9 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.seekers.plugin;
-
-import org.seekers.game.*;
+package org.seekers.game;
 
 public interface GameMode {
 

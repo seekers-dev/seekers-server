@@ -33,7 +33,6 @@ import javafx.util.Duration;
 import org.ini4j.Ini;
 import org.seekers.grpc.Corresponding;
 import org.seekers.grpc.service.CommandResponse;
-import org.seekers.plugin.GameMap;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;

@@ -15,10 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.seekers.plugin;
+package org.seekers.game;
 
 import javafx.geometry.Point2D;
-import org.seekers.game.Physical;
 
 import javax.annotation.Nonnull;
 

@@ -19,7 +19,6 @@ package org.seekers.game;
 
 import javafx.geometry.Point2D;
 import org.seekers.grpc.game.Vector2DOuterClass;
-import org.seekers.plugin.GameMap;
 
 import javax.annotation.Nonnull;
 

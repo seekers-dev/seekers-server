@@ -28,17 +28,14 @@ import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.ini4j.Ini;
-import org.ini4j.Profile;
 import org.seekers.game.*;
 import org.seekers.grpc.service.*;
-import org.seekers.plugin.GameMode;
-import org.seekers.plugin.ClientLoader;
+import org.seekers.game.GameMode;
 import org.seekers.game.Tournament;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.*;
@@ -62,8 +59,8 @@ public class SeekersServer {
 
     // Collections
     private final @Nonnull Map<String, Player> players = new HashMap<>();
+    private final @Nonnull Map<String, String> drivers = new HashMap<>();
     private final @Nonnull Set<SeekersClient> clients = new HashSet<>();
-    private final @Nonnull Set<ClientLoader> loaders = new HashSet<>();
     private final @Nonnull List<Section> sections = new ArrayList<>();
 
     private GameMode mode;
@@ -81,8 +78,16 @@ public class SeekersServer {
         this.stage = stage;
         this.config = config;
 
-        for (Map.Entry<String, Profile.Section> section : config.entrySet()) {
+        for (var section : config.entrySet()) {
             sections.add(Section.newBuilder().setName(section.getKey()).putAllEntries(section.getValue()).build());
+        }
+        var section = config.get("drivers");
+        if (section != null) {
+            for (var entry : section.entrySet()) {
+                for (var extension : entry.getKey().substring(1, entry.getKey().length() - 1).split(",")) {
+                    drivers.put(extension, entry.getValue());
+                }
+            }
         }
     }
 
@@ -146,12 +151,10 @@ public class SeekersServer {
      *
      * @param file the name of the file
      */
-    private void hostFile(String file) {
-        for (ClientLoader loader : loaders) {
-            if (loader.canHost(file)) {
-                SeekersClient client = loader.create();
-                client.host(new File(file));
-                clients.add(client);
+    private void hostFile(String file) throws IOException {
+        for (var entry : drivers.entrySet()) {
+            if (file.endsWith(entry.getKey())) {
+                clients.add(new SeekersClient(file, entry.getValue()));
                 return;
             }
         }
@@ -161,7 +164,7 @@ public class SeekersServer {
     /**
      * Hosts new clients for the next match.
      */
-    private void hostNewClients() {
+    private void hostNewClients() throws IOException {
         logger.info("Host new clients");
         List<String> match = tournament.getMatches().remove(0);
         for (String file : match) {
@@ -209,11 +212,6 @@ public class SeekersServer {
 
     public SeekersServer setTournament(@Nonnull Tournament tournament) {
         this.tournament = tournament;
-        return this;
-    }
-
-    public SeekersServer addClientLoaders(@Nonnull Collection<ClientLoader> loaders) {
-        this.loaders.addAll(loaders);
         return this;
     }
 

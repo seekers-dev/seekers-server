@@ -28,19 +28,27 @@ import java.io.IOException;
  *
  * @author karlz
  */
-public interface SeekersClient extends AutoCloseable {
+public class SeekersClient implements AutoCloseable {
 
-    /**
-     * Hosts a single AI file. Cannot be called more than once.
-     *
-     * @param file the file to host
-     */
-    void host(File file);
+    private Process process;
+
+    public SeekersClient(String file, String exec) throws IOException {
+        ProcessBuilder builder = new ProcessBuilder(exec.replace("{file}", file).split(" "));
+        File log = new File(file + ".log");
+        if (!log.exists()) {
+            log.createNewFile();
+        }
+        builder.redirectError(log);
+        builder.redirectOutput(log);
+        process = builder.start();
+    }
 
     /**
      * Closes the hosted file and any related gRPC network resources.
      *
      * @throws IOException if it could not close the script
      */
-    void close() throws IOException;
+    public void close() throws IOException {
+        process.destroy();
+    }
 }

@@ -19,8 +19,6 @@ package org.seekers.game;
 
 import javafx.geometry.Point2D;
 import javafx.scene.layout.BorderPane;
-import org.seekers.plugin.GameMap;
-import org.seekers.plugin.GameMode;
 
 import javax.annotation.Nonnull;
 
