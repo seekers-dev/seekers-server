@@ -17,6 +17,9 @@
 
 package org.seekers.grpc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -29,17 +32,23 @@ import java.io.IOException;
  * @author karlz
  */
 public class SeekersClient implements AutoCloseable {
+    private static final Logger logger = LoggerFactory.getLogger(SeekersClient.class);
 
-    private Process process;
+    private final Process process;
 
     public SeekersClient(String file, String exec) throws IOException {
         ProcessBuilder builder = new ProcessBuilder(exec.replace("{file}", file).split(" "));
         File log = new File(file + ".log");
         if (!log.exists()) {
-            log.createNewFile();
+             if (log.createNewFile()) {
+                 logger.debug("Logfile was created");
+             } else if (!log.exists()) {
+                 logger.error("Could not create log file for file {}!", file);
+             }
         }
         builder.redirectError(log);
         builder.redirectOutput(log);
+        logger.info("Start driver process");
         process = builder.start();
     }
 
@@ -49,6 +58,7 @@ public class SeekersClient implements AutoCloseable {
      * @throws IOException if it could not close the script
      */
     public void close() throws IOException {
+        logger.info("Close process");
         process.destroy();
     }
 }
