@@ -36,13 +36,13 @@
         </contributor>
     </contributors>
 
-    <repositories>
-        <!-- Use JitPack for snapshot builds -->
+    <!-- Use JitPack for snapshot builds -->
+    <!--repositories>
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
-    </repositories>
+    </repositories-->
 
     <dependencies>
         <!-- Graphics -->
