@@ -53,7 +53,7 @@
         </dependency>
         <!-- API -->
         <dependency>
-            <groupId>com.github.seekers-dev</groupId>
+            <groupId>org.seekers</groupId>
             <artifactId>seekers-grpc</artifactId>
             <version>0.1.1</version>
         </dependency>
