@@ -39,7 +39,7 @@
     <!-- Use JitPack for snapshot builds -->
     <repositories>
         <repository>
-            <id>seekers</id>
+            <id>github</id>
             <url>https://maven.pkg.github.com/seekers-dev/seekers-grpc</url>
             <releases>
                 <enabled>true</enabled>
