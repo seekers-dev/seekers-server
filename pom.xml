@@ -37,12 +37,22 @@
     </contributors>
 
     <!-- Use JitPack for snapshot builds -->
-    <!--repositories>
+    <repositories>
         <repository>
+            <id>seekers</id>
+            <url>https://maven.pkg.github.com/seekers-dev/seekers-grpc</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <!--repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
-        </repository>
-    </repositories-->
+        </repository-->
+    </repositories>
 
     <dependencies>
         <!-- Graphics -->
