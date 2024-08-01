@@ -26,10 +26,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import io.grpc.stub.StreamObserver;
-import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import org.seekers.Launcher;
 import org.seekers.grpc.Corresponding;
 import org.seekers.grpc.game.PlayerOuterClass;
 import org.seekers.grpc.service.CommandResponse;
@@ -64,8 +64,7 @@ public class Player extends Label implements Entity, Corresponding<PlayerOuterCl
 		this.name = "Player " + hashCode();
 		this.color = new Color((rand.nextDouble() + 1) / 3, (rand.nextDouble() + 1) / 3, (rand.nextDouble() + 1) / 3,
 				1.0);
-		setPadding(new Insets(2.0));
-		setFont(Font.font("Ubuntu", 24.0));
+		setFont(Font.loadFont(Launcher.class.getResourceAsStream("PixelFont.otf"), 24.0));
 		setTextFill(color);
 		getGame().getEntities().add(this);
 		getGame().getInfo().getChildren().add(this);

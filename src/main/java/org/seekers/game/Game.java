@@ -19,6 +19,7 @@ package org.seekers.game;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
@@ -31,6 +32,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
 import org.ini4j.Ini;
+import org.seekers.Launcher;
 import org.seekers.grpc.Corresponding;
 import org.seekers.grpc.service.CommandResponse;
 
@@ -64,7 +66,7 @@ public class Game extends Scene {
 
     // Graphics
     private final @Nonnull Label time = new Label();
-    private final @Nonnull VBox info = new VBox();
+    private final @Nonnull VBox info = new VBox(5);
     private final @Nonnull Group front = new Group();
     private final @Nonnull Group back = new Group();
     private final @Nonnull Timeline timeline;
@@ -100,8 +102,9 @@ public class Game extends Scene {
         this.timeline.setCycleCount(getGameProperties().playtime);
         this.timeline.setOnFinished(e -> setGameState(GameState.FINISHED));
 
-        time.setFont(Font.font("Ubuntu", 14));
+        time.setFont(Font.loadFont(Launcher.class.getResourceAsStream("PixelFont.otf"), 16));
         time.setTextFill(Color.WHITESMOKE);
+        getInfo().setPadding(new Insets(10));
 
         parent.setTop(getInfo());
         parent.getChildren().addAll(getBack(), getFront());
