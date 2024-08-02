@@ -80,6 +80,10 @@ public class Player extends Label implements Entity, Corresponding<PlayerOuterCl
 		}
 	}
 
+	private void updateText() {
+		setText(String.format("%4d %s", getScore(), getName()));
+	}
+
 	/**
 	 * Gets the map of Seekers associated with the Player.
 	 *
@@ -147,7 +151,7 @@ public class Player extends Label implements Entity, Corresponding<PlayerOuterCl
 	 */
 	public void setName(@Nonnull String name) {
 		this.name = name;
-		setText(name + ": " + score);
+		updateText();
 	}
 
 	/**
@@ -192,7 +196,7 @@ public class Player extends Label implements Entity, Corresponding<PlayerOuterCl
 	 */
 	public void putUp() {
 		score++;
-		setText(name + ": " + score);
+		updateText();
 	}
 
 	public void setObserver(@Nonnull StreamObserver<CommandResponse> observer) {

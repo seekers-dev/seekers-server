@@ -56,7 +56,7 @@ If you start the server for the first time, the following file and folders will 
 |  `results`   | Save tournament results               |
 
 Before the server starts, the app checks first if all listed paths exist. If a path does not exist, it will be created.
-Then it will launch all plugins. It will create a tournament with a list of matches. In the tournament will every player
+It will create a tournament with a list of matches. In the tournament will every player
 play a match against every other opponent.
 
 ## Config
