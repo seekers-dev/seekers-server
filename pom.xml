@@ -4,6 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.seekers</groupId>
     <artifactId>seekers-server</artifactId>
+
+    <name>Seekers Server</name>
     <description>Server for the seekers game.</description>
     <inceptionYear>2022</inceptionYear>
     <version>0.1.0</version>
